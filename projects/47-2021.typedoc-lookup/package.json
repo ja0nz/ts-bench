@@ -1,0 +1,32 @@
+{
+  "name": "47-2021.typedoc-lookup",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Just a lookup for typescript comments",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ja0nz/ts-scratch.git",
+    "directory": "projects/47-2021.typedoc-lookup"
+  },
+  "author": "Ja0nz <mail@ja.nz>",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc && vite build",
+    "clean": "rimraf dist node_modules/.vite",
+    "docs": "typedoc --entryPoints src --out dist --watch & yarn preview",
+    "preview": "vite preview --open",
+    "start": "vite --open"
+  },
+  "dependencies": {
+    "@thi.ng/hiccup-html": "^2.1.2",
+    "@thi.ng/rdom": "^0.8.2",
+    "twind": "^0.16.16"
+  },
+  "devDependencies": {
+    "@types/rimraf": "^3.0.2",
+    "rimraf": "^3.0.2",
+    "typedoc": "^0.22.10",
+    "typescript": "^4.5.2",
+    "vite": "^2.6.14"
+  }
+}

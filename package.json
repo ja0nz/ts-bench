@@ -1,0 +1,18 @@
+{
+  "private": true,
+  "name": "ts-scratch",
+  "workspaces": [
+    "packages/*",
+    "projects/*",
+    "tools"
+  ],
+  "devDependencies": {
+    "tools": "workspace:^",
+    "verdaccio": "^5.2.2"
+  },
+  "scripts": {
+    "registry": "yarn run verdaccio",
+    "build": "yarn workspaces foreach --no-private --verbose run build"
+  },
+  "packageManager": "yarn@3.1.0"
+}

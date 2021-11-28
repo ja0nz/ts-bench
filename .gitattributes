@@ -1,0 +1,22 @@
+# https://github.com/alexkaratarakis/gitattributes/blob/master/Web.gitattributes
+
+*                 text=auto
+*.css             text diff=css
+*.json            linguist-language=JSON-with-Comments
+*.yml             text
+*.cjs             text
+*.js              text
+*.ts              text
+*.map             text -diff
+*.html            text diff=html
+*.org             text
+*.md              text diff=markdown
+*.lock            text -diff
+*.nix             text
+
+# RC files (like .babelrc or .eslintrc)
+*.*rc             text
+.env              text
+
+# Ignore files (like .npmignore or .gitignore)
+*.*ignore         text
