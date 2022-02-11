@@ -1,0 +1,35 @@
+{
+  "name": "04-2022.scan-transducer",
+  "version": "0.0.1",
+  "private": true,
+  "description": "TODO",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ja0nz/ts-scratch.git",
+    "directory": "projects/04-2022.scan-transducer"
+  },
+  "author": "Ja0nz <mail@ja.nz>",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc && vite build",
+    "build:depgraph": "yarn tools:depgraph",
+    "clean": "rimraf dist node_modules/.vite",
+    "docs": "typedoc --entryPoints src --out dist --watch & yarn preview",
+    "preview": "vite preview --open",
+    "start": "vite --open"
+  },
+  "dependencies": {
+    "@thi.ng/hiccup-html": "^2.1.3",
+    "@thi.ng/rdom": "^0.8.5",
+    "@thi.ng/transducers": "^8.2.0",
+    "twind": "^0.16.16"
+  },
+  "devDependencies": {
+    "@types/rimraf": "^3.0.2",
+    "rimraf": "^3.0.2",
+    "tools": "workspace:^",
+    "typedoc": "^0.22.11",
+    "typescript": "^4.5.5",
+    "vite": "^2.8.1"
+  }
+}

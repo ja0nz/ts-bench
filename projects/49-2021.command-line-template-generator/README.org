@@ -1,0 +1,9 @@
+* 49-2021.command-line-template-generator
+
+** Authors
+
+- Ja0nz
+
+** License
+
+&copy; 2021 Ja0nz // Apache Software License 2.0

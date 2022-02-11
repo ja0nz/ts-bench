@@ -1,0 +1,214 @@
+#+TITLE: GithubCMS - a headless CMS based on Github Issues
+
+* Table of Content :toc:noexport:
+- [[#what-is-this-thing][What is this thing]]
+  - [[#tldr][Tldr]]
+  - [[#rationale][Rationale]]
+- [[#how-to-run][How to run]]
+- [[#starring][Starring]]
+  - [[#github-issues---main-building-blocks][Github Issues - main building blocks]]
+  - [[#labels][Labels]]
+  - [[#milestones][Milestones]]
+- [[#graphql-dump][GraphQL dump]]
+  - [[#repoid][repoID]]
+  - [[#createlabel][createLabel]]
+  - [[#deletelabel][deleteLabel]]
+  - [[#createmilestone][createMilestone]]
+  - [[#deletemilestone][deleteMilestone]]
+  - [[#createissue][createIssue]]
+  - [[#updateissue][updateIssue]]
+  - [[#deleteissue][deleteIssue]]
+- [[#misc][Misc]]
+
+* What is this thing
+** Tldr
+Basically just a simple command line tool that converts local markdown files representing your blogposts/website content to *GitHub issues*.
+
+** Rationale
+1. *GitHub Issues have a nice front-end* allowing other people to easily interact and comment on your content. You can browse topics based on labels and have a powerful content search at hand.
+2. *GitHub uses an extensive GraphQL API* which let you fetch content in a granular manner.
+3. *You get a headless CMS for free* which let you embed your content elsewhere.
+
+* How to run
+#+begin_src bash
+yarn install -D X
+yarn ghi-cms --help
+#+end_src
+
+* Starring
+** Github Issues - main building blocks
+- Main building blocks
+** Labels
+- Used to
+** Milestones
+
+* GraphQL dump
+** repoID
+#+begin_example
+{
+  repository(name: "ja.nz", owner: "ja0nz") {
+    id
+  }
+}
+#+end_example
+#+begin_example
+{
+  "repository": {
+    "id": "MDEwOlJlcG9zaXRvcnkzNzgwOTk0MTY="
+  }
+}
+#+end_example
+** createLabel :repoid:
+#+begin_example
+mutation {
+  createLabel(
+    input: {
+      repositoryId: "MDEwOlJlcG9zaXRvcnkzNzgwOTk0MTY=",
+      name: "World"
+      color: $color
+    }
+  ) {
+    issue {
+      id name
+    }
+  }
+}
+#+end_example
+#+begin_example
+{
+  "createLabel": {
+    "label": {
+      "name": "World"
+     }
+  }
+}
+#+end_example
+** deleteLabel :labelid:
+#+begin_example
+mutation {
+  deleteLabel(input: {id: "I_kwDOFolW2M5BdBo3"}) {
+    clientMutationId
+  }
+}
+#+end_example
+** createMilestone
+#+begin_src js
+const test = await rerequest(opts.repoUrl)(
+  'POST /repos/{owner}/{repo}/milestones',
+  //@ts-ignore - owner and repo set in defaults
+  { title: "oksss" }
+)
+console.log(test.data.node_id)
+#+end_src
+** deleteMilestone
+#+begin_src js
+const test = await rerequest(opts.repoUrl)(
+  'DELETE /repos/{owner}/{repo}/milestones/{milestone_number}',
+  //@ts-ignore - owner and repo set in defaults
+  { milestone_number: 6 }
+)
+console.log(test)
+#+end_src
+
+** createIssue :labelids:repoid:milestoneid:
+#+begin_example
+mutation {
+  createIssue(
+    input: {
+      repositoryId: "MDEwOlJlcG9zaXRvcnkzNzgwOTk0MTY=",
+      title: "Hello World"
+      milestoneId: $slug
+      labelIds: $labels
+      body: $body
+    }
+  ) {
+    issue {
+      id title
+    }
+  }
+}
+#+end_example
+#+begin_example
+{
+  "createIssue": {
+    "issue": {
+      "title": "Hello World"
+     }
+  }
+}
+#+end_example
+
+** updateIssue :issueid:labelids:milestoneid:
+#+begin_example
+mutation {
+  createIssue(
+    input: {
+      id: $ID
+      title: $title
+      milestoneId: $slug
+      labelIds: $labels
+      body: $body
+    }
+  ) {
+    issue {
+      id title
+    }
+  }
+}
+#+end_example
+#+begin_example
+{
+  "createIssue": {
+    "issue": {
+      "title": "Hello World"
+     }
+  }
+}
+#+end_example
+** deleteIssue :issueid:
+#+begin_example
+mutation {
+  deleteIssue(input: {issueId: "I_kwDOFolW2M5BdBo3"}) {
+    clientMutationId
+    repository {
+      id
+    }
+  }
+}
+#+end_example
+#+begin_example
+{
+  "deleteIssue": {
+    "clientMutationId": null,
+    "repository": {
+      "id": "MDEwOlJlcG9zaXRvcnkzNzgwOTk0MTY="
+    }
+  }
+}
+#+end_example
+* Misc
+#+begin_example
+{
+  repository(name: "ja.nz", owner: "ja0nz") {
+    issues(first: 100, filterBy: {assignee: "ja0nz"}) {
+      nodes {
+        id
+        labels(first: 10) {
+          nodes {
+            id
+            name
+          }
+        }
+        milestone {
+          id
+          title
+        }
+        projectNext(number: 1) {
+          id
+          title
+        }
+      }
+    }
+  }
+}
+#+end_example

@@ -7,12 +7,11 @@
     "tools"
   ],
   "devDependencies": {
-    "tools": "workspace:^",
-    "verdaccio": "^5.2.2"
+    "dependency-cruiser": "^11.3.1",
+    "tools": "workspace:^"
   },
   "scripts": {
-    "registry": "yarn run verdaccio",
     "build": "yarn workspaces foreach --no-private --verbose run build"
   },
-  "packageManager": "yarn@3.1.0"
+  "packageManager": "yarn@3.1.1"
 }

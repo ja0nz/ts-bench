@@ -1,0 +1,14 @@
+node_modules
+
+# Credentials
+.env
+bin/index.cjs
+
+# Yarn3
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

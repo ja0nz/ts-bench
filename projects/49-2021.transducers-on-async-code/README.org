@@ -1,0 +1,9 @@
+* 49-2021.transducers-on-async-code
+
+** Authors
+
+- Ja0nz
+
+** License
+
+&copy; 2021 Ja0nz // Apache Software License 2.0

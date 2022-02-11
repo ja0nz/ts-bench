@@ -1,17 +1,20 @@
 {
-    "name": "tools",
-    "description": "This module provides some build-related tools",
-    "version": "1.0.0",
-    "author": "Ja0nz <mail@ja.nz>",
-    "license": "Apache-2.0",
-    "bin": {
-        "tools:generate": "bin/gen-template.mjs",
-        "tools:ts-node": "bin/ts-node.mjs"
-    },
-    "dependencies": {
-        "@thi.ng/args": "^2.1.2"
-    },
-    "devDependencies": {
-        "tsm": "^2.1.4"
-    }
+  "private": true,
+  "name": "tools",
+  "description": "This module provides some build-related tools",
+  "version": "1.0.0",
+  "author": "Ja0nz <mail@ja.nz>",
+  "license": "Apache-2.0",
+  "bin": {
+    "tools:depgraph": "bin/depgraph.mjs",
+    "tools:generate": "bin/gen-template.mjs",
+    "tools:ts-node": "bin/ts-node.mjs"
+  },
+  "dependencies": {
+    "@thi.ng/args": "^2.1.4",
+    "dependency-cruiser": "^11.3.1"
+  },
+  "devDependencies": {
+    "tsm": "^2.2.1"
+  }
 }
