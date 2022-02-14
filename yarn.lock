@@ -18,7 +18,7 @@ __metadata:
     twind: ^0.16.16
     typedoc: ^0.22.11
     typescript: ^4.5.5
-    vite: ^2.8.1
+    vite: ^2.8.2
   languageName: unknown
   linkType: soft
 
@@ -36,7 +36,7 @@ __metadata:
     twind: ^0.16.16
     typedoc: ^0.22.11
     typescript: ^4.5.5
-    vite: ^2.8.1
+    vite: ^2.8.2
   languageName: unknown
   linkType: soft
 
@@ -44,16 +44,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "06-2022.ghcms-test@workspace:projects/06-2022.ghcms-test"
   dependencies:
-    "@thi.ng/hiccup-html": ^2.0.8
-    "@thi.ng/rdom": ^0.7.9
+    "@thi.ng/hiccup-html": ^2.1.3
+    "@thi.ng/rdom": ^0.8.5
     "@types/rimraf": ^3.0.2
     gh-cms: "workspace:^"
     rimraf: ^3.0.2
     tools: "workspace:^"
     twind: ^0.16.16
-    typedoc: ^0.22.9
-    typescript: ^4.4.4
-    vite: ^2.6.14
+    typedoc: ^0.22.11
+    typescript: ^4.5.5
+    vite: ^2.8.2
   languageName: unknown
   linkType: soft
 
@@ -61,6 +61,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "46-2021.rdom-rsteam-play@workspace:projects/46-2021.rdom-rstream-play"
   dependencies:
+    "@thi.ng/expose": ^1.1.3
     "@thi.ng/hiccup-html": ^2.1.3
     "@thi.ng/rdom": ^0.8.5
     "@types/rimraf": ^3.0.2
@@ -68,7 +69,7 @@ __metadata:
     twind: ^0.16.16
     typedoc: ^0.22.11
     typescript: ^4.5.5
-    vite: ^2.8.1
+    vite: ^2.8.2
   languageName: unknown
   linkType: soft
 
@@ -83,7 +84,7 @@ __metadata:
     twind: ^0.16.16
     typedoc: ^0.22.11
     typescript: ^4.5.5
-    vite: ^2.8.1
+    vite: ^2.8.2
   languageName: unknown
   linkType: soft
 
@@ -98,7 +99,7 @@ __metadata:
     twind: ^0.16.16
     typedoc: ^0.22.11
     typescript: ^4.5.5
-    vite: ^2.8.1
+    vite: ^2.8.2
   languageName: unknown
   linkType: soft
 
@@ -117,7 +118,7 @@ __metadata:
     twind: ^0.16.16
     typedoc: ^0.22.11
     typescript: ^4.5.5
-    vite: ^2.8.1
+    vite: ^2.8.2
   languageName: unknown
   linkType: soft
 
@@ -137,7 +138,7 @@ __metadata:
     twind: ^0.16.16
     typedoc: ^0.22.11
     typescript: ^4.5.5
-    vite: ^2.8.1
+    vite: ^2.8.2
   languageName: unknown
   linkType: soft
 
@@ -153,7 +154,7 @@ __metadata:
     twind: ^0.16.16
     typedoc: ^0.22.11
     typescript: ^4.5.5
-    vite: ^2.8.1
+    vite: ^2.8.2
   languageName: unknown
   linkType: soft
 
@@ -422,7 +423,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@thi.ng/api@npm:^8.2.0, @thi.ng/api@npm:^8.3.3":
+"@thi.ng/api@npm:^8.3.3":
   version: 8.3.3
   resolution: "@thi.ng/api@npm:8.3.3"
   checksum: 3976c61728b3e0149e4de833d6c08f3a6724a8c1b6d322732e40e7484e6cb8d6710185cf2b162a7aeabcc10ec272aef41aeb96c60b441b618cf675922be23e51
@@ -495,7 +496,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@thi.ng/checks@npm:^3.0.7, @thi.ng/checks@npm:^3.1.3":
+"@thi.ng/checks@npm:^3.1.3":
   version: 3.1.3
   resolution: "@thi.ng/checks@npm:3.1.3"
   dependencies:
@@ -558,7 +559,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@thi.ng/errors@npm:^2.0.6, @thi.ng/errors@npm:^2.1.3":
+"@thi.ng/errors@npm:^2.1.3":
   version: 2.1.3
   resolution: "@thi.ng/errors@npm:2.1.3"
   checksum: 0198dcebf0b771fbaa3b579343290094816a29e9336d04fbcd6e9a9e20334cad5e32d2475bb2e0b8135a83e994ca1a794c44fbd96f9b75aba47f5e296dab15cd
@@ -579,7 +580,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@thi.ng/hiccup-html@npm:^2.0.8, @thi.ng/hiccup-html@npm:^2.1.3":
+"@thi.ng/hiccup-html@npm:^2.1.3":
   version: 2.1.3
   resolution: "@thi.ng/hiccup-html@npm:2.1.3"
   dependencies:
@@ -588,7 +589,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@thi.ng/hiccup@npm:^4.1.4, @thi.ng/hiccup@npm:^4.2.4":
+"@thi.ng/hiccup@npm:^4.2.4":
   version: 4.2.4
   resolution: "@thi.ng/hiccup@npm:4.2.4"
   dependencies:
@@ -636,7 +637,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@thi.ng/paths@npm:^5.0.8, @thi.ng/paths@npm:^5.1.3":
+"@thi.ng/paths@npm:^5.1.3":
   version: 5.1.3
   resolution: "@thi.ng/paths@npm:5.1.3"
   dependencies:
@@ -647,7 +648,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@thi.ng/prefixes@npm:^2.0.6, @thi.ng/prefixes@npm:^2.1.3":
+"@thi.ng/prefixes@npm:^2.1.3":
   version: 2.1.3
   resolution: "@thi.ng/prefixes@npm:2.1.3"
   checksum: 14890cde70078db02c6865af774376d8f5d0599aa9a4caf12a74ac2d660a3724aeeefa017307a5688e6c4a8672412f67d7aac16113afd384bc73aeb8bf528a0a
@@ -663,22 +664,6 @@ __metadata:
     "@thi.ng/errors": ^2.1.3
     "@thi.ng/hex": ^2.1.3
   checksum: 8371a59d2dd774f70ef32eeaa9c722f00e55cba7d8f367a3bbc4bf074d504d54b30270b96d377b2a89a9669e4868214dafe8b9cf4af6ab08a297f5bc0208e914
-  languageName: node
-  linkType: hard
-
-"@thi.ng/rdom@npm:^0.7.9":
-  version: 0.7.9
-  resolution: "@thi.ng/rdom@npm:0.7.9"
-  dependencies:
-    "@thi.ng/api": ^8.2.0
-    "@thi.ng/checks": ^3.0.7
-    "@thi.ng/errors": ^2.0.6
-    "@thi.ng/hiccup": ^4.1.4
-    "@thi.ng/paths": ^5.0.8
-    "@thi.ng/prefixes": ^2.0.6
-    "@thi.ng/rstream": ^7.0.9
-    "@thi.ng/strings": ^3.1.4
-  checksum: 88d568f0bccd013f282ebfa85ce4a578ccbcad2cdd411bc5c4e50ecc886d793f02706fbfc51c816f786c003649bf1a275f70e54167edb98a99b09a79311a3ca1
   languageName: node
   linkType: hard
 
@@ -698,7 +683,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@thi.ng/rstream@npm:^7.0.9, @thi.ng/rstream@npm:^7.2.2":
+"@thi.ng/rstream@npm:^7.2.2":
   version: 7.2.2
   resolution: "@thi.ng/rstream@npm:7.2.2"
   dependencies:
@@ -714,7 +699,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@thi.ng/strings@npm:^3.1.4, @thi.ng/strings@npm:^3.3.1":
+"@thi.ng/strings@npm:^3.3.1":
   version: 3.3.1
   resolution: "@thi.ng/strings@npm:3.3.1"
   dependencies:
@@ -856,7 +841,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^17.0.15":
+"@types/node@npm:^17.0.17":
   version: 17.0.17
   resolution: "@types/node@npm:17.0.17"
   checksum: 8ddba2829acdf1684fbd8fd248ec13f033efb70ecd1085677b547c40ef8e936a006b95eac3bdc28c47939c62526f3f027afeb4a930e30e4394923bbae4626476
@@ -1838,7 +1823,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.14.14, esbuild@npm:^0.14.19":
+"esbuild@npm:^0.14.14, esbuild@npm:^0.14.21":
   version: 0.14.21
   resolution: "esbuild@npm:0.14.21"
   dependencies:
@@ -2067,11 +2052,11 @@ __metadata:
     "@thi.ng/testament": ^0.2.3
     "@thi.ng/text-format": ^1.1.3
     "@thi.ng/transducers": ^8.2.0
-    "@types/node": ^17.0.15
+    "@types/node": ^17.0.17
     dotenv: ^16.0.0
-    esbuild: ^0.14.19
+    esbuild: ^0.14.21
     gray-matter: ^4.0.3
-    ts-node: ^10.4.0
+    ts-node: ^10.5.0
     typescript: ^4.5.5
   bin:
     gh-cms: bin/index.cjs
@@ -3443,7 +3428,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-node@npm:^10.4.0":
+"ts-node@npm:^10.5.0":
   version: 10.5.0
   resolution: "ts-node@npm:10.5.0"
   dependencies:
@@ -3560,7 +3545,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typedoc@npm:^0.22.11, typedoc@npm:^0.22.9":
+"typedoc@npm:^0.22.11":
   version: 0.22.11
   resolution: "typedoc@npm:0.22.11"
   dependencies:
@@ -3577,7 +3562,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.4.4, typescript@npm:^4.5.5":
+"typescript@npm:^4.5.5":
   version: 4.5.5
   resolution: "typescript@npm:4.5.5"
   bin:
@@ -3597,7 +3582,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.4.4#~builtin<compat/typescript>, typescript@patch:typescript@^4.5.5#~builtin<compat/typescript>":
+"typescript@patch:typescript@^4.5.5#~builtin<compat/typescript>":
   version: 4.5.5
   resolution: "typescript@patch:typescript@npm%3A4.5.5#~builtin<compat/typescript>::version=4.5.5&hash=493e53"
   bin:
@@ -3688,9 +3673,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.6.14, vite@npm:^2.8.1":
-  version: 2.8.1
-  resolution: "vite@npm:2.8.1"
+"vite@npm:^2.8.2":
+  version: 2.8.2
+  resolution: "vite@npm:2.8.2"
   dependencies:
     esbuild: ^0.14.14
     fsevents: ~2.3.2
@@ -3713,7 +3698,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 4ce8acc2dd2a7ca8727511ff575f72de162114402e55e5d081001f05ef1656782cd5611d4f6091c29efb455e72d30967467bad5b6b329bfe5279fbe8d5169d67
+  checksum: 2e5ace113e34fbcd335ea9e83292086fb464a0029df5b4547ae89d109de509210bd0027dc2c041f11d24a0af6136ee31e78dd605a1d93fa23e968db5a4e81c7e
   languageName: node
   linkType: hard
 

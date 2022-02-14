@@ -32,6 +32,6 @@
     "tools": "workspace:^",
     "typedoc": "^0.22.11",
     "typescript": "^4.5.5",
-    "vite": "^2.8.1"
+    "vite": "^2.8.2"
   }
 }
