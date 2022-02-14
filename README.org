@@ -1,0 +1,33 @@
+#+TITLE: Readme
+This is just a *trail and error* workbench of TS projects.
+
+* Contents :toc:
+- [[#setup][Setup]]
+  - [[#projects---a-playground-and-testbed][./projects - A playground and testbed]]
+  - [[#packages---own-librariescli-tools][./packages - Own libraries/CLI tools]]
+- [[#find-a-project-by-technology][Find a project by technology]]
+  - [[#thingrstream][@thi.ng/rstream]]
+
+* Setup
+** [[file:projects/][./projects]] - A playground and testbed
+This is a place between super random tests and actual useful code snippets. Or a place to test out WIPs from imported from [[id:f2122de1-b17f-485f-a1b1-d93506c3eab2][./packages]]
+
+Scaffold a new project with
+#+begin_src bash
+make-project "good-project-name"
+#+end_src
+** [[file:packages/][./packages]] - Own libraries/CLI tools
+:PROPERTIES:
+:ID:       f2122de1-b17f-485f-a1b1-d93506c3eab2
+:END:
+This should be more polished. sometimes is, sometimes not:)
+
+Scaffold a new project with
+#+begin_src bash
+make-package "good-package-name"
+#+end_src
+
+* Find a project by technology
+A lookup map for me
+** @thi.ng/rstream
+[[file:projects/46-2021.rdom-rstream-play/src/index.ts][W46-2021.rdom-rstream-play]]
