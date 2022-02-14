@@ -1,5 +1,6 @@
 import { isString } from "@thi.ng/checks/is-string";
 import { delayed } from "@thi.ng/compose/delayed";
+import { exposeGlobal } from "@thi.ng/expose";
 import { h1, button, div, li, span } from "@thi.ng/hiccup-html";
 import { $compile } from "@thi.ng/rdom/compile";
 import { $list } from "@thi.ng/rdom/list";
@@ -9,6 +10,7 @@ import { fromDOMEvent } from "@thi.ng/rstream/event";
 import { fromInterval } from "@thi.ng/rstream/interval";
 import { fromIterable } from "@thi.ng/rstream/iterable";
 import { metaStream } from "@thi.ng/rstream/metastream";
+import { trace } from "@thi.ng/rstream";
 import { reactive, stream } from "@thi.ng/rstream/stream";
 import { sync } from "@thi.ng/rstream/sync";
 import { choices } from "@thi.ng/transducers/choices";
@@ -18,14 +20,38 @@ import { tw } from "twind";
 
 const app = document.querySelector<HTMLDivElement>('#app')!
 
+/**
+ * Reactive blur stream (boolean)
+ * Made by the reactive stream creation helper. pre seeded
+ * Toggle value (push operation)
+ * () => blur.next(!blur.deref()), "toggle blur")
+ *
+ */
 const blur = reactive(false);
 
+/**
+ * Raw string stream
+ * Eventually seeded by randomized strings
+ */
 const body = stream<string>();
 
+/**
+ * Time triggered stream
+ */
 const date = fromInterval(1000).transform(map(() => new Date()));
 
+/**
+ * Overall generic stream for holding one of the prementioned items
+ */
 const items = stream<any[]>();
 
+/**
+ * Like this one for its complexity / it's an endless (but controlled) loop
+ * 1. It has a source -> an async producer of values (s.next)
+ * This async function indefinitely produces values lettering values with random timings
+ * 2. It has a stop function build
+ * 3. The way it's used in metastream down below feeding in the src argument
+ */
 const typewriter = (min: number, max: number) => (src: string) =>
     stream<string>((s) => {
         let active = true;
@@ -44,8 +70,7 @@ const names = ["👋TypeScript", "👋@thi.ng/rdom", "👋toxi", "👋Discord"];
 /**
  * Merging streams + factory
  * Consumes both fromIterable plus an "typewriter factory" together
- * So for every word in names we get ONE stream which returns the chars sequentially
- *
+ * So for every word in names we get ONE stream which returns the chars sequentially in a random time
  */
 const typing = fromIterable(choices(names), { delay: 2000 }).subscribe(
     metaStream(typewriter(16, 100), { closeOut: CloseMode.NEVER })
