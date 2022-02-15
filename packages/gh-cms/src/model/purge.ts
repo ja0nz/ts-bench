@@ -4,7 +4,7 @@ import { comp, flatten, sideEffect, map, filter, transduce, push } from "@thi.ng
 import type { PurgeOpts } from "../cmd/purge"
 import type { Logger } from "../logger"
 import type { Milestone, Label, Issue } from "./api"
-import { deleteLabel, deleteMilestone } from "./io/mutateRepo"
+import { deleteLabel, deleteMilestone } from "./io/net"
 
 type PIn = Label | Milestone
 

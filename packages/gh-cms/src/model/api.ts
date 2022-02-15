@@ -1,4 +1,4 @@
-import { defGetter } from "@thi.ng/paths";
+import { defGetter, defSetterUnsafe } from "@thi.ng/paths";
 import { comp } from "@thi.ng/compose";
 import type { GrayMatterFile } from "gray-matter";
 import { GH_MD2LABEL, GH_MD2MILESTONE } from "../api";
@@ -8,7 +8,7 @@ import { GH_MD2LABEL, GH_MD2MILESTONE } from "../api";
 export interface Blogpost {
     title: string;
     body: string;
-    slug?: string;
+    route?: string;
     labels?: string[];
 }
 
@@ -17,11 +17,14 @@ export interface Blogpost {
  * used to store GH information alongside the parsed content
  */
 export interface GitHubGrayMatter {
-    id: string;
-
+    repoID: string;
+    issueID: string;
+    raw: string;
     body: CustomGrayMatter;
 }
-export const get_GHGM_ID = defGetter<GitHubGrayMatter, "id">(["id"]);
+export const get_GHGM_IID = defGetter<GitHubGrayMatter, "issueID">(["issueID"]);
+export const get_GHGM_RID = defGetter<GitHubGrayMatter, "repoID">(["repoID"]);
+export const get_GHGM_raw = defGetter<GitHubGrayMatter, "raw">(["raw"]);
 export const get_GHGM_body = defGetter<GitHubGrayMatter, "body">(["body"]);
 
 /*
@@ -48,6 +51,7 @@ export const getGHGM_data = comp(
 export interface FrontMatterSpec {
     id: string,
     date: Date,
+    title: string,
     tags?: string[],
     route?: string
 }
@@ -59,21 +63,31 @@ export const getGHGM_data_date = comp(
     defGetter<FrontMatterSpec, "date">(["date"]),
     getGHGM_data
 )
+export const getGHGM_data_title = comp(
+    defGetter<FrontMatterSpec, "title">(["title"]),
+    getGHGM_data
+)
+
 export const getGHGM_data_tags = comp(
     defGetter<FrontMatterSpec, any>([GH_MD2LABEL ?? "tags"]),
     getGHGM_data
 )
+export const setGHGM_data_tags =
+    defSetterUnsafe(["body", "data", GH_MD2LABEL ?? "tags"])
 export const getGHGM_data_route = comp(
     defGetter<FrontMatterSpec, any>([GH_MD2MILESTONE ?? "route"]),
     getGHGM_data
 )
+export const setGHGM_data_route =
+    defSetterUnsafe(["body", "data", GH_MD2MILESTONE ?? "route"])
 
 /*
  * GraphQL
  */
 export interface Issue {
-    id: string,
-    body?: string
+    id: string;
+    repository?: { id: string };
+    body?: string;
 }
 export interface Label {
     id: string;

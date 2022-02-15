@@ -35,4 +35,6 @@ export const rerequest = (url: string) => {
 }
 
 export * from "./queryRepo.js";
-export * from "./setIssues.js";
+export * from "./milestone.js";
+export * from "./label.js";
+export * from "./issue.js";

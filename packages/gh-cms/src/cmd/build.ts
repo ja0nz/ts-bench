@@ -21,14 +21,16 @@ export const BUILD: CommandSpec<BuildOpts> = {
 
     // CONF
     const dry = opts.dryRun;
+    const repoUrl = opts.repoUrl;
+    const contentPath = opts.contentPath;
     logger.info(logger.pp(opts))
 
     // INPUT
-    const pnear: Promise<Issue[]> = getInFs(opts.contentPath);
-    const pfar: Fn0<Promise<Repository>> = () => qlrequest(opts.repoUrl)(
+    const pnear: Promise<Issue[]> = getInFs(contentPath);
+    const pfar: Fn0<Promise<Repository>> = () => qlrequest(repoUrl)(
       queryStrRepo(
         queryQLID(),
-        queryQLIssues("body"),
+        queryQLIssues("body", "repository { id }"),
         queryQLLabels(),
         queryQLMilestones()
       ))
@@ -47,7 +49,7 @@ export const BUILD: CommandSpec<BuildOpts> = {
       getInRepo(far, "issues")?.nodes ?? [],
       near
     );
-
+    //console.log(content2Build)
 
     // Prebuild
     const preBuildFx =
@@ -64,9 +66,15 @@ export const BUILD: CommandSpec<BuildOpts> = {
       build(opts, logger, far)(content2Build);
 
     // OUTPUT
+    let issues;
     if (!dry) {
-      await Promise.all(buildFx.map(x => x()))
+      issues = await Promise.all(buildFx.map(x => x()))
+      console.log(logger.pp(issues))
     }
+
+    // Postbuild
+    // drafts close else not
+    // delete repo id from GHW
 
     logger.info("Successfully build");
   },

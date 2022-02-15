@@ -9,6 +9,7 @@ export const queryStrRepo = (...query: string[]) => `
   }`;
 
 export const queryQLID = () => `id`;
+
 export const queryQLIssues = (...query: string[]) => `
       issues(first: 100, filterBy: {createdBy: $owner, states: CLOSED}) {
         nodes { id ${query.length ? query : ""} }

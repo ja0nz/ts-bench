@@ -36,11 +36,11 @@ export const PURGE: CommandSpec<PurgeOpts> = {
     const labels = !l ? [] : getInRepo(far, "labels")?.nodes ?? [];
     const milestones = !m ? [] : getInRepo(far, "milestones")?.nodes ?? [];
 
-    const out = purge(opts, logger)(labels, milestones)
+    const outFx = purge(opts, logger)(labels, milestones)
 
     // OUTPUT
     if (!dry) {
-      await Promise.all(out.map(x => x()))
+      await Promise.all(outFx.map(x => x()))
     }
 
     logger.info("Successfully purged");
