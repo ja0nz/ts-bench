@@ -18,6 +18,7 @@ export interface Blogpost {
  */
 export interface GitHubGrayMatter {
     id: string;
+
     body: CustomGrayMatter;
 }
 export const get_GHGM_ID = defGetter<GitHubGrayMatter, "id">(["id"]);
@@ -101,8 +102,11 @@ export interface Milestones {
         nodes: Milestone[]
     }
 }
+export interface RepoID {
+    id: string
+}
 
-type Response = Issues & Labels & Milestones
+type Response = RepoID & Issues & Labels & Milestones
 
 export interface Repository {
     repository: {

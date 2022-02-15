@@ -1,11 +1,10 @@
 import type { Fn0, FnAnyT } from "@thi.ng/api"
 import { defGetter, defGetterUnsafe } from "@thi.ng/paths"
-import { comp, trace, flatten, sideEffect, map, filter, transduce, push } from "@thi.ng/transducers"
+import { comp, flatten, sideEffect, map, filter, transduce, push } from "@thi.ng/transducers"
 import type { PurgeOpts } from "../cmd/purge"
 import type { Logger } from "../logger"
 import type { Milestone, Label, Issue } from "./api"
-import { deleteLabel, mutateStrRepo } from "./io/mutateRepo"
-import { qlrequest, rerequest } from "./io/net"
+import { deleteLabel, deleteMilestone } from "./io/mutateRepo"
 
 type PIn = Label | Milestone
 
@@ -28,16 +27,10 @@ export function purge(opts: PurgeOpts, logger: Logger): FnAnyT<PIn[], Fn0<Promis
                     number: defGetterUnsafe<number | undefined>(["number"])(x) // ok to be unsafe here
                 })),
                 map(x => x.number === undefined
-                    ? deleteLabel(x.id) // label
-                    : { milestone_number: x.number } // milestone
-                ),
-                map(x => typeof x === 'string'
-                    ? () => qlrequest(opts.repoUrl)(mutateStrRepo(x)) // label
-                    : () => rerequest(opts.repoUrl)( // milestone
-                        'DELETE /repos/{owner}/{repo}/milestones/{milestone_number}',
-                        x as any
-                    )
-                )),
+                    ? deleteLabel(opts.repoUrl, x.id)
+                    : deleteMilestone(opts.repoUrl, x.number)
+                )
+            ),
             push(),
             flatten<PIn[], PIn>(rows)
         )

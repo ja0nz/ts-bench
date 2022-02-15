@@ -1,10 +1,11 @@
+import type { Fn0 } from "@thi.ng/api";
 import { Args, string } from "@thi.ng/args";
 import { comp } from "@thi.ng/compose";
 import { CLIOpts, DryRunOpts, CommandSpec, CONTENT_PATH, ensureEnv, REQUIRED } from "../api";
 import type { Issue, Repository } from "../model/api";
-import { latestContentRows, parseContentRows, preFilter } from "../model/build";
+import { build, latestContentRows, parseContentRows, preBuild, preFilter } from "../model/build";
 import { getInFs } from "../model/io/fs";
-import { queryStrRepo, getInRepo, qlrequest, queryQLIssues, queryQLLabels, queryQLMilestones } from "../model/io/net";
+import { queryStrRepo, getInRepo, qlrequest, queryQLIssues, queryQLLabels, queryQLMilestones, queryQLID } from "../model/io/net";
 import { ARG_DRY } from "./args";
 
 export interface BuildOpts extends CLIOpts, DryRunOpts {
@@ -17,29 +18,25 @@ export const BUILD: CommandSpec<BuildOpts> = {
     // Guards
     ensureEnv("--content-path", "env.CONTENT_PATH", opts.contentPath);
     logger.info("Starting build")
-    /*
-     * opts
-     * {
-         "repoUrl": "https://github.com/ja0nz/ja.nz",
-         "dryRun": false,
-         "contentPath": "./content"
-     }
-    */
+
+    // CONF
+    const dry = opts.dryRun;
     logger.info(logger.pp(opts))
 
     // INPUT
     const pnear: Promise<Issue[]> = getInFs(opts.contentPath);
-    const pfar: Promise<Repository> = qlrequest(opts.repoUrl)(
+    const pfar: Fn0<Promise<Repository>> = () => qlrequest(opts.repoUrl)(
       queryStrRepo(
+        queryQLID(),
         queryQLIssues("body"),
         queryQLLabels(),
         queryQLMilestones()
       ))
-    const [far, near] = await Promise.all([pfar, pnear])
+    const near = await pnear;
+    let far = await pfar();
 
     // transform
-    const out = comp(
-      //genWorkMap(far),
+    const content2Build = comp(
       // extract
       latestContentRows,
       // filter only relevant rows
@@ -50,34 +47,27 @@ export const BUILD: CommandSpec<BuildOpts> = {
       getInRepo(far, "issues")?.nodes ?? [],
       near
     );
-    console.log(out)
 
-    // const workload: Promise<any>[] = transduce(
-    //   comp(
-    //     map(x => new Promise(x)) // into workload
-    //   ),
-    //   reducer(
-    //     () => [],
-    //     (acc, x) => {
-    //       // TODO
-    //       // labels
-    //       // milestones
-    //       // modify i
-    //       // create i
-    //     }
-    //   ),
-    //   await latestContent(opts)
-    // )
 
-    // // OUTPUT
-    // for (let p of workload) {
-    //   await p;
-    // }
+    // Prebuild
+    const preBuildFx =
+      preBuild(opts, logger, far)(content2Build)
 
-    //console.log(c)
-    // FIXME debug only
-    // opts.dryRun = true;
-    // TODO implement build logic
+    // OUTPUT
+    if (!dry) {
+      await Promise.all(preBuildFx.map(x => x()))
+    }
+
+    // Build
+    far = await pfar();
+    const buildFx =
+      build(opts, logger, far)(content2Build);
+
+    // OUTPUT
+    if (!dry) {
+      await Promise.all(buildFx.map(x => x()))
+    }
+
     logger.info("Successfully build");
   },
   opts: <Args<BuildOpts>>{

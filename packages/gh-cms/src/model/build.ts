@@ -1,10 +1,76 @@
-import { comp, filter, flatten, groupByObj, iterator, map, mapcat, multiplexObj, push, reduce, sideEffect, trace, transduce } from "@thi.ng/transducers";
-import { get_GHGM_ID, getGHGM_data_date, getGHGM_data_id, GitHubGrayMatter as GHW, CustomGrayMatter, get_GHGM_body, Issue, Repository, getGHGM_data_tags } from "./api";
+import { comp, cat, filter, flatten, groupByObj, iterator, map, mapcat, multiplex, multiplexObj, push, reduce, sideEffect, sideEffect, trace, transduce } from "@thi.ng/transducers";
+import { get_GHGM_ID, getGHGM_data_date, getGHGM_data_id, GitHubGrayMatter as GHW, CustomGrayMatter, get_GHGM_body, Issue, Repository, getGHGM_data_tags, Label, getGHGM_data_route } from "./api";
 import grayMatter from "gray-matter";
-import type { Fn, IObjectOf } from "@thi.ng/api";
+import type { Fn, Fn0, IObjectOf } from "@thi.ng/api";
 import { getInRepo } from "./io/queryRepo";
+import { createLabel, createMilestone } from "./io/mutateRepo";
+import type { Logger } from "../logger";
+import type { BuildOpts } from "../cmd/build";
+
+/*
+ *
+     TODO
+     - [X] compare them by 'date'
+     - diff labels && are created
+     - diff milestones && are created
+     - new content: push to issues
+     - mod content: modify issue by ID
+ *
+ */
 
 
+export function build(opts: BuildOpts, logger: Logger, far: Repository): Fn<GHW[], Fn0<Promise<any>>[]> {
+    const farLabels = getInRepo(far, "labels")?.nodes ?? [];
+    const farMilestones = getInRepo(far, "milestones")?.nodes ?? [];
+    const repoID = getInRepo(far, "id") ?? "";
+    return (rows: GHW[]) => transduce(
+        comp(
+            map(x => x),
+        ),
+        push(),
+        rows
+    )
+}
+
+export function preBuild(opts: BuildOpts, logger: Logger, far: Repository): Fn<GHW[], Fn0<Promise<any>>[]> {
+    const farLabels = getInRepo(far, "labels")?.nodes ?? [];
+    const farMilestones = getInRepo(far, "milestones")?.nodes ?? [];
+    const repoID = getInRepo(far, "id") ?? "";
+    return (rows: GHW[]) => transduce(
+        comp(
+            multiplex(
+                comp(
+                    mapcat<GHW, string>(getGHGM_data_tags), // wanted tags
+                    filter((t: string) => {
+                        const i = farLabels.filter(x => x.name !== t)
+                        return i.length ? true : false;
+                    }),
+                    sideEffect((x: string) => {
+                        if (opts.dryRun) logger.info(`DRY; Create missing label: ${x}`)
+                    }),
+                    trace("label"),
+                    map((x: string) => createLabel(opts.repoUrl, repoID, x)),
+                ),
+                comp(
+                    map<GHW, string>(getGHGM_data_route), // wanted milestone
+                    filter((t: string) => {
+                        const i = farMilestones.filter(x => x.title !== t)
+                        return i.length ? true : false;
+                    }),
+                    sideEffect((x: string) => {
+                        if (opts.dryRun) logger.info(`DRY; Create missing milestone: ${x}`)
+                    }),
+                    trace("milestone"),
+                    map((x: string) => createMilestone(opts.repoUrl, x)),
+                )
+            ),
+            cat(),
+            filter(Boolean)
+        ),
+        push(),
+        rows
+    )
+}
 
 export function latestContentRows(entries: IterableIterator<GHW[]>): GHW[] {
     return transduce(
@@ -64,30 +130,3 @@ export function parseContentRows(...rows: Issue[][]): IObjectOf<GHW[]> {
     )
 }
 
-/*
- *
-     TODO
-     - [X] compare them by 'date'
-     - diff labels && are created
-     - diff milestones && are created
-     - new content: push to issues
-     - mod content: modify issue by ID
- *
- */
-
-
-export function genWorkMap(far: Repository): Fn<GHW[], any> {
-    const farLabels = getInRepo(far, "labels")?.nodes ?? [];
-    const farMilestones = getInRepo(far, "milestones")?.nodes ?? [];
-    return (rows: GHW[]) => transduce(
-        multiplexObj({
-            missingLabels: comp(
-                mapcat(getGHGM_data_tags),
-                //filter(),
-                trace()
-            )
-        }),
-        push(),
-        rows
-    )
-}
