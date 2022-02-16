@@ -3,15 +3,6 @@ import { comp } from "@thi.ng/compose";
 import type { GrayMatterFile } from "gray-matter";
 import { GH_MD2LABEL, GH_MD2MILESTONE } from "../api";
 
-// interfaces
-
-export interface Blogpost {
-    title: string;
-    body: string;
-    route?: string;
-    labels?: string[];
-}
-
 /*
  * This is a wrapper around the parsed GrayMatter file
  * used to store GH information alongside the parsed content
@@ -20,12 +11,12 @@ export interface GitHubGrayMatter {
     repoID: string;
     issueID: string;
     raw: string;
-    body: CustomGrayMatter;
+    parsed: CustomGrayMatter;
 }
 export const get_GHGM_IID = defGetter<GitHubGrayMatter, "issueID">(["issueID"]);
 export const get_GHGM_RID = defGetter<GitHubGrayMatter, "repoID">(["repoID"]);
 export const get_GHGM_raw = defGetter<GitHubGrayMatter, "raw">(["raw"]);
-export const get_GHGM_body = defGetter<GitHubGrayMatter, "body">(["body"]);
+export const get_GHGM_parsed = defGetter<GitHubGrayMatter, "parsed">(["parsed"]);
 
 /*
  * GrayMatterFile is poorly typed
@@ -38,11 +29,11 @@ export interface CustomGrayMatter extends GrayMatterFile<string> {
 }
 export const getGHGM_content = comp(
     defGetter<CustomGrayMatter, "content">(["content"]),
-    get_GHGM_body
+    get_GHGM_parsed
 );
 export const getGHGM_data = comp(
     defGetter<CustomGrayMatter, "data">(["data"]),
-    get_GHGM_body
+    get_GHGM_parsed
 );
 
 /*
@@ -74,6 +65,7 @@ export const getGHGM_data_tags = comp(
 )
 export const setGHGM_data_tags =
     defSetterUnsafe(["body", "data", GH_MD2LABEL ?? "tags"])
+
 export const getGHGM_data_route = comp(
     defGetter<FrontMatterSpec, any>([GH_MD2MILESTONE ?? "route"]),
     getGHGM_data
@@ -86,7 +78,6 @@ export const setGHGM_data_route =
  */
 export interface Issue {
     id: string;
-    repository?: { id: string };
     body?: string;
 }
 export interface Label {

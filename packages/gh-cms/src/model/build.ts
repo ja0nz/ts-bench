@@ -1,19 +1,21 @@
 import { comp, filter, flatten, groupByObj, iterator, map, mapcat, multiplex, multiplexObj, push, sideEffect, trace, transduce, last } from "@thi.ng/transducers";
-import { get_GHGM_IID, getGHGM_data_date, getGHGM_data_id, GitHubGrayMatter as GHW, CustomGrayMatter, get_GHGM_body, Issue, Repository, getGHGM_data_tags, getGHGM_data_route, get_GHGM_RID, setGHGM_data_tags, setGHGM_data_route, getGHGM_data } from "./api";
+import { get_GHGM_IID, getGHGM_data_date, getGHGM_data_id, GitHubGrayMatter as GHW, CustomGrayMatter, get_GHGM_parsed, Issue, Repository, getGHGM_data_tags, getGHGM_data_route, get_GHGM_RID, setGHGM_data_tags, setGHGM_data_route, getGHGM_data } from "./api";
 import grayMatter from "gray-matter";
-import type { Fn, Fn0, IObjectOf } from "@thi.ng/api";
+import type { Fn, Fn0, FnAnyT, IObjectOf, Tuple } from "@thi.ng/api";
 import { getInRepo } from "./io/queryRepo";
 import { createIssue, createLabel, createMilestone } from "./io/net";
 import type { Logger } from "../logger";
 import type { BuildOpts } from "../cmd/build";
 
-
 export function build(opts: BuildOpts, logger: Logger, far: Repository): Fn<GHW[], Fn0<Promise<any>>[]> {
     const farLabels = getInRepo(far, "labels")?.nodes ?? [];
     const farMilestones = getInRepo(far, "milestones")?.nodes ?? [];
-    const repoID = getInRepo(far, "id") ?? "";
     return (rows: GHW[]) => transduce(
         comp(
+            sideEffect((i: GHW) => {
+                const nI = get_GHGM_IID(i)
+                if (opts.dryRun) logger.info(`DRY; ${nI ? "Update" : "Create"} issue: ${logger.pp(getGHGM_data(i))}`)
+            }),
             // labels
             map<GHW, GHW>(i => {
                 const lIDs = transduce(
@@ -38,15 +40,6 @@ export function build(opts: BuildOpts, logger: Logger, far: Repository): Fn<GHW[
                 const nT = setGHGM_data_route(i, lIDs)
                 return nT;
             }),
-            // ensure repoID
-            map<GHW, GHW>(i => {
-                if (!get_GHGM_RID(i)) i.repoID = repoID;
-                return i;
-            }),
-            sideEffect((i: GHW) => {
-                const nI = get_GHGM_IID(i)
-                if (opts.dryRun) logger.info(`DRY; ${nI ? "Update" : "Create"} issue: ${logger.pp(getGHGM_data(i))}`)
-            }),
             map(i => createIssue(opts.repoUrl, i))
         ),
         push(),
@@ -57,28 +50,26 @@ export function build(opts: BuildOpts, logger: Logger, far: Repository): Fn<GHW[
 export function preBuild(opts: BuildOpts, logger: Logger, far: Repository): Fn<GHW[], Fn0<Promise<any>>[]> {
     const farLabels = getInRepo(far, "labels")?.nodes ?? [];
     const farMilestones = getInRepo(far, "milestones")?.nodes ?? [];
-    const repoID = getInRepo(far, "id") ?? "";
     return (rows: GHW[]) => transduce(
         comp(
             multiplex(
                 comp(
-                    mapcat<GHW, string>(getGHGM_data_tags), // wanted tags
-                    filter((t: string) => {
-                        const i = farLabels.filter(x => x.name === t)
-                        return i.length ? false : true;
-                    }),
-                    sideEffect((x: string) => {
-                        if (opts.dryRun) logger.info(`DRY; Create missing label: ${x}`)
+                    mapcat<GHW, Tuple<string, 2>>(x => [get_GHGM_RID(x), getGHGM_data_tags(x)]), // wanted tags
+                    filter(([_, tag]: Tuple<string, 2>) =>
+                        farLabels.filter(x => x.name === tag).length ? false : true
+                    ),
+                    sideEffect((x: Tuple<string, 2>) => {
+                        if (opts.dryRun) logger.info(`DRY; Create missing label: ${x[1]}`)
                     }),
                     //trace("label"),
-                    map((x: string) => createLabel(opts.repoUrl, repoID, x)),
-                ),
+                    map(([rID, tag]: Tuple<string, 2>) =>
+                        createLabel(opts.repoUrl, rID, tag)
+                    )),
                 comp(
                     map<GHW, string>(getGHGM_data_route), // wanted milestone
-                    filter((t: string) => {
-                        const i = farMilestones.filter(x => x.title === t)
-                        return i.length ? false : true;
-                    }),
+                    filter((t: string) =>
+                        farMilestones.filter(x => x.title === t).length ? false : true
+                    ),
                     sideEffect((x: string) => {
                         if (opts.dryRun) logger.info(`DRY; Create missing milestone: ${x}`)
                     }),
@@ -111,8 +102,8 @@ export function latestContentRows(entries: IterableIterator<GHW[]>): GHW[] {
                 ghxs.reduce((prev, cur) => (getGHGM_data_date(cur) > getGHGM_data_date(prev) ? cur : prev)).raw
             ),
             // latest message body
-            body: map((ghxs: GHW[]) =>
-                ghxs.reduce((prev, cur) => (getGHGM_data_date(cur) > getGHGM_data_date(prev) ? cur : prev)).body
+            parsed: map((ghxs: GHW[]) =>
+                ghxs.reduce((prev, cur) => (getGHGM_data_date(cur) > getGHGM_data_date(prev) ? cur : prev)).parsed
             )
         }),
         push(),
@@ -145,20 +136,21 @@ export function preFilter(entries: IObjectOf<GHW[]>): IterableIterator<GHW[]> {
 }
 
 
-export function parseContentRows(...rows: Issue[][]): IObjectOf<GHW[]> {
-    return transduce(
-        comp(
-            filter((x: Issue) => !!x.body ?? false),
-            map((x: Issue) => ({
-                issueID: x.id,
-                repoID: x.repository?.id ?? "",
-                raw: x.body,
-                body: grayMatter(x.body as string) as CustomGrayMatter
-            })),
-            filter((x: GHW) => !get_GHGM_body(x).isEmpty)
-        ),
-        groupByObj({ key: getGHGM_data_id }),
-        flatten(rows)
-    )
+export function parseContentRows(far: Repository): FnAnyT<Issue[][], IObjectOf<GHW[]>> {
+    const repoID = getInRepo(far, "id") ?? "";
+    return (...rows: Issue[][]) =>
+        transduce(
+            comp(
+                filter((x: Issue) => !!x.body ?? false),
+                map((x: Issue) => ({
+                    issueID: x.id,
+                    repoID: repoID,
+                    raw: x.body,
+                    parsed: grayMatter(x.body as string) as CustomGrayMatter
+                })),
+                filter((x: GHW) => !get_GHGM_parsed(x).isEmpty)
+            ),
+            groupByObj({ key: getGHGM_data_id }),
+            flatten(rows)
+        )
 }
-

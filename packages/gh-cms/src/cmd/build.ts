@@ -30,7 +30,7 @@ export const BUILD: CommandSpec<BuildOpts> = {
     const pfar: Fn0<Promise<Repository>> = () => qlrequest(repoUrl)(
       queryStrRepo(
         queryQLID(),
-        queryQLIssues("body", "repository { id }"),
+        queryQLIssues("body"),
         queryQLLabels(),
         queryQLMilestones()
       ))
@@ -44,7 +44,7 @@ export const BUILD: CommandSpec<BuildOpts> = {
       // filter only relevant rows
       preFilter,
       // parse content with grayMatter and group them by id
-      parseContentRows
+      parseContentRows(far)
     )(
       getInRepo(far, "issues")?.nodes ?? [],
       near
