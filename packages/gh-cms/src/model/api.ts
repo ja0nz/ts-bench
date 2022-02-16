@@ -1,7 +1,8 @@
-import { defGetter, defSetterUnsafe } from "@thi.ng/paths";
+import { defGetter, defSetter, defSetterUnsafe } from "@thi.ng/paths";
 import { comp } from "@thi.ng/compose";
 import type { GrayMatterFile } from "gray-matter";
-import { GH_MD2LABEL, GH_MD2MILESTONE } from "../api";
+import { GH_MD2LABEL, GH_MD2MILESTONE, GH_MD2STATE } from "../api";
+import type { Fn } from "@thi.ng/api";
 
 /*
  * This is a wrapper around the parsed GrayMatter file
@@ -10,11 +11,15 @@ import { GH_MD2LABEL, GH_MD2MILESTONE } from "../api";
 export interface GitHubGrayMatter {
     repoID: string;
     issueID: string;
+    issueState: string;
     raw: string;
     parsed: CustomGrayMatter;
 }
 export const get_GHGM_IID = defGetter<GitHubGrayMatter, "issueID">(["issueID"]);
+export const set_GHGM_IID = defSetter<GitHubGrayMatter, "issueID">(["issueID"]);
 export const get_GHGM_RID = defGetter<GitHubGrayMatter, "repoID">(["repoID"]);
+export const get_GHGM_state = defGetter<GitHubGrayMatter, "issueState">(["issueState"]);
+export const set_GHGM_state = defSetter<GitHubGrayMatter, "issueState">(["issueState"]);
 export const get_GHGM_raw = defGetter<GitHubGrayMatter, "raw">(["raw"]);
 export const get_GHGM_parsed = defGetter<GitHubGrayMatter, "parsed">(["parsed"]);
 
@@ -40,11 +45,12 @@ export const getGHGM_data = comp(
  *
  */
 export interface FrontMatterSpec {
-    id: string,
-    date: Date,
-    title: string,
-    tags?: string[],
-    route?: string
+    id: string;
+    date: Date;
+    title: string;
+    draft?: boolean;
+    tags?: string[];
+    route?: string;
 }
 export const getGHGM_data_id = comp(
     defGetter<FrontMatterSpec, "id">(["id"]),
@@ -59,25 +65,31 @@ export const getGHGM_data_title = comp(
     getGHGM_data
 )
 
-export const getGHGM_data_tags = comp(
+export const getGHGM_data_tags: Fn<GitHubGrayMatter, string[]> = comp(
     defGetter<FrontMatterSpec, any>([GH_MD2LABEL ?? "tags"]),
     getGHGM_data
 )
 export const setGHGM_data_tags =
-    defSetterUnsafe(["body", "data", GH_MD2LABEL ?? "tags"])
+    defSetterUnsafe(["parsed", "data", GH_MD2LABEL ?? "tags"])
 
-export const getGHGM_data_route = comp(
+export const getGHGM_data_route: Fn<GitHubGrayMatter, string> = comp(
     defGetter<FrontMatterSpec, any>([GH_MD2MILESTONE ?? "route"]),
     getGHGM_data
 )
 export const setGHGM_data_route =
-    defSetterUnsafe(["body", "data", GH_MD2MILESTONE ?? "route"])
+    defSetterUnsafe(["parsed", "data", GH_MD2MILESTONE ?? "route"])
 
+export const getGHGM_data_state: Fn<GitHubGrayMatter, boolean> = comp(
+    defGetter<FrontMatterSpec, any>([GH_MD2STATE ?? "draft"]),
+    getGHGM_data
+)
 /*
  * GraphQL
  */
 export interface Issue {
     id: string;
+    state: string;
+    title?: string;
     body?: string;
 }
 export interface Label {

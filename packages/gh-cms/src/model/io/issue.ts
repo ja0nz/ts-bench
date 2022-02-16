@@ -28,6 +28,7 @@ const update = `
   mutation updateIssue(
     $ID: String!,
     $title: String!,
+    $state: String!,
     $route: String = null,
     $labels: [String] = [""],
     $body: String = null) {
@@ -36,6 +37,7 @@ const update = `
         title: $title
         milestoneId: $route
         labelIds: $labels
+        state: $state
         body: $body
         }) {
           issue {
@@ -49,8 +51,9 @@ const update = `
 
 const close = `
   mutation closeIssue(
-    $ID: String!) {
-      updateIssue(input: {id: ID, state: CLOSED}) {
+    $ID: String!
+    $state: String!) {
+      updateIssue(input: {id: $ID, state: $state}) {
         clientMutationId
       }
     }
@@ -58,18 +61,20 @@ const close = `
 
 // CREATES
 export function createIssue(url: string, i: GHW) {
-    return () => qlrequest(url)(i.issueID ? update : create, {
-        ID: i.issueID ? i.issueID : i.repoID,
-        title: getGHGM_data_title(i),
-        body: get_GHGM_raw(i),
-        route: getGHGM_data_route(i),
-        labels: getGHGM_data_tags(i)
-    })
+  return () => qlrequest(url)(i.issueID ? update : create, {
+    ID: i.issueID ? i.issueID : i.repoID,
+    title: getGHGM_data_title(i),
+    body: get_GHGM_raw(i),
+    route: getGHGM_data_route(i),
+    state: i.issueState ? i.issueState : "OPEN",
+    labels: getGHGM_data_tags(i)
+  })
 }
 
 // CLOSE
-export function closeIssue(url: string, ID: string) {
-    return () => qlrequest(url)(close, {
-        ID
-    })
+export function closeIssue(url: string, ID: string, state: string) {
+  return () => qlrequest(url)(close, {
+    ID,
+    state
+  })
 }

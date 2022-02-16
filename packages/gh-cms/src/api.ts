@@ -40,6 +40,7 @@ export const CONTENT_PATH = getEnv("CONTENT_PATH");
 export const GH_TOKEN = getEnv("GH_TOKEN"); // github.com -> Settings -> Developer Settings -> Personal access tokens -> token for public repo
 export const GH_MD2LABEL = getEnv("GH_MD2LABEL");
 export const GH_MD2MILESTONE = getEnv("GH_MD2MILESTONE");
+export const GH_MD2STATE = getEnv("GH_MD2STATE");
 export function ensureEnv(id: string, env: string, val: string) {
   assert(val !== REQUIRED, `missing required '${id}' or '${env}'`);
 }

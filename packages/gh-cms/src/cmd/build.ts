@@ -1,9 +1,9 @@
-import type { Fn0 } from "@thi.ng/api";
+import type { Fn0, IObjectOf } from "@thi.ng/api";
 import { Args, string } from "@thi.ng/args";
 import { comp } from "@thi.ng/compose";
 import { CLIOpts, DryRunOpts, CommandSpec, CONTENT_PATH, ensureEnv, REQUIRED } from "../api";
 import type { Issue, Repository } from "../model/api";
-import { build, latestContentRows, parseContentRows, preBuild, preFilter } from "../model/build";
+import { build, latestContentRows, parseContentRows, postBuild, preBuild, preFilter } from "../model/build";
 import { getInFs } from "../model/io/fs";
 import { queryStrRepo, getInRepo, qlrequest, queryQLIssues, queryQLLabels, queryQLMilestones, queryQLID } from "../model/io/net";
 import { ARG_DRY } from "./args";
@@ -23,7 +23,6 @@ export const BUILD: CommandSpec<BuildOpts> = {
     const dry = opts.dryRun;
     const repoUrl = opts.repoUrl;
     const contentPath = opts.contentPath;
-    logger.info(logger.pp(opts))
 
     // INPUT
     const pnear: Promise<Issue[]> = getInFs(contentPath);
@@ -49,7 +48,6 @@ export const BUILD: CommandSpec<BuildOpts> = {
       getInRepo(far, "issues")?.nodes ?? [],
       near
     );
-    //console.log(content2Build)
 
     // Prebuild
     const preBuildFx =
@@ -69,12 +67,14 @@ export const BUILD: CommandSpec<BuildOpts> = {
     let issues;
     if (!dry) {
       issues = await Promise.all(buildFx.map(x => x()))
-      console.log(logger.pp(issues))
-    }
 
-    // Postbuild
-    // drafts close else not
-    // delete repo id from GHW
+      // Postbuild
+      const postBuildFx =
+        postBuild(opts, logger, issues)(content2Build)
+      if (!dry) {
+        await Promise.all(postBuildFx.map(x => x()))
+      }
+    }
 
     logger.info("Successfully build");
   },
