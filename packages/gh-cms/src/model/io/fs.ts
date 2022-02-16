@@ -18,7 +18,7 @@ export async function getInFs(contentDir: string): Promise<Issue[]> {
             const file = await readFile(f);
             const buffer = Buffer.from(file).toString("utf-8");
             // Wrap in empty issue
-            fxs.push({ id: "", body: buffer });
+            fxs.push({ id: "", state: "", body: buffer });
         }
     }
     return fxs;

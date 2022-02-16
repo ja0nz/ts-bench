@@ -1,5 +1,5 @@
 import { qlrequest } from "./net.js";
-import { getGHGM_data_route, getGHGM_data_tags, getGHGM_data_title, get_GHGM_raw, GitHubGrayMatter as GHW } from "../api.js";
+import { get_parsed_route, get_parsed_tags, get_parsed_title, get_CMS_raw, GH_CMS, get_CMS_id, get_CMS_rid, get_CMS_state } from "../api.js";
 
 const create = `
   mutation createIssue(
@@ -60,14 +60,17 @@ const close = `
   `;
 
 // CREATES
-export function createIssue(url: string, i: GHW) {
-  return () => qlrequest(url)(i.issueID ? update : create, {
-    ID: i.issueID ? i.issueID : i.repoID,
-    title: getGHGM_data_title(i),
-    body: get_GHGM_raw(i),
-    route: getGHGM_data_route(i),
-    state: i.issueState ? i.issueState : "OPEN",
-    labels: getGHGM_data_tags(i)
+export function createIssue(url: string, i: GH_CMS) {
+  const id = get_CMS_id(i)
+  const rid = get_CMS_rid(i)
+  const state = get_CMS_state(i)
+  return () => qlrequest(url)(id ? update : create, {
+    ID: id ? id : rid,
+    title: get_parsed_title(i),
+    body: get_CMS_raw(i),
+    route: get_parsed_route(i),
+    state: state ? state : "OPEN", //TODO
+    labels: get_parsed_tags(i)
   })
 }
 

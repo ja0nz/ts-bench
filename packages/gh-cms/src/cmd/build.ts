@@ -1,9 +1,9 @@
-import type { Fn0, IObjectOf } from "@thi.ng/api";
+import type { Fn0 } from "@thi.ng/api";
 import { Args, string } from "@thi.ng/args";
 import { comp } from "@thi.ng/compose";
 import { CLIOpts, DryRunOpts, CommandSpec, CONTENT_PATH, ensureEnv, REQUIRED } from "../api";
 import type { Issue, Repository } from "../model/api";
-import { build, latestContentRows, parseContentRows, postBuild, preBuild, preFilter } from "../model/build";
+import { build, latestContentRows, parseContentRows, postBuild, preBuild } from "../model/build";
 import { getInFs } from "../model/io/fs";
 import { queryStrRepo, getInRepo, qlrequest, queryQLIssues, queryQLLabels, queryQLMilestones, queryQLID } from "../model/io/net";
 import { ARG_DRY } from "./args";
@@ -40,8 +40,6 @@ export const BUILD: CommandSpec<BuildOpts> = {
     const content2Build = comp(
       // extract
       latestContentRows,
-      // filter only relevant rows
-      preFilter,
       // parse content with grayMatter and group them by id
       parseContentRows(far)
     )(

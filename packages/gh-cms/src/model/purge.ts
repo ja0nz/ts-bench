@@ -22,7 +22,7 @@ export function purge(opts: PurgeOpts, logger: Logger): FnAnyT<PIn[], Fn0<Promis
                     const num = defGetterUnsafe<PIn>(["number"])(x)
                     if (opts.dryRun) logger.info(`DRY; Subject to removal, ${num ? "Milestone" : "Label"} ${logger.pp(x as object)}`)
                 }),
-                map(x => ({
+                map((x: PIn) => ({
                     id: defGetter<PIn, "id">(["id"])(x),
                     number: defGetterUnsafe<number | undefined>(["number"])(x) // ok to be unsafe here
                 })),
