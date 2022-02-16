@@ -3,7 +3,7 @@ import { get_CMS_id, get_parsed_date, get_parsed_id, GH_CMS, CustomGrayMatter, g
 import grayMatter from "gray-matter";
 import type { Fn, Fn0, FnAnyT, IObjectOf } from "@thi.ng/api";
 import { getInRepo } from "./io/queryRepo";
-import { closeIssue, createIssue, createLabel, createMilestone } from "./io/net";
+import { modifyState, createIssue, createLabel, createMilestone } from "./io/net";
 import type { Logger } from "../logger";
 import type { BuildOpts } from "../cmd/build";
 
@@ -13,7 +13,7 @@ export function postBuild(
     opts: BuildOpts,
     logger: Logger,
     build: IObjectOf<WrapIssue>[]): Fn<GH_CMS[], Fn0<Promise<any>>[]> {
-    // id, state
+    // id, title, state
     const farBuild: Issue[] = transduce(
         comp(
             mapcat<IObjectOf<WrapIssue>, WrapIssue>(b => Object.values(b)),
@@ -44,8 +44,8 @@ export function postBuild(
                 if (opts.dryRun) logger.info(`DRY; ${action} issue title: ${get_parsed_title(i)}`)
             }),
             map(i => {
-                const newState = get_parsed_state(i) ? "OPEN" : "CLOSED";
-                return closeIssue(opts.repoUrl, get_CMS_id(i), newState)
+                const newState = get_parsed_state(i) === false ? "CLOSED" : "OPEN";
+                return modifyState(opts.repoUrl, get_CMS_id(i), newState)
             })
         ),
         push(),
@@ -74,7 +74,7 @@ export function build(opts: BuildOpts, logger: Logger, far: Repository): Fn<GH_C
                 const nT = set_tags(i, lIDs)
                 return nT;
             }),
-            // milestones
+            // milestone
             map<GH_CMS, GH_CMS>(i => {
                 const lIDs = transduce(
                     comp(
@@ -85,6 +85,16 @@ export function build(opts: BuildOpts, logger: Logger, far: Repository): Fn<GH_C
                     [get_parsed_route(i)])
                 const nT = set_route(i, lIDs)
                 return nT;
+            }),
+            // state
+            map<GH_CMS, GH_CMS>(i => {
+                const pState = get_parsed_state(i) === false ? "CLOSED" : "OPEN";
+                const nT = set_CMS_state(i, pState);
+                return nT;
+            }),
+            sideEffect((i: GH_CMS) => {
+                const nI = get_CMS_id(i)
+                if (opts.dryRun) logger.info(`DRY; ${nI ? "Update" : "Create"} issue: ${logger.pp(get_parsed_data(i))}`)
             }),
             map(i => createIssue(opts.repoUrl, i))
         ),
@@ -148,7 +158,7 @@ function reduceToLatest(xs: GH_CMS[]): GH_CMS {
                         (a, b) => get_parsed_date(a) > get_parsed_date(b) ? 1 : -1
                     ))
             }),
-            // fold to GH_CMS
+            // fold to single GH_CMS
             map((x: { id: string, rest: GH_CMS }) => set_CMS_id(x.rest, x.id))
         ),
         last(),

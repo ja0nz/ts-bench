@@ -63,19 +63,18 @@ const close = `
 export function createIssue(url: string, i: GH_CMS) {
   const id = get_CMS_id(i)
   const rid = get_CMS_rid(i)
-  const state = get_CMS_state(i)
   return () => qlrequest(url)(id ? update : create, {
     ID: id ? id : rid,
     title: get_parsed_title(i),
-    body: get_CMS_raw(i),
     route: get_parsed_route(i),
-    state: state ? state : "OPEN", //TODO
-    labels: get_parsed_tags(i)
+    labels: get_parsed_tags(i),
+    body: get_CMS_raw(i),
+    state: get_CMS_state(i),
   })
 }
 
-// CLOSE
-export function closeIssue(url: string, ID: string, state: string) {
+// UPDATE
+export function modifyState(url: string, ID: string, state: string) {
   return () => qlrequest(url)(close, {
     ID,
     state

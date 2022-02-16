@@ -24,10 +24,12 @@ export function purge(opts: PurgeOpts, logger: Logger): FnAnyT<PIn[], Fn0<Promis
                 }),
                 map((x: PIn) => ({
                     id: defGetter<PIn, "id">(["id"])(x),
+                    name: defGetterUnsafe<string | undefined>(["name"])(x),
                     number: defGetterUnsafe<number | undefined>(["number"])(x) // ok to be unsafe here
                 })),
                 map(x => x.number === undefined
-                    ? deleteLabel(opts.repoUrl, x.id)
+                    // ? deleteLabel(opts.repoUrl, x.id) // TODO wait for delteLabel in graphql
+                    ? deleteLabel(opts.repoUrl, x.name ?? "")
                     : deleteMilestone(opts.repoUrl, x.number)
                 )
             ),
