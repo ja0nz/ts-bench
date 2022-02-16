@@ -23,6 +23,8 @@ export function postBuild(
     return (rows: GH_CMS[]) => transduce(
         comp(
             // fill in missing/regenerated values
+            // matching by titles may be not enough - only ID is uniqe. But I don't want to parse the doc again
+            // and go through all the loops
             map((i: GH_CMS) => {
                 const match = farBuild.filter(x => x.title === get_parsed_title(i));
                 if (match.length) {
@@ -34,19 +36,19 @@ export function postBuild(
                 return i;
             }),
             // filter rows which need preBuild
-            filter((i: GH_CMS) => {
-                const nearDraft = get_parsed_state(i);
-                const farDraft = get_CMS_state(i) === "OPEN"
-                return nearDraft !== farDraft
+            filter((r: GH_CMS) => {
+                const p = get_parsed_state(r);
+                const i = get_CMS_state(r);
+                if (p === true && i === "OPEN") return false;
+                if (p === false && i === "CLOSED") return false;
+                return true;
             }),
             sideEffect((i: GH_CMS) => {
                 const action = get_parsed_state(i) ? "Draft" : "Publish";
                 if (opts.dryRun) logger.info(`DRY; ${action} issue title: ${get_parsed_title(i)}`)
             }),
-            map(i => {
-                const newState = get_parsed_state(i) === false ? "CLOSED" : "OPEN";
-                return modifyState(opts.repoUrl, get_CMS_id(i), newState)
-            })
+            map(i => [get_CMS_id(i), get_parsed_state(i) === false ? "CLOSED" : "OPEN"]),
+            map(([id, state]) => modifyState(opts.repoUrl, id, state))
         ),
         push(),
         rows
@@ -62,7 +64,7 @@ export function build(opts: BuildOpts, logger: Logger, far: Repository): Fn<GH_C
                 const nI = get_CMS_id(i)
                 if (opts.dryRun) logger.info(`DRY; ${nI ? "Update" : "Create"} issue: ${logger.pp(get_parsed_data(i))}`)
             }),
-            // labels
+            // labels -> ids
             map<GH_CMS, GH_CMS>(i => {
                 const lIDs = transduce(
                     comp(
@@ -74,7 +76,7 @@ export function build(opts: BuildOpts, logger: Logger, far: Repository): Fn<GH_C
                 const nT = set_tags(i, lIDs)
                 return nT;
             }),
-            // milestone
+            // milestone -> id
             map<GH_CMS, GH_CMS>(i => {
                 const lIDs = transduce(
                     comp(
