@@ -2,7 +2,6 @@ node_modules
 
 # Credentials
 .env
-bin/index.cjs
 
 # Yarn3
 .pnp.*
