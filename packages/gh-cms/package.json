@@ -2,11 +2,8 @@
   "name": "gh-cms",
   "version": "0.0.1",
   "description": "A headless CMS based on GH issues",
-  "keywords": [
-    "cms",
-    "github"
-  ],
-  "homepage": "https://github.com/ja0nz/ts-scratch#readme",
+  "keywords": ["cms", "github"],
+  "homepage": "https://github.com/ja0nz/ts-bench/tree/main/packages/gh-cms#readme",
   "bugs": {
     "url": "https://github.com/ja0nz/ts-scratch/issues"
   },
@@ -19,7 +16,9 @@
   "author": "Ja0nz <mail@ja.nz>",
   "type": "module",
   "main": "src/index.js",
-  "bin": "bin/index.cjs",
+  "bin": {
+    "gh-cms": "bin/index.cjs"
+  },
   "directories": {
     "test": "test"
   },
