@@ -1,38 +1,38 @@
 
 # Table of Contents
 
-1.  [TLDR](#org3184c07)
-2.  [About](#org7028611)
-    1.  [Additional metadata mapping](#orgb22df97)
-        1.  [title -> gh issue title](#orgae3216c)
-        2.  [tags -> gh issue labels (customizable)](#org700f324)
-        3.  [route -> gh issue milestone (customizable)](#org6cf091d)
-        4.  [draft -> gh issue state (CLOSED or OPEN) (customizable)](#org2331c9d)
-    2.  [What you can do with this CLI tool](#org57642c4)
-    3.  [Rationale: GitHub Issues as CMS for your blog](#org78bb73e)
-3.  [Up and running](#orgf41432d)
-    1.  [Install and first run (yarn)](#orgd27e4ea)
-    2.  [Point to a local content directory](#org8e8085b)
-    3.  [Point to a remote gh repository](#org07f883a)
-    4.  [Create a GH token and set put in in .env](#org0d50cb3)
-4.  [CLI manual](#orge5df2e2)
-    1.  [&#x2013;help](#org2315bae):minor:
-    2.  [&#x2013;dry-run](#org0124b2e):minor:
-    3.  [gh-cms build](#orga2e043c):major:
-    4.  [gh-cms purge](#org2df74ba):major:
-5.  [ENV manual](#org1d29d3f)
-    1.  [LOG<sub>LEVEL</sub> (default: INFO)](#orge69d69b)
-    2.  [NO<sub>COLOR</sub> (default: undefined)](#org8ad60ad)
-    3.  [REPO<sub>URL</sub>](#org6348c34)
-    4.  [CONTENT<sub>PATH</sub>](#org74f722e)
-    5.  [GH<sub>TOKEN</sub>](#orged88f36)
-    6.  [GH<sub>MD2LABEL</sub>](#orge546e2d)
-    7.  [GH<sub>MD2MILESTONE</sub>](#orgcb67bda)
-    8.  [GH<sub>MD2STATE</sub>](#org3a856a4)
+1.  [TLDR](#org64c4d54)
+2.  [About](#org9d2f4a5)
+    1.  [Additional metadata mapping](#org080a330)
+        1.  [title -> gh issue title](#org51b928f)
+        2.  [tags -> gh issue labels (customizable)](#org56fb467)
+        3.  [route -> gh issue milestone (customizable)](#org2207e91)
+        4.  [draft -> gh issue state (CLOSED or OPEN) (customizable)](#org55affb4)
+    2.  [What you can do with this CLI tool](#orgffdab3f)
+    3.  [Rationale: GitHub Issues as CMS for your blog](#orgc92eab5)
+3.  [Up and running](#orgdfb726a)
+    1.  [Install and first run (yarn)](#org3c50007)
+    2.  [Point to a local content directory](#org7ecf382)
+    3.  [Point to a remote gh repository](#org97c10e0)
+    4.  [Create a GH token and set put in in .env](#org4f6217d)
+4.  [CLI manual](#orgfdb83ac)
+    1.  [&#x2013;help](#orgdad6deb):minor:
+    2.  [&#x2013;dry-run](#orge6efab0):minor:
+    3.  [gh-cms build](#orge298825):major:
+    4.  [gh-cms purge](#org4524c06):major:
+5.  [ENV manual](#org225d423)
+    1.  [LOG\_LEVEL (default: INFO)](#org505bd1d)
+    2.  [NO\_COLOR (default: undefined)](#orgaf6364c)
+    3.  [REPO\_URL](#org338860b)
+    4.  [CONTENT\_PATH](#org12f6aa7)
+    5.  [GH\_TOKEN](#orgcf6e7ce)
+    6.  [GH\_MD2LABEL](#orgea83191)
+    7.  [GH\_MD2MILESTONE](#org1c4af5d)
+    8.  [GH\_MD2STATE](#org778151d)
 
 
 
-<a id="org3184c07"></a>
+<a id="org64c4d54"></a>
 
 # TLDR
 
@@ -41,7 +41,7 @@ GithubCMS a simple command line tool that maps **markdown files** to **GitHub is
 Be aware that this is **alpha quality**. It does it&rsquo;s job for me but you have to find out yourself. Feel free to report bugs/glitches.
 
 
-<a id="org7028611"></a>
+<a id="org9d2f4a5"></a>
 
 # About
 
@@ -53,12 +53,12 @@ This package requires YAML-shaped [Front Matter](https://jekyllrb.com/docs/front
     ---
 
 
-<a id="orgb22df97"></a>
+<a id="org080a330"></a>
 
 ## Additional metadata mapping
 
 
-<a id="orgae3216c"></a>
+<a id="org51b928f"></a>
 
 ### title -> gh issue title
 
@@ -69,7 +69,7 @@ If not set falls back to mandatory issue id
     ---
 
 
-<a id="org700f324"></a>
+<a id="org56fb467"></a>
 
 ### tags -> gh issue labels (customizable)
 
@@ -81,7 +81,7 @@ Not happy with &ldquo;tags&rdquo;? Fear not, you can set your own label key like
     ---
 
 
-<a id="org6cf091d"></a>
+<a id="org2207e91"></a>
 
 ### route -> gh issue milestone (customizable)
 
@@ -93,23 +93,24 @@ I use this as slug/endpoint identifier. Not happy with &ldquo;route&rdquo;? Set 
     ---
 
 
-<a id="org2331c9d"></a>
+<a id="org55affb4"></a>
 
 ### draft -> gh issue state (CLOSED or OPEN) (customizable)
 
 I use this as published/unpublished identifier. Not happy with &ldquo;draft&rdquo;? Set it with
 `GH_MD2STATE = open`
-where
-
--   true -> OPEN
--   false -> CLOSED
 
     ---
     draft: false
     ---
 
+where
 
-<a id="org57642c4"></a>
+-   true -> OPEN
+-   false -> CLOSED
+
+
+<a id="orgffdab3f"></a>
 
 ## What you can do with this CLI tool
 
@@ -123,7 +124,7 @@ where
 -   ❌ delete/purge issues - this is push only. Delete your content directly on github.com
 
 
-<a id="org78bb73e"></a>
+<a id="orgc92eab5"></a>
 
 ## Rationale: GitHub Issues as CMS for your blog
 
@@ -133,14 +134,14 @@ where
 4.  Using GitHub as discussion medium on articles leads to a **reduction of third parties** and site overload in general. It&rsquo;s quiet convenient.
 
 
-<a id="orgf41432d"></a>
+<a id="orgdfb726a"></a>
 
 # Up and running
 
-This package requires some minimal setup to work properly. Please refer to [CLI manual](#orge5df2e2) and [ENV manual](#org1d29d3f) for an in-depth manual.
+This package requires some minimal setup to work properly. Please refer to [CLI manual](#orgfdb83ac) and [ENV manual](#org225d423) for an in-depth manual.
 
 
-<a id="orgd27e4ea"></a>
+<a id="org3c50007"></a>
 
 ## Install and first run (yarn)
 
@@ -148,7 +149,7 @@ This package requires some minimal setup to work properly. Please refer to [CLI 
     yarn gh-cms --help
 
 
-<a id="org8e8085b"></a>
+<a id="org7ecf382"></a>
 
 ## Point to a local content directory
 
@@ -160,7 +161,7 @@ Path can be relative or absolute.
     EOF
 
 
-<a id="org07f883a"></a>
+<a id="org97c10e0"></a>
 
 ## Point to a remote gh repository
 
@@ -173,7 +174,7 @@ This is optional but in most cases wanted.
 Note: You can specify this with the **-u https:/&#x2026;** flag when running the command. This has always higher precedence than setting it as ENV.
 
 
-<a id="org0d50cb3"></a>
+<a id="org4f6217d"></a>
 
 ## Create a GH token and set put in in .env
 
@@ -184,36 +185,36 @@ Go to <https://github.com/settings/tokens> and create a token which matches your
     EOF
 
 
-<a id="orge5df2e2"></a>
+<a id="orgfdb83ac"></a>
 
 # CLI manual
 
 
-<a id="org2315bae"></a>
+<a id="orgdad6deb"></a>
 
 ## &#x2013;help     :minor:
 
 Use with every command to get an overview
 
 
-<a id="org0124b2e"></a>
+<a id="orge6efab0"></a>
 
 ## &#x2013;dry-run     :minor:
 
 Log instead of modify
 
 
-<a id="orga2e043c"></a>
+<a id="orge298825"></a>
 
 ## gh-cms build     :major:
 
-Flags: -p -> CONTENT<sub>PATH</sub>; -u -> REPO<sub>URL</sub>
+Flags: -p -> CONTENT\_PATH; -u -> REPO\_URL
 
--   Traverse to the $CONTENT<sub>PATH</sub> for markdown files.
+-   Traverse to the $CONTENT\_PATH for markdown files.
 -   Build accordingly
 
 
-<a id="org2df74ba"></a>
+<a id="org4524c06"></a>
 
 ## gh-cms purge     :major:
 
@@ -222,22 +223,22 @@ Flags: -l -> labels; -m -> milestones
 -   Check if labels/milestone are referenced and delete if not
 
 
-<a id="org1d29d3f"></a>
+<a id="org225d423"></a>
 
 # ENV manual
 
 
-<a id="orge69d69b"></a>
+<a id="org505bd1d"></a>
 
-## LOG<sub>LEVEL</sub> (default: INFO)
+## LOG\_LEVEL (default: INFO)
 
 -   DEBUG
 -   SEVERE
 
 
-<a id="org8ad60ad"></a>
+<a id="orgaf6364c"></a>
 
-## NO<sub>COLOR</sub> (default: undefined)
+## NO\_COLOR (default: undefined)
 
 If you need uncolored output
 
@@ -245,40 +246,40 @@ If you need uncolored output
 -   unset
 
 
-<a id="org6348c34"></a>
+<a id="org338860b"></a>
 
-## REPO<sub>URL</sub>
+## REPO\_URL
 
 Full URL to GH repo
 
 -   <https://github.com/x/x>
 
 
-<a id="org74f722e"></a>
+<a id="org12f6aa7"></a>
 
-## CONTENT<sub>PATH</sub>
+## CONTENT\_PATH
 
 Relative or absolute URL to content, traverses directories
 
 -   &ldquo;./content&rdquo;
 
 
-<a id="orged88f36"></a>
+<a id="orgcf6e7ce"></a>
 
-## GH<sub>TOKEN</sub>
-
-
-<a id="orge546e2d"></a>
-
-## GH<sub>MD2LABEL</sub>
+## GH\_TOKEN
 
 
-<a id="orgcb67bda"></a>
+<a id="orgea83191"></a>
 
-## GH<sub>MD2MILESTONE</sub>
+## GH\_MD2LABEL
 
 
-<a id="org3a856a4"></a>
+<a id="org1c4af5d"></a>
 
-## GH<sub>MD2STATE</sub>
+## GH\_MD2MILESTONE
+
+
+<a id="org778151d"></a>
+
+## GH\_MD2STATE
 

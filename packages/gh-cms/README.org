@@ -1,4 +1,5 @@
 #+TITLE: GithubCMS - a headless CMS based on Github Issues
+#+OPTIONS: ^:nil
 
 * Table of Content :toc:noexport:
 - [[#tldr][TLDR]]
@@ -70,14 +71,14 @@ route: "/welcome-post"
 *** draft -> gh issue state (CLOSED or OPEN) (customizable)
 I use this as published/unpublished identifier. Not happy with "draft"? Set it with
 =GH_MD2STATE = open=
-where
-- true -> OPEN
-- false -> CLOSED
 #+begin_src markdown
 ---
 draft: false
 ---
 #+end_src
+where
+- true -> OPEN
+- false -> CLOSED
 ** What you can do with this CLI tool
 - ✅ create and update issues based on an ID
 - ✅ set labels according to your needs
