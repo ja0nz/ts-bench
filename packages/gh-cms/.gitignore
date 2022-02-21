@@ -2,6 +2,7 @@ node_modules
 
 # Credentials
 .env
+README.md
 
 # Yarn3
 .pnp.*
