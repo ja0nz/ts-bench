@@ -2,14 +2,17 @@
   "name": "gh-cms",
   "version": "0.0.13",
   "description": "A headless CMS based on GH issues",
-  "keywords": ["cms", "github"],
+  "keywords": [
+    "cms",
+    "github"
+  ],
   "homepage": "https://github.com/ja0nz/ts-bench/tree/main/packages/gh-cms#readme",
   "bugs": {
-    "url": "https://github.com/ja0nz/ts-scratch/issues"
+    "url": "https://github.com/ja0nz/ts-bench/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ja0nz/ts-scratch.git",
+    "url": "git+https://github.com/ja0nz/ts-bench.git",
     "directory": "packages/gh-cms"
   },
   "license": "Apache-2.0",

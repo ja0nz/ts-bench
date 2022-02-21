@@ -8,10 +8,10 @@
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/ja0nz/ts-scratch.git",
+    "url": "https://github.com/ja0nz/ts-bench.git",
     "directory": "packages/all-dynamic-imports"
   },
-  "homepage": "https://github.com/ja0nz/ts-scratch/tree/main/packages/all-dynamic-imports#readme",
+  "homepage": "https://github.com/ja0nz/ts-bench/tree/main/packages/all-dynamic-imports#readme",
   "author": "Ja0nz <mail@ja.nz>",
   "license": "Apache-2.0",
   "scripts": {

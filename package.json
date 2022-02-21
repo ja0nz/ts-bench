@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "ts-scratch",
+  "name": "ts-bench",
   "workspaces": [
     "packages/*",
     "projects/*",

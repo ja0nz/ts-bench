@@ -39,7 +39,7 @@ cat << EOF > "$MODULE"/package.json
   "description": "TODO",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ja0nz/ts-scratch.git",
+    "url": "https://github.com/ja0nz/ts-bench.git",
     "directory": "projects/$ID"
   },
   "author": "$AUTHOR <$EMAIL>",

@@ -1,8 +1,9 @@
 import { h1 } from "@thi.ng/hiccup-html";
 import { $compile } from "@thi.ng/rdom";
-import { add, comp, count, map, mapcat, max, multiplex, partition, push, reduce, trace, transduce } from "@thi.ng/transducers";
+import { add, cat, comp, count, filter, interleave, last, map, mapcat, max, maxCompare, multiplex, multiplexObj, partition, push, reduce, reducer, scan, trace, transduce } from "@thi.ng/transducers";
 import { tw } from "twind";
 import { iterator } from "@thi.ng/iterators";
+import type { IObjectOf } from "@thi.ng/api/object";
 
 const greeter = h1(
     { class: tw`font-bold text(center 5xl white sm:gray-800 md:pink-700)` },
@@ -13,37 +14,33 @@ const app = document.querySelector<HTMLDivElement>('#app')!
 $compile(greeter).mount(app);
 
 
-const b = [1, 2, 3]
-const c = [4, 5, 6]
-console.log([...iterator(b)])
-console.log(
-    transduce(
-        map(x => x + 10),
-        push(),
-        iterator(b), iterator(c)
-    )
-)
+const data = [
+    { id: "99", date: new Date(), content: "old" },
+    { id: "", date: new Date(9999999999999), content: "new" }
+]
 
-//console.log(reduce(count(), 0, [1, 2]))
-
-const a = transduce(
+const x = transduce(
     comp(
-        mapcat(a => a),
-        partition(2),
-        //trace("after part1"),
-        multiplex(
-            map(id => id),
-            comp(
-                mapcat(a => a),
-                partition(2),
-                //        trace("after part2"),
-            )
-        ),
-        map(([one, two]) => { console.log(one, two); return one })
+        multiplexObj({
+            id: comp(
+                map(x => x.id),
+                scan(max())
+            ),
+            content: scan(maxCompare(
+                () => ({ date: new Date(0) }),
+                (a, b) => { return a.date > b.date ? 1 : -1 }
+            ))
+        }),
+        map(x => ({ ...x.content, id: x.id }))
+        //trace("run"),
     ),
-    push(),
-    [["one", "shot"]]
-    //[["one", "shot", "two", "shot"]]
+    last(),
+    data
 )
+console.log(x)
 
-//console.log(a);
+const data1 = [[1, 2, 3, 4], [5, 6, 7, 8]]
+
+const y = transduce(
+    comp(cat(), trace()), push(), data1
+)

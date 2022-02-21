@@ -59,10 +59,10 @@ cat << EOF > "$MODULE"/package.json
     "sideEffects": false,
     "repository": {
         "type": "git",
-        "url": "https://github.com/ja0nz/ts-scratch.git",
+        "url": "https://github.com/ja0nz/ts-bench.git",
         "directory": "packages/$1"
     },
-    "homepage": "https://github.com/ja0nz/ts-scratch/tree/main/packages/$1#readme",
+    "homepage": "https://github.com/ja0nz/ts-bench/tree/main/packages/$1#readme",
     "author": "$AUTHOR <$EMAIL>",
     "license": "Apache-2.0",
     "publishConfig": {
