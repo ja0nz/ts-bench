@@ -31,7 +31,7 @@ export class AppConfig {
         alias: "u",
         hint: "URL",
         default: REPO_URL || REQUIRED,
-        desc: "'https://github.com/x/x' URL to push issues",
+        desc: "'https://github.com/x/x'",
         group: "common"
       })
     };

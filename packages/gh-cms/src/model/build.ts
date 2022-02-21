@@ -1,7 +1,7 @@
-import { comp, reducer, partition, filter, flatten, groupByObj, iterator, map, mapcat, multiplex, multiplexObj, push, sideEffect, transduce, last, interleave, scan, max, maxCompare, trace } from "@thi.ng/transducers";
-import { get_CMS_id, get_parsed_date, get_parsed_id, GH_CMS, CustomGrayMatter, get_CMS_parsed, Issue, Repository, get_parsed_tags, get_parsed_route, get_CMS_rid, set_tags, set_route, get_parsed_data, get_CMS_state, get_parsed_title, get_parsed_state, set_CMS_id, set_CMS_state } from "./api";
+import { comp, reducer, partition, filter, flatten, groupByObj, map, mapcat, multiplex, multiplexObj, push, sideEffect, transduce, last, interleave, scan, maxCompare } from "@thi.ng/transducers";
+import { get_CMS_id, get_parsed_date, get_parsed_id, GH_CMS, CustomGrayMatter, get_CMS_parsed, Issue, Repository, get_parsed_tags, get_parsed_route, get_CMS_rid, set_tags, set_route, get_parsed_data, get_CMS_state, get_parsed_title, get_parsed_state, set_CMS_id, set_CMS_state, set_title, Effect } from "./api";
 import grayMatter from "gray-matter";
-import type { Fn, Fn0, FnAnyT, IObjectOf } from "@thi.ng/api";
+import type { Fn, FnAnyT, IObjectOf } from "@thi.ng/api";
 import { getInRepo } from "./io/queryRepo";
 import { modifyState, createIssue, createLabel, createMilestone } from "./io/net";
 import type { Logger } from "../logger";
@@ -12,7 +12,7 @@ type WrapIssue = { issue: Issue }
 export function postBuild(
     opts: BuildOpts,
     logger: Logger,
-    build: IObjectOf<WrapIssue>[]): Fn<GH_CMS[], Fn0<Promise<any>>[]> {
+    build: IObjectOf<WrapIssue>[]): Fn<GH_CMS[], Effect[]> {
     // id, title, state
     const farBuild: Issue[] = transduce(
         comp(
@@ -55,7 +55,7 @@ export function postBuild(
     )
 }
 
-export function build(opts: BuildOpts, logger: Logger, far: Repository): Fn<GH_CMS[], Fn0<Promise<any>>[]> {
+export function build(opts: BuildOpts, logger: Logger, far: Repository): Fn<GH_CMS[], Effect[]> {
     const farLabels = getInRepo(far, "labels")?.nodes ?? [];
     const farMilestones = getInRepo(far, "milestones")?.nodes ?? [];
     return (rows: GH_CMS[]) => transduce(
@@ -105,12 +105,12 @@ export function build(opts: BuildOpts, logger: Logger, far: Repository): Fn<GH_C
     )
 }
 
-export function preBuild(opts: BuildOpts, logger: Logger, far: Repository): Fn<GH_CMS[], Fn0<Promise<any>>[]> {
+export function preBuild(opts: BuildOpts, logger: Logger, far: Repository): Fn<GH_CMS[], Effect[]> {
     const farLabels = getInRepo(far, "labels")?.nodes ?? [];
     const farMilestones = getInRepo(far, "milestones")?.nodes ?? [];
     return (rows: GH_CMS[]) => transduce(
         comp(
-            multiplex(
+            multiplex<GH_CMS, Effect, Effect>(
                 comp(
                     // flat out tags
                     mapcat<GH_CMS, string>((x: GH_CMS) => {
@@ -134,12 +134,11 @@ export function preBuild(opts: BuildOpts, logger: Logger, far: Repository): Fn<G
                     sideEffect((x: string) => {
                         if (opts.dryRun) logger.info(`DRY; Create missing milestone: ${x}`)
                     }),
-                    //trace("milestone"),
                     map((x: string) => createMilestone(opts.repoUrl, x)),
                 )
             ),
-            flatten(),
-            filter(Boolean)
+            flatten<Effect[]>(),
+            filter(x => x !== undefined)
         ),
         push(),
         rows
@@ -149,7 +148,7 @@ export function preBuild(opts: BuildOpts, logger: Logger, far: Repository): Fn<G
 function reduceToLatest(xs: GH_CMS[]): GH_CMS {
     return transduce(
         comp(
-            multiplexObj({
+            multiplexObj<GH_CMS, { id: string, rest: GH_CMS }>({
                 id: comp(
                     map(get_CMS_id),
                     scan(reducer(() => "", (acc, x) => acc ? acc : x))
@@ -189,21 +188,28 @@ export function latestContentRows(entries: IObjectOf<GH_CMS[]>): GH_CMS[] {
                 return false;
             }),
             map(reduceToLatest),
+            // if title is not set use id
+            map((gh: GH_CMS) => {
+                const title = get_parsed_title(gh);
+                if (title === undefined || title.length === 0)
+                    return set_title(gh, get_parsed_id(gh))
+                return gh;
+            })
         ),
         push(),
         Object.values(entries)
     );
 }
 
-export function parseContentRows(far: Repository): FnAnyT<Issue[][], IObjectOf<GH_CMS[]>> {
+export function parseContentRows(far: Repository): FnAnyT<Issue[], IObjectOf<GH_CMS[]>> {
     const repoID = getInRepo(far, "id") ?? "";
-    return (...rows: Issue[][]) =>
+    return (...rows) =>
         transduce(
             comp(
                 filter((x: Issue) => !!x.body ?? false),
-                map((x: Issue) => ({
+                map<Issue, GH_CMS>((x: Issue) => ({
                     issue: { ...x, rid: repoID },
-                    raw: x.body,
+                    raw: x.body ?? "",
                     parsed: grayMatter(x.body as string) as CustomGrayMatter
                 })),
                 filter((x: GH_CMS) => !get_CMS_parsed(x).isEmpty)

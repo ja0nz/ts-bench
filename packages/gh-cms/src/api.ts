@@ -1,7 +1,7 @@
 import type { Fn } from "@thi.ng/api";
 import type { Args } from "@thi.ng/args";
 import { defGetter } from "@thi.ng/paths";
-import { dirname, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { AppConfig } from "./config.js";
 import { readJSON } from "./io.js";
@@ -33,17 +33,19 @@ export const CMD_HEADER = `
 
 // process.env
 const getEnv = (env: string) => defGetter<typeof Process, "env">(["env"])(process)[env];
+export function ensureEnv(id: string, env: string, val: string) {
+  assert(val !== REQUIRED, `missing required '${id}' or '${env}'`);
+}
+
+const CP = getEnv("CONTENT_PATH") ?? "";
+export const CONTENT_PATH = !isAbsolute(CP) ? join(INSTALL_DIR, CP) : CP;
 export const LOG_LEVEL = getEnv("LOG_LEVEL");
 export const REPO_URL = getEnv("REPO_URL");
 export const NO_COLOR = getEnv("NO_COLOR");
-export const CONTENT_PATH = getEnv("CONTENT_PATH");
 export const GH_TOKEN = getEnv("GH_TOKEN"); // github.com -> Settings -> Developer Settings -> Personal access tokens -> token for public repo
 export const GH_MD2LABEL = getEnv("GH_MD2LABEL");
 export const GH_MD2MILESTONE = getEnv("GH_MD2MILESTONE");
 export const GH_MD2STATE = getEnv("GH_MD2STATE");
-export function ensureEnv(id: string, env: string, val: string) {
-  assert(val !== REQUIRED, `missing required '${id}' or '${env}'`);
-}
 
 // process.argv
 const argv = defGetter<typeof Process, "argv">(["argv"])(process);

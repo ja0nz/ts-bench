@@ -2,7 +2,7 @@ import { defGetter, defSetter, defSetterUnsafe } from "@thi.ng/paths";
 import { comp } from "@thi.ng/compose";
 import type { GrayMatterFile } from "gray-matter";
 import { GH_MD2LABEL, GH_MD2MILESTONE, GH_MD2STATE } from "../api";
-import type { Fn } from "@thi.ng/api";
+import type { Fn, Fn0 } from "@thi.ng/api";
 
 /*
  * GraphQL
@@ -51,6 +51,8 @@ export interface Repository {
         [k in keyof Partial<Response>]: Response[k]
     }
 }
+
+export type Effect = Fn0<Promise<any>>
 
 /*
  * This is a wrapper around the parsed GrayMatter file
@@ -110,6 +112,8 @@ export const get_parsed_title = comp(
     defGetter<FrontMatterSpec, "title">(["title"]),
     get_parsed_data
 )
+export const set_title =
+    defSetter<GH_CMS, "parsed", "data", "title">(["parsed", "data", "title"])
 
 export const get_parsed_tags: Fn<GH_CMS, string[]> = comp(
     defGetter<FrontMatterSpec, any>([GH_MD2LABEL ?? "tags"]),

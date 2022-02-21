@@ -34,7 +34,7 @@ export function purge(opts: PurgeOpts, logger: Logger): FnAnyT<PIn[], Fn0<Promis
                 )
             ),
             push(),
-            flatten<PIn[], PIn>(rows)
+            flatten<PIn[]>(rows)
         )
     }
 }

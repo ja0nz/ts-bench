@@ -14,7 +14,7 @@ export interface BuildOpts extends CLIOpts, DryRunOpts {
 
 export const BUILD: CommandSpec<BuildOpts> = {
   fn: async (ctx) => {
-    const { opts, config, logger } = ctx;
+    const { opts, logger } = ctx;
     // Guards
     ensureEnv("--content-path", "env.CONTENT_PATH", opts.contentPath);
     logger.info("Starting build")
