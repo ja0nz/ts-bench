@@ -5,7 +5,7 @@
 - [[#about][About]]
   - [[#additional-metadata-mapping][Additional metadata mapping]]
   - [[#what-you-can-do-with-this-cli-tool][What you can do with this CLI tool]]
-  - [[#retionale-github-issues-as-cms-for-your-blog][Retionale: GitHub Issues as CMS for your blog]]
+  - [[#rationale-github-issues-as-cms-for-your-blog][Rationale: GitHub Issues as CMS for your blog]]
 - [[#up-and-running][Up and running]]
   - [[#install-and-first-run-yarn][Install and first run (yarn)]]
   - [[#point-to-a-local-content-directory][Point to a local content directory]]
@@ -88,7 +88,7 @@ draft: false
 - ✅ use =--dry-run= in every occasion to get a glimpse whats going on before anything happens
 - ❌ delete/purge issues - this is push only. Delete your content directly on github.com
 
-** Retionale: GitHub Issues as CMS for your blog
+** Rationale: GitHub Issues as CMS for your blog
 1. *GitHub Issues have a nice front-end* allowing other people to easily interact and comment on your content. You can browse topics based on labels and have a powerful content search at hand.
 2. *GitHub uses an extensive GraphQL API* which let you fetch content in a granular manner.
 3. *You get a headless CMS for free* which let you embed your content elsewhere.

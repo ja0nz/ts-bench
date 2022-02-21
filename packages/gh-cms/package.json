@@ -1,6 +1,6 @@
 {
   "name": "gh-cms",
-  "version": "0.0.1",
+  "version": "0.0.11",
   "description": "A headless CMS based on GH issues",
   "keywords": ["cms", "github"],
   "homepage": "https://github.com/ja0nz/ts-bench/tree/main/packages/gh-cms#readme",
