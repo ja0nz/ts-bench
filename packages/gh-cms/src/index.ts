@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { defSystem } from "@thi.ng/system";
 import { config } from "dotenv";
 import { CommandRegistry } from "./commands";

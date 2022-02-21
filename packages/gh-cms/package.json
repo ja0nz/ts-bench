@@ -1,6 +1,6 @@
 {
   "name": "gh-cms",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "A headless CMS based on GH issues",
   "keywords": ["cms", "github"],
   "homepage": "https://github.com/ja0nz/ts-bench/tree/main/packages/gh-cms#readme",
@@ -16,9 +16,7 @@
   "author": "Ja0nz <mail@ja.nz>",
   "type": "module",
   "main": "src/index.js",
-  "bin": {
-    "gh-cms": "bin/index.cjs"
-  },
+  "bin": "bin/index.cjs",
   "directories": {
     "test": "test"
   },
