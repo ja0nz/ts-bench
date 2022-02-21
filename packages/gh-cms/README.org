@@ -1,214 +1,173 @@
 #+TITLE: GithubCMS - a headless CMS based on Github Issues
 
 * Table of Content :toc:noexport:
-- [[#what-is-this-thing][What is this thing]]
-  - [[#tldr][Tldr]]
-  - [[#rationale][Rationale]]
-- [[#how-to-run][How to run]]
-- [[#starring][Starring]]
-  - [[#github-issues---main-building-blocks][Github Issues - main building blocks]]
-  - [[#labels][Labels]]
-  - [[#milestones][Milestones]]
-- [[#graphql-dump][GraphQL dump]]
-  - [[#repoid][repoID]]
-  - [[#createlabel][createLabel]]
-  - [[#deletelabel][deleteLabel]]
-  - [[#createmilestone][createMilestone]]
-  - [[#deletemilestone][deleteMilestone]]
-  - [[#createissue][createIssue]]
-  - [[#updateissue][updateIssue]]
-  - [[#deleteissue][deleteIssue]]
-- [[#misc][Misc]]
+- [[#tldr][TLDR]]
+- [[#about][About]]
+  - [[#additional-metadata-mapping][Additional metadata mapping]]
+  - [[#what-you-can-do-with-this-cli-tool][What you can do with this CLI tool]]
+  - [[#retionale-github-issues-as-cms-for-your-blog][Retionale: GitHub Issues as CMS for your blog]]
+- [[#up-and-running][Up and running]]
+  - [[#install-and-first-run-yarn][Install and first run (yarn)]]
+  - [[#point-to-a-local-content-directory][Point to a local content directory]]
+  - [[#point-to-a-remote-gh-repository][Point to a remote gh repository]]
+  - [[#create-a-gh-token-and-set-put-in-in-env][Create a GH token and set put in in .env]]
+- [[#cli-manual][CLI manual]]
+  - [[#--help][--help]]
+  - [[#--dry-run][--dry-run]]
+  - [[#gh-cms-build][gh-cms build]]
+  - [[#gh-cms-purge][gh-cms purge]]
+- [[#env-manual][ENV manual]]
+  - [[#log_level-default-info][LOG_LEVEL (default: INFO)]]
+  - [[#no_color-default-undefined][NO_COLOR (default: undefined)]]
+  - [[#repo_url][REPO_URL]]
+  - [[#content_path][CONTENT_PATH]]
+  - [[#gh_token][GH_TOKEN]]
+  - [[#gh_md2label][GH_MD2LABEL]]
+  - [[#gh_md2milestone][GH_MD2MILESTONE]]
+  - [[#gh_md2state][GH_MD2STATE]]
 
-* What is this thing
-** Tldr
-Basically just a simple command line tool that converts local markdown files representing your blogposts/website content to *GitHub issues*.
+* TLDR
+GithubCMS a simple command line tool that maps *markdown files* to *GitHub issues*. This tool was born out of the idea to have a personal blog hosted on GitHub Issues and updated against static markdown files. But you may use it with any other content too.
 
-** Rationale
+Be aware that this is *alpha quality*. It does it's job for me but you have to find out yourself. Feel free to report bugs/glitches.
+
+* About
+This package requires YAML-shaped [[https://jekyllrb.com/docs/front-matter/][Front Matter]] which is a metadata header on top of your markdown file. The most critical and required metadata is
+#+begin_src markdown
+---
+id: "123abc" -> used to update local->remote
+date: 2022-01-23T12:47:00+01:00 -> used to figure out if update is needed. Any valid JS Date will do
+---
+#+end_src
+
+** Additional metadata mapping
+*** title -> gh issue title
+If not set falls back to mandatory issue id
+#+begin_src markdown
+---
+title: "hello world"
+---
+#+end_src
+
+*** tags -> gh issue labels (customizable)
+Not happy with "tags"? Fear not, you can set your own label key like
+=GH_MD2LABEL = label=
+#+begin_src markdown
+---
+tags: ["T1", "T5", "dev"]
+---
+#+end_src
+
+*** route -> gh issue milestone (customizable)
+I use this as slug/endpoint identifier. Not happy with "route"? Set it with
+=GH_MD2MILESTONE = milestone=
+#+begin_src markdown
+---
+route: "/welcome-post"
+---
+#+end_src
+
+*** draft -> gh issue state (CLOSED or OPEN) (customizable)
+I use this as published/unpublished identifier. Not happy with "draft"? Set it with
+=GH_MD2STATE = open=
+where
+- true -> OPEN
+- false -> CLOSED
+#+begin_src markdown
+---
+draft: false
+---
+#+end_src
+** What you can do with this CLI tool
+- ✅ create and update issues based on an ID
+- ✅ set labels according to your needs
+- ✅ set a milestone to indicate an route (or whatever you may use milestone in your context)
+- ✅ work coexistendly with other GH issue content. This tool won't touch content it is not indended to modify
+- ✅ purge milestones which are not in use
+- ✅ purge labels which are not in use
+- ✅ use =--dry-run= in every occasion to get a glimpse whats going on before anything happens
+- ❌ delete/purge issues - this is push only. Delete your content directly on github.com
+
+** Retionale: GitHub Issues as CMS for your blog
 1. *GitHub Issues have a nice front-end* allowing other people to easily interact and comment on your content. You can browse topics based on labels and have a powerful content search at hand.
 2. *GitHub uses an extensive GraphQL API* which let you fetch content in a granular manner.
 3. *You get a headless CMS for free* which let you embed your content elsewhere.
+4. Using GitHub as discussion medium on articles leads to a *reduction of third parties* and site overload in general. It's quiet convenient.
 
-* How to run
+* Up and running
+This package requires some minimal setup to work properly. Please refer to [[id:007a85b4-1ef9-4071-a517-5e63e3d42cb5][CLI manual]] and [[id:30732088-36d7-4f48-8fd8-0bca699f461f][ENV manual]] for an in-depth manual.
+
+** Install and first run (yarn)
 #+begin_src bash
 yarn install -D X
-yarn ghi-cms --help
+yarn gh-cms --help
 #+end_src
 
-* Starring
-** Github Issues - main building blocks
-- Main building blocks
-** Labels
-- Used to
-** Milestones
-
-* GraphQL dump
-** repoID
-#+begin_example
-{
-  repository(name: "ja.nz", owner: "ja0nz") {
-    id
-  }
-}
-#+end_example
-#+begin_example
-{
-  "repository": {
-    "id": "MDEwOlJlcG9zaXRvcnkzNzgwOTk0MTY="
-  }
-}
-#+end_example
-** createLabel :repoid:
-#+begin_example
-mutation {
-  createLabel(
-    input: {
-      repositoryId: "MDEwOlJlcG9zaXRvcnkzNzgwOTk0MTY=",
-      name: "World"
-      color: $color
-    }
-  ) {
-    issue {
-      id name
-    }
-  }
-}
-#+end_example
-#+begin_example
-{
-  "createLabel": {
-    "label": {
-      "name": "World"
-     }
-  }
-}
-#+end_example
-** deleteLabel :labelid:
-#+begin_example
-mutation {
-  deleteLabel(input: {id: "I_kwDOFolW2M5BdBo3"}) {
-    clientMutationId
-  }
-}
-#+end_example
-** createMilestone
-#+begin_src js
-const test = await rerequest(opts.repoUrl)(
-  'POST /repos/{owner}/{repo}/milestones',
-  //@ts-ignore - owner and repo set in defaults
-  { title: "oksss" }
-)
-console.log(test.data.node_id)
-#+end_src
-** deleteMilestone
-#+begin_src js
-const test = await rerequest(opts.repoUrl)(
-  'DELETE /repos/{owner}/{repo}/milestones/{milestone_number}',
-  //@ts-ignore - owner and repo set in defaults
-  { milestone_number: 6 }
-)
-console.log(test)
+** Point to a local content directory
+Create an *.env* file at the project root.
+Path can be relative or absolute.
+#+begin_src bash
+cat <<EOF > .env
+CONTENT_PATH="./content"
+EOF
 #+end_src
 
-** createIssue :labelids:repoid:milestoneid:
-#+begin_example
-mutation {
-  createIssue(
-    input: {
-      repositoryId: "MDEwOlJlcG9zaXRvcnkzNzgwOTk0MTY=",
-      title: "Hello World"
-      milestoneId: $slug
-      labelIds: $labels
-      body: $body
-    }
-  ) {
-    issue {
-      id title
-    }
-  }
-}
-#+end_example
-#+begin_example
-{
-  "createIssue": {
-    "issue": {
-      "title": "Hello World"
-     }
-  }
-}
-#+end_example
+** Point to a remote gh repository
+This is optional but in most cases wanted.
+#+begin_src bash
+cat <<EOF > .env
+REPO_URL="https://github.com/<name>/<repo>"
+EOF
+#+end_src
+Note: You can specify this with the *-u https:/...* flag when running the command. This has always higher precedence than setting it as ENV.
 
-** updateIssue :issueid:labelids:milestoneid:
-#+begin_example
-mutation {
-  createIssue(
-    input: {
-      id: $ID
-      title: $title
-      milestoneId: $slug
-      labelIds: $labels
-      body: $body
-    }
-  ) {
-    issue {
-      id title
-    }
-  }
-}
-#+end_example
-#+begin_example
-{
-  "createIssue": {
-    "issue": {
-      "title": "Hello World"
-     }
-  }
-}
-#+end_example
-** deleteIssue :issueid:
-#+begin_example
-mutation {
-  deleteIssue(input: {issueId: "I_kwDOFolW2M5BdBo3"}) {
-    clientMutationId
-    repository {
-      id
-    }
-  }
-}
-#+end_example
-#+begin_example
-{
-  "deleteIssue": {
-    "clientMutationId": null,
-    "repository": {
-      "id": "MDEwOlJlcG9zaXRvcnkzNzgwOTk0MTY="
-    }
-  }
-}
-#+end_example
-* Misc
-#+begin_example
-{
-  repository(name: "ja.nz", owner: "ja0nz") {
-    issues(first: 100, filterBy: {assignee: "ja0nz"}) {
-      nodes {
-        id
-        labels(first: 10) {
-          nodes {
-            id
-            name
-          }
-        }
-        milestone {
-          id
-          title
-        }
-        projectNext(number: 1) {
-          id
-          title
-        }
-      }
-    }
-  }
-}
-#+end_example
+** Create a GH token and set put in in .env
+Go to https://github.com/settings/tokens and create a token which matches your needs.
+#+begin_src bash
+cat <<EOF > .env
+GH_TOKEN=ghp_xxx
+EOF
+#+end_src
+
+
+* CLI manual
+:PROPERTIES:
+:ID:       007a85b4-1ef9-4071-a517-5e63e3d42cb5
+:END:
+** --help :minor:
+Use with every command to get an overview
+
+** --dry-run :minor:
+
+Log instead of modify
+** gh-cms build :major:
+Flags: -p -> CONTENT_PATH; -u -> REPO_URL
+- Traverse to the $CONTENT_PATH for markdown files.
+- Build accordingly
+
+** gh-cms purge :major:
+Flags: -l -> labels; -m -> milestones
+- Check if labels/milestone are referenced and delete if not
+
+* ENV manual
+:PROPERTIES:
+:ID:       30732088-36d7-4f48-8fd8-0bca699f461f
+:END:
+** LOG_LEVEL (default: INFO)
+- DEBUG
+- SEVERE
+** NO_COLOR (default: undefined)
+If you need uncolored output
+- set
+- unset
+** REPO_URL
+Full URL to GH repo
+- https://github.com/x/x
+** CONTENT_PATH
+Relative or absolute URL to content, traverses directories
+- "./content"
+
+** GH_TOKEN
+** GH_MD2LABEL
+** GH_MD2MILESTONE
+** GH_MD2STATE
