@@ -1,0 +1,18 @@
+#+TITLE: --place-package--
+#+OPTIONS: ^:nil
+
+* Table of Content :toc:noexport:
+
+* TLDR
+
+* Installation
+
+* Dependencies
+
+* API
+
+* Author
+- Ja0nz
+
+* License
+2022 Ja0nz // Apache Software License 2.0
