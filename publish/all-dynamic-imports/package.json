@@ -2,18 +2,30 @@
   "name": "all-dynamic-imports",
   "version": "0.0.1",
   "description": "TODO",
-  "type": "module",
-  "module": "./index.js",
-  "typings": "./index.d.ts",
-  "sideEffects": false,
+  "keywords": [
+    "typescript"
+  ],
+  "homepage": "https://github.com/ja0nz/ts-bench/tree/main/publish/all-dynamic-imports#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/ja0nz/ts-bench.git",
-    "directory": "packages/all-dynamic-imports"
+    "directory": "publish/all-dynamic-imports"
   },
-  "homepage": "https://github.com/ja0nz/ts-bench/tree/main/packages/all-dynamic-imports#readme",
-  "author": "Ja0nz <mail@ja.nz>",
   "license": "Apache-2.0",
+  "author": "Ja0nz <mail@ja.nz>",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./index.js"
+    }
+  },
+  "module": "./index.js",
+  "typings": "./index.d.ts",
+  "files": [
+    "*.js",
+    "*.d.ts"
+  ],
   "scripts": {
     "build": "yarn clean && tsc --declaration",
     "clean": "rimraf '*.js' '*.d.ts' '*.map' doc",
@@ -31,17 +43,5 @@
     "rimraf": "^3.0.2",
     "typedoc": "^0.22.12",
     "typescript": "^4.5.5"
-  },
-  "keywords": [
-    "typescript"
-  ],
-  "files": [
-    "*.js",
-    "*.d.ts"
-  ],
-  "exports": {
-    ".": {
-      "import": "./index.js"
-    }
   }
 }

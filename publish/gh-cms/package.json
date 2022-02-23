@@ -6,14 +6,14 @@
     "cms",
     "github"
   ],
-  "homepage": "https://github.com/ja0nz/ts-bench/tree/main/packages/gh-cms#readme",
+  "homepage": "https://github.com/ja0nz/ts-bench/tree/main/publish/gh-cms#readme",
   "bugs": {
     "url": "https://github.com/ja0nz/ts-bench/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ja0nz/ts-bench.git",
-    "directory": "packages/gh-cms"
+    "directory": "publish/gh-cms"
   },
   "license": "Apache-2.0",
   "author": "Ja0nz <mail@ja.nz>",
