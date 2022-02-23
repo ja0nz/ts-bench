@@ -28,6 +28,6 @@ const [_0, _1, ...args] = process.argv;
             { input: <string>cruiseResult.output }, { format: 'svg' }
         )
 
-        writeFileSync(join(dest, "deps.html"), svg);
+        writeFileSync(join(dest, "deps.svg"), svg);
     }
 })();
