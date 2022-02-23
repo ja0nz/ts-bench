@@ -9,7 +9,7 @@
   "bin": {
     "t:depgraph": "cruise/index.js",
     "t:generate": "template/index.js",
-    "t:ts-node": "ts-node.js"
+    "t:node": "ts-node.js"
   },
   "dependencies": {
     "dependency-cruiser": "^11.3.1",

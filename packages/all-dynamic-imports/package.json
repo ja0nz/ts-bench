@@ -20,7 +20,7 @@
     "doc": "typedoc --excludePrivate --excludeInternal --out doc src/index.ts",
     "doc:ae": "mkdir -p .ae/doc .ae/temp && api-extractor run --local --verbose",
     "pub": "yarn build && yarn npm publish",
-    "test": "NODE_OPTIONS='--no-warnings --loader ts-node/esm' testament test"
+    "test": "NODE_OPTIONS='--no-warnings --loader tsm' testament test"
   },
   "dependencies": {
     "@thi.ng/api": "^8.3.3"
