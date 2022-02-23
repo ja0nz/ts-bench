@@ -1,5 +1,5 @@
 {
-  "name": "47-2021.typedoc-lookup",
+  "name": "@project/47-2021.typedoc-lookup",
   "version": "0.0.1",
   "private": true,
   "description": "Just a lookup for typescript comments",

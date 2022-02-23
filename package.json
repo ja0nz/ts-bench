@@ -2,16 +2,18 @@
   "private": true,
   "name": "ts-bench",
   "workspaces": [
-    "packages/*",
+    "publish/*",
     "projects/*",
     "tools"
   ],
   "devDependencies": {
-    "dependency-cruiser": "^11.3.1",
     "tools": "workspace:^"
   },
   "scripts": {
-    "build": "yarn workspaces foreach --no-private --verbose run build"
+    "@npmjs": "yarn workspaces foreach -pv --no-private",
+    "build": "yarn @npmjs -t run build",
+    "clean": "yarn @npmjs run clean",
+    "doc": "yarn @npmjs run doc"
   },
   "packageManager": "yarn@3.1.1"
 }
