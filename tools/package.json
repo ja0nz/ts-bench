@@ -1,18 +1,19 @@
 {
   "private": true,
   "name": "tools",
+  "type": "module",
   "description": "This module provides some build-related tools",
   "version": "1.0.0",
   "author": "Ja0nz <mail@ja.nz>",
   "license": "Apache-2.0",
   "bin": {
-    "tools:depgraph": "bin/depgraph.mjs",
-    "tools:generate": "bin/gen-template.mjs",
-    "tools:ts-node": "bin/ts-node.mjs"
+    "t:depgraph": "cruise/index.js",
+    "t:generate": "template/index.js",
+    "t:ts-node": "ts-node.js"
   },
   "dependencies": {
-    "@thi.ng/args": "^2.1.4",
-    "dependency-cruiser": "^11.3.1"
+    "dependency-cruiser": "^11.3.1",
+    "graphviz-cli": "^1.0.1"
   },
   "devDependencies": {
     "tsm": "^2.2.1"

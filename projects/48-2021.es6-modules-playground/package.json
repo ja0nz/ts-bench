@@ -5,7 +5,7 @@
   "description": "TODO",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ja0nz/ts-scratch.git",
+    "url": "https://github.com/ja0nz/ts-bench.git",
     "directory": "projects/48-2021.es6-modules-playground"
   },
   "author": "Ja0nz <mail@ja.nz>",
@@ -25,8 +25,8 @@
   "devDependencies": {
     "@types/rimraf": "^3.0.2",
     "rimraf": "^3.0.2",
-    "typedoc": "^0.22.11",
+    "typedoc": "^0.22.12",
     "typescript": "^4.5.5",
-    "vite": "^2.8.2"
+    "vite": "^2.8.4"
   }
 }

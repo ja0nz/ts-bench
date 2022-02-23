@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 
-const src = "index.ts";
-import { spawn } from "child_process";
-import { join } from "path";
-const [node, toolsDir, ...args] = process.argv;
+import { spawn } from "node:child_process";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const cli = join(toolsDir, "..", "..", "cruise", src);
+const src = "index.ts";
+const [node, _, ...args] = process.argv;
+
+const binDir = dirname(fileURLToPath(import.meta.url));
+const cli = join(binDir, src);
 const p = spawn(node, ["--loader", "tsm", cli, ...args]);
 
 p.stdout.pipe(process.stdout);
