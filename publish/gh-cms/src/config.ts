@@ -1,13 +1,13 @@
-import { Args, string } from "@thi.ng/args";
-import type { LogLevelName } from "@thi.ng/logger";
+import { Args, string } from '@thi.ng/args';
+import type { LogLevelName } from '@thi.ng/logger';
 import {
   defFormatPresets,
   FMT_ANSI16,
   FMT_NONE,
   FormatPresets,
-  StringFormat
-} from "@thi.ng/text-format";
-import { PKG, CLIOpts, LOG_LEVEL, REPO_URL, NO_COLOR, REQUIRED } from "./api";
+  StringFormat,
+} from '@thi.ng/text-format';
+import { PKG, CLIOpts, LOG_LEVEL, REPO_URL, NO_COLOR, REQUIRED } from './api';
 
 /**
  * Config module:
@@ -25,15 +25,15 @@ export class AppConfig {
 
   constructor() {
     this.id = PKG.name;
-    this.logLevel = <LogLevelName>LOG_LEVEL || "INFO";
+    this.logLevel = <LogLevelName>LOG_LEVEL || 'INFO';
     this.specs = {
       repoUrl: string({
-        alias: "u",
-        hint: "URL",
+        alias: 'u',
+        hint: 'URL',
         default: REPO_URL || REQUIRED,
         desc: "'https://github.com/x/x'",
-        group: "common"
-      })
+        group: 'common',
+      }),
     };
     this.setFormat(NO_COLOR ? FMT_NONE : FMT_ANSI16);
   }

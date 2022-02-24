@@ -1,4 +1,4 @@
-import { qlrequest, rerequest } from "./net";
+import { qlrequest, rerequest } from './net';
 
 const cLabel = `
   mutation createLabel(
@@ -35,17 +35,18 @@ const cLabel = `
 
 // DELETES
 export function deleteLabel(url: string, name: string) {
-  return () => rerequest(url)(
-    'DELETE /repos/{owner}/{repo}/labels/{name}',
-    { name } as any
-  );
+  return () =>
+    rerequest(url)('DELETE /repos/{owner}/{repo}/labels/{name}', {
+      name,
+    } as any);
 }
 
 // CREATES
 export function createLabel(url: string, repoID: string, lname: string) {
-  return () => qlrequest(url)(cLabel, {
-    repoID,
-    lname,
-    lcolor: Math.floor(Math.random() * 16777215).toString(16)
-  });
+  return () =>
+    qlrequest(url)(cLabel, {
+      repoID,
+      lname,
+      lcolor: Math.floor(Math.random() * 16777215).toString(16),
+    });
 }

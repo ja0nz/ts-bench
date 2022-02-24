@@ -28,8 +28,8 @@
     "twind": "^0.16.16"
   },
   "devDependencies": {
-    "@types/rimraf": "^3.0.2",
     "@thi.ng/testament": "^0.2.3",
+    "@types/rimraf": "^3.0.2",
     "rimraf": "^3.0.2",
     "tools": "workspace:^",
     "typedoc": "^0.22.12",

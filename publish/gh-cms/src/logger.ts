@@ -1,5 +1,5 @@
-import { ConsoleLogger, LogLevel } from "@thi.ng/logger";
-import type { AppConfig } from "./config.js";
+import { ConsoleLogger, LogLevel } from '@thi.ng/logger';
+import type { AppConfig } from './config.js';
 
 /**
  * Logger module:
@@ -11,11 +11,12 @@ export class Logger extends ConsoleLogger {
   }
 
   dry(isDry: boolean, ...args: any[]) {
-    this.level <= LogLevel.INFO && this.log("INFO", isDry ? ["[dryrun]", ...args] : args);
+    this.level <= LogLevel.INFO &&
+      this.log('INFO', isDry ? ['[dryrun]', ...args] : args);
   }
 
   important(...args: any[]) {
-    this.level <= LogLevel.NONE && this.log("INFO", args);
+    this.level <= LogLevel.NONE && this.log('INFO', args);
   }
 
   pp(arg: object) {
@@ -23,16 +24,16 @@ export class Logger extends ConsoleLogger {
   }
 
   protected log(level: string, args: any[]) {
-    let msg = `[${level}] ${this.config.id}: ${args.join(" ")}\n`;
+    let msg = `[${level}] ${this.config.id}: ${args.join(' ')}\n`;
     const theme = this.config.theme;
     switch (level) {
-      case "INFO":
+      case 'INFO':
         msg = theme.lightYellow(msg);
         break;
-      case "WARN":
+      case 'WARN':
         msg = theme.lightRed(msg);
         break;
-      case "SEVERE":
+      case 'SEVERE':
         msg = theme.red(msg);
         break;
       default:
