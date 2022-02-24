@@ -13,7 +13,10 @@
     "@npmjs": "yarn workspaces foreach -pv --no-private",
     "build": "yarn @npmjs -t run build",
     "clean": "yarn @npmjs run clean",
-    "doc": "yarn @npmjs run doc"
+    "test": "yarn @npmjs run test",
+    "doc": "yarn @npmjs run doc",
+    "doc:api": "yarn @npmjs run doc:api",
+    "pub": "yarn @npmjs run pub"
   },
   "packageManager": "yarn@3.1.1"
 }

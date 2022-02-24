@@ -1,9 +1,10 @@
-* --place-project--
+#+TITLE: --place-project--
+#+OPTIONS: ^:nil
 
-** Authors
+* TLDR
 
+* Authors
 - Ja0nz
 
-** License
-
+* License
 2022 Ja0nz // Apache Software License 2.0

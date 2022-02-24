@@ -17,7 +17,7 @@ if (args.length === 1) {
 const dest = resolve(
     args.length === 1
         ? process.cwd()
-        : process.env.PROJECT_CWD,
+        : process.env.PROJECT_CWD ?? process.cwd(),
     ...args);
 
 const target = basename(dest);
@@ -37,7 +37,8 @@ const skel = join(dirname(dest), STENCIL);
         try {
             await writeFile(dest, file);
         } catch (e) {
-            if (e.code === "ENOENT") {
+            const { code } = <any>e;
+            if (code === "ENOENT") {
                 await mkdir(dirname(dest));
                 await writeFile(dest, file);
             }

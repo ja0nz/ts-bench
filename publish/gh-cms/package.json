@@ -28,7 +28,7 @@
     "clean": "rimraf dist doc",
     "pub": "yarn build && yarn npm publish",
     "quick": "node esbuild.config.js && node bin/index.cjs",
-    "test": "NODE_OPTIONS='--no-warnings --loader tsm' testament test"
+    "test": "testament test"
   },
   "dependencies": {
     "@octokit/graphql": "^4.8.0",

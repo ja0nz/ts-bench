@@ -3,7 +3,7 @@
 import { spawn } from "node:child_process";
 const [node, _, ...args] = process.argv;
 
-const p = spawn(node, ["--loader", "tsm", ...args]);
+const p = spawn(node, ["--loader", "ts-node/esm", ...args]);
 
 p.stdout.pipe(process.stdout);
 p.stderr.on('data', d => {
