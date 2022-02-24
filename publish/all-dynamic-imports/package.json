@@ -3,9 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "description": "TODO",
-  "keywords": [
-    "typescript"
-  ],
+  "keywords": ["typescript"],
   "homepage": "https://github.com/ja0nz/ts-bench/tree/main/publish/all-dynamic-imports#readme",
   "bugs": {
     "url": "https://github.com/ja0nz/ts-bench/issues"
@@ -24,15 +22,13 @@
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "typings": "./dist/index.d.ts",
-  "files": [
-    "./dist/*"
-  ],
+  "files": ["./dist/*"],
   "scripts": {
     "build": "yarn clean && tsc --declaration",
     "clean": "rimraf dist doc",
     "doc": "typedoc --excludePrivate --excludeInternal --out doc --darkHighlightTheme dracula src/index.ts",
     "doc:api": "api-extractor run --local --verbose",
-    "pub": "yarn build && yarn npm publish",
+    "pub": "yarn build && yarn npm publish --tolerate-republish",
     "test": "testament test"
   },
   "dependencies": {

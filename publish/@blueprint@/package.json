@@ -22,15 +22,13 @@
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "typings": "./dist/index.d.ts",
-  "files": [
-    "./dist/*"
-  ],
+  "files": ["./dist/*"],
   "scripts": {
     "build": "yarn clean && tsc --declaration",
     "clean": "rimraf dist doc",
     "doc": "typedoc --excludePrivate --excludeInternal --out doc --darkHighlightTheme dracula src/index.ts",
     "doc:api": "api-extractor run --local --verbose",
-    "pub": "yarn build && yarn npm publish",
+    "pub": "yarn build && yarn npm publish --tolerate-republish",
     "test": "testament test"
   },
   "dependencies": {

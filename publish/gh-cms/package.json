@@ -2,10 +2,7 @@
   "name": "gh-cms",
   "version": "0.0.13",
   "description": "A headless CMS based on GH issues",
-  "keywords": [
-    "cms",
-    "github"
-  ],
+  "keywords": ["cms", "github"],
   "homepage": "https://github.com/ja0nz/ts-bench/tree/main/publish/gh-cms#readme",
   "bugs": {
     "url": "https://github.com/ja0nz/ts-bench/issues"
@@ -20,13 +17,11 @@
   "type": "module",
   "bin": "./dist/index.cjs",
   "main": "./dist/index.cjs",
-  "files": [
-    "./dist/*"
-  ],
+  "files": ["./dist/*"],
   "scripts": {
     "build": "tsc && node esbuild.config.js",
     "clean": "rimraf dist doc",
-    "pub": "yarn build && yarn npm publish",
+    "pub": "yarn build && yarn npm publish --tolerate-republish",
     "quick": "node esbuild.config.js && node bin/index.cjs",
     "test": "testament test"
   },
