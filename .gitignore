@@ -10,3 +10,7 @@ README.md
 !.yarn/versions
 node_modules
 dist
+
+.ae
+doc
+dev

@@ -4,7 +4,7 @@ buildSync({
     "./src/index.ts",
   ],
   bundle: true,
-  outfile: "./bin/index.cjs",
+  outfile: "./dist/index.cjs",
   minify: false,
   sourcemap: false,
   target: ["node16"],

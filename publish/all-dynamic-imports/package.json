@@ -6,6 +6,9 @@
     "typescript"
   ],
   "homepage": "https://github.com/ja0nz/ts-bench/tree/main/publish/all-dynamic-imports#readme",
+  "bugs": {
+    "url": "https://github.com/ja0nz/ts-bench/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/ja0nz/ts-bench.git",
@@ -13,24 +16,22 @@
   },
   "license": "Apache-2.0",
   "author": "Ja0nz <mail@ja.nz>",
-  "sideEffects": false,
   "type": "module",
   "exports": {
-    ".": {
-      "import": "./index.js"
-    }
+    "import": "./dist/index.js"
   },
-  "module": "./index.js",
-  "typings": "./index.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
   "files": [
-    "*.js",
-    "*.d.ts"
+    "./dist/*",
+    "./bin/*"
   ],
   "scripts": {
     "build": "yarn clean && tsc --declaration",
-    "clean": "rimraf '*.js' '*.d.ts' '*.map' doc",
-    "doc": "typedoc --excludePrivate --excludeInternal --out doc src/index.ts",
-    "doc:ae": "mkdir -p .ae/doc .ae/temp && api-extractor run --local --verbose",
+    "clean": "rimraf dist doc",
+    "doc": "typedoc --excludePrivate --excludeInternal --out doc --darkHighlightTheme dracula src/index.ts",
+    "doc:api": "mkdir -p .ae/doc .ae/temp && api-extractor run --local --verbose",
     "pub": "yarn build && yarn npm publish",
     "test": "NODE_OPTIONS='--no-warnings --loader tsm' testament test"
   },

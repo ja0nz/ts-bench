@@ -14,5 +14,5 @@ const p = spawn(node, ["--loader", "tsm", cli, ...args]);
 p.stdout.pipe(process.stdout);
 p.stderr.on('data', d => {
   const dStr = d.toString().trim();
-  !dStr.includes("ExperimentalWarning") ? console.log(dStr) : "";
+  !dStr.includes("Warning") ? console.log(dStr) : "";
 });

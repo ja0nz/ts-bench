@@ -20,17 +20,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@aduh95/viz.js@npm:3.5.0":
-  version: 3.5.0
-  resolution: "@aduh95/viz.js@npm:3.5.0"
-  checksum: f0d312b72b9ab22c62488e15f8380fb8380818aa19ad764e218605f972deda7baadfea327e1378119343cadd1487abb3ac28e70b45cac6aa0c629f5a7b7fd3a7
-  languageName: node
-  linkType: hard
-
 "@gar/promisify@npm:^1.0.1":
   version: 1.1.2
   resolution: "@gar/promisify@npm:1.1.2"
   checksum: d05081e0887a49c178b75ee3067bd6ee086f73c154d121b854fb2e044e8a89cb1cbb6de3a0dd93a519b80f0531fda68b099dd7256205f7fbb3490324342f2217
+  languageName: node
+  linkType: hard
+
+"@hpcc-js/wasm@npm:^1.12.9":
+  version: 1.12.9
+  resolution: "@hpcc-js/wasm@npm:1.12.9"
+  dependencies:
+    yargs: ^17.3.1
+  bin:
+    dot-wasm: bin/cli.js
+  checksum: 481adc6bdaf45cc594b8a74fc1531b32191eba89335df0ec3e19e884fb6127a86da0095b7529c5ca01b0634cbe1b3339dae4c5e335c0faf7c0e45d82ef9b00c5
   languageName: node
   linkType: hard
 
@@ -297,6 +301,7 @@ __metadata:
     "@thi.ng/hiccup-html": ^2.1.3
     "@thi.ng/rdom": ^0.8.5
     "@types/rimraf": ^3.0.2
+    dependency-cruiser: ^11.3.1
     rimraf: ^3.0.2
     tools: "workspace:^"
     twind: ^0.16.16
@@ -820,10 +825,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^17.0.20":
-  version: 17.0.20
-  resolution: "@types/node@npm:17.0.20"
-  checksum: 50cdbd3c4c93f117f95e7c11ee28540f388500d6496e9efc8610f7e27839cb1fcf6c2479cac1dcd00fcc4658029a41201cc3294ae0d42e24ffcc71477a44191c
+"@types/node@npm:^17.0.21":
+  version: 17.0.21
+  resolution: "@types/node@npm:17.0.21"
+  checksum: 89dcd2fe82f21d3634266f8384e9c865cf8af49685639fbdbd799bdd1040480fb1e8eeda2d3b9fce41edbe704d2a4be9f427118c4ae872e8d9bb7cbeb3c41a94
   languageName: node
   linkType: hard
 
@@ -1193,6 +1198,17 @@ __metadata:
   version: 3.0.0
   resolution: "cli-width@npm:3.0.0"
   checksum: 4c94af3769367a70e11ed69aa6095f1c600c0ff510f3921ab4045af961820d57c0233acfa8b6396037391f31b4c397e1f614d234294f979ff61430a6c166c3f6
+  languageName: node
+  linkType: hard
+
+"cliui@npm:^7.0.2":
+  version: 7.0.4
+  resolution: "cliui@npm:7.0.4"
+  dependencies:
+    string-width: ^4.2.0
+    strip-ansi: ^6.0.0
+    wrap-ansi: ^7.0.0
+  checksum: ce2e8f578a4813806788ac399b9e866297740eecd4ad1823c27fd344d78b22c5f8597d548adbcc46f0573e43e21e751f39446c5a5e804a12aace402b7a315d7f
   languageName: node
   linkType: hard
 
@@ -2050,6 +2066,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"escalade@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "escalade@npm:3.1.1"
+  checksum: a3e2a99f07acb74b3ad4989c48ca0c3140f69f923e56d0cba0526240ee470b91010f9d39001f2a4a313841d237ede70a729e92125191ba5d21e74b106800b133
+  languageName: node
+  linkType: hard
+
 "escape-string-regexp@npm:^1.0.5":
   version: 1.0.5
   resolution: "escape-string-regexp@npm:1.0.5"
@@ -2188,6 +2211,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"get-caller-file@npm:^2.0.5":
+  version: 2.0.5
+  resolution: "get-caller-file@npm:2.0.5"
+  checksum: b9769a836d2a98c3ee734a88ba712e62703f1df31b94b784762c433c27a386dd6029ff55c2a920c392e33657d80191edbf18c61487e198844844516f843496b9
+  languageName: node
+  linkType: hard
+
 "get-stream@npm:^6.0.1":
   version: 6.0.1
   resolution: "get-stream@npm:6.0.1"
@@ -2211,13 +2241,15 @@ __metadata:
     "@thi.ng/testament": ^0.2.3
     "@thi.ng/text-format": ^1.1.3
     "@thi.ng/transducers": ^8.2.0
-    "@types/node": ^17.0.20
+    "@types/node": ^17.0.21
+    "@types/rimraf": ^3.0.2
     dotenv: ^16.0.0
     esbuild: ^0.14.23
     gray-matter: ^4.0.3
+    rimraf: ^3.0.2
     typescript: ^4.5.5
   bin:
-    gh-cms: bin/index.cjs
+    gh-cms: ./dist/index.cjs
   languageName: unknown
   linkType: soft
 
@@ -2248,19 +2280,6 @@ __metadata:
   version: 4.2.8
   resolution: "graceful-fs@npm:4.2.8"
   checksum: 5d224c8969ad0581d551dfabdb06882706b31af2561bd5e2034b4097e67cc27d05232849b8643866585fd0a41c7af152950f8776f4dd5579e9853733f31461c6
-  languageName: node
-  linkType: hard
-
-"graphviz-cli@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "graphviz-cli@npm:1.0.1"
-  dependencies:
-    "@aduh95/viz.js": 3.5.0
-  peerDependencies:
-    canvas: 2.8.0
-  bin:
-    graphviz: bin/graphviz.js
-  checksum: 8cc7c562071e822af388eec6122000a56e910982db5f5aaf6a74f939c9a7e7ef95012910808e8d225ca7afc7e5acd0b88b10b89142742546ef280afd4dcca5ec
   languageName: node
   linkType: hard
 
@@ -3130,6 +3149,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"require-directory@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "require-directory@npm:2.1.1"
+  checksum: fb47e70bf0001fdeabdc0429d431863e9475e7e43ea5f94ad86503d918423c1543361cc5166d713eaa7029dd7a3d34775af04764bebff99ef413111a5af18c80
+  languageName: node
+  linkType: hard
+
 "require-from-string@npm:^2.0.2":
   version: 2.0.2
   resolution: "require-from-string@npm:2.0.2"
@@ -3420,7 +3446,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"string-width@npm:^1.0.2 || 2 || 3 || 4, string-width@npm:^4.1.0":
+"string-width@npm:^1.0.2 || 2 || 3 || 4, string-width@npm:^4.1.0, string-width@npm:^4.2.0, string-width@npm:^4.2.3":
   version: 4.2.3
   resolution: "string-width@npm:4.2.3"
   dependencies:
@@ -3575,13 +3601,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "tools@workspace:tools"
   dependencies:
+    "@hpcc-js/wasm": ^1.12.9
     dependency-cruiser: ^11.3.1
-    graphviz-cli: ^1.0.1
     tsm: ^2.2.1
   bin:
     "t:depgraph": cruise/index.js
-    "t:generate": template/index.js
     "t:node": ts-node.js
+    "t:template": template/index.js
   languageName: unknown
   linkType: soft
 
@@ -3906,10 +3932,39 @@ __metadata:
   languageName: node
   linkType: hard
 
+"y18n@npm:^5.0.5":
+  version: 5.0.8
+  resolution: "y18n@npm:5.0.8"
+  checksum: 54f0fb95621ee60898a38c572c515659e51cc9d9f787fb109cef6fde4befbe1c4602dc999d30110feee37456ad0f1660fa2edcfde6a9a740f86a290999550d30
+  languageName: node
+  linkType: hard
+
 "yallist@npm:^4.0.0":
   version: 4.0.0
   resolution: "yallist@npm:4.0.0"
   checksum: 343617202af32df2a15a3be36a5a8c0c8545208f3d3dfbc6bb7c3e3b7e8c6f8e7485432e4f3b88da3031a6e20afa7c711eded32ddfb122896ac5d914e75848d5
+  languageName: node
+  linkType: hard
+
+"yargs-parser@npm:^21.0.0":
+  version: 21.0.0
+  resolution: "yargs-parser@npm:21.0.0"
+  checksum: 1e205fca1cb7a36a1585e2b94a64e641c12741b53627d338e12747f4dca3c3610cdd9bb235040621120548dd74c3ef03a8168d52a1eabfedccbe4a62462b6731
+  languageName: node
+  linkType: hard
+
+"yargs@npm:^17.3.1":
+  version: 17.3.1
+  resolution: "yargs@npm:17.3.1"
+  dependencies:
+    cliui: ^7.0.2
+    escalade: ^3.1.1
+    get-caller-file: ^2.0.5
+    require-directory: ^2.1.1
+    string-width: ^4.2.3
+    y18n: ^5.0.5
+    yargs-parser: ^21.0.0
+  checksum: 64fc2e32c56739f1d14d2d24acd17a6944c3c8e3e3558f09fc1953ac112e868cc16013d282886b9d5be22187f8b9ed4f60741a6b1011f595ce2718805a656852
   languageName: node
   linkType: hard
 

@@ -1,7 +1,7 @@
 import { cruise, IReporterOutput, ICruiseOptions } from "dependency-cruiser";
-import { writeFileSync } from "node:fs";
+import { writeFile } from "node:fs/promises";
 import { resolve, join } from "node:path";
-import { renderGraphFromSource } from 'graphviz-cli'
+import { graphviz } from "@hpcc-js/wasm";
 
 const [_0, _1, ...args] = process.argv;
 
@@ -24,10 +24,10 @@ const [_0, _1, ...args] = process.argv;
             ARRAY_OF_FILES_AND_DIRS_TO_CRUISE,
             cruiseOptions);
 
-        const svg = await renderGraphFromSource(
-            { input: <string>cruiseResult.output }, { format: 'svg' }
-        )
+        const svg = await graphviz.layout(<string>cruiseResult.output, "svg", "dot");
 
-        writeFileSync(join(dest, "deps.svg"), svg);
+        const out = join(dest, "deps.svg");
+        await writeFile(out, svg);
+        console.log("Written to", out)
     }
 })();
