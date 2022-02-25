@@ -25,7 +25,7 @@
   ],
   "scripts": {
     "build": "tsc && node esbuild.config.js",
-    "clean": "rimraf dist doc",
+    "clean": "rimraf dist",
     "pub": "yarn build && yarn npm publish --tolerate-republish",
     "quick": "node esbuild.config.js && node bin/index.cjs",
     "test": "testament test"

@@ -14,7 +14,6 @@
   "scripts": {
     "@npmjs": "yarn workspaces foreach -pv --no-private",
     "doc": "yarn typedoc --entryPointStrategy packages 'publish/*'",
-    "doc:api": "yarn @npmjs run doc:api",
     "build": "yarn @npmjs -t run build",
     "clean": "yarn @npmjs run clean",
     "test": "yarn @npmjs run test",
