@@ -19,7 +19,7 @@
   "exports": {
     "import": "./dist/index.js"
   },
-  "main": "./dist/index.js",
+  "main": "./src/index.ts",
   "module": "./dist/index.js",
   "typings": "./dist/index.d.ts",
   "files": [
@@ -28,7 +28,6 @@
   "scripts": {
     "build": "yarn clean && tsc --declaration",
     "clean": "rimraf dist doc",
-    "doc": "typedoc --excludePrivate --excludeInternal --out doc --darkHighlightTheme dracula src/index.ts",
     "doc:api": "api-extractor run --local --verbose",
     "pub": "yarn build && yarn npm publish --tolerate-republish",
     "test": "testament test"
@@ -41,7 +40,6 @@
     "@thi.ng/testament": "^0.2.3",
     "rimraf": "^3.0.2",
     "tools": "workspace:^",
-    "typedoc": "^0.22.12",
     "typescript": "^4.5.5"
   }
 }

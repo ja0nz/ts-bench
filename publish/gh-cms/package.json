@@ -19,7 +19,7 @@
   "author": "Ja0nz <mail@ja.nz>",
   "type": "module",
   "bin": "./dist/index.cjs",
-  "main": "./dist/index.cjs",
+  "main": "./src/index.ts",
   "files": [
     "./dist/*"
   ],

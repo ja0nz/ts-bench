@@ -7,15 +7,17 @@
     "tools"
   ],
   "devDependencies": {
-    "tools": "workspace:^"
+    "tools": "workspace:^",
+    "typedoc": "^0.22.12",
+    "typescript": "^4.5.5"
   },
   "scripts": {
     "@npmjs": "yarn workspaces foreach -pv --no-private",
+    "doc": "yarn typedoc --entryPointStrategy packages 'publish/*'",
+    "doc:api": "yarn @npmjs run doc:api",
     "build": "yarn @npmjs -t run build",
     "clean": "yarn @npmjs run clean",
     "test": "yarn @npmjs run test",
-    "doc": "yarn @npmjs run doc",
-    "doc:api": "yarn @npmjs run doc:api",
     "pub": "yarn @npmjs run pub"
   },
   "packageManager": "yarn@3.2.0"

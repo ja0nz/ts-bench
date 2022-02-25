@@ -1,0 +1,6 @@
+{
+  "out": "./docs",
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "darkHighlightTheme": "dracula"
+}
