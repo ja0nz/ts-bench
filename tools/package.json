@@ -9,7 +9,8 @@
   "bin": {
     "t:depgraph": "cruise/index.js",
     "t:node": "ts-node.js",
-    "t:template": "template/index.js"
+    "t:template": "template/index.js",
+    "t:yarnup": "yarnup.js"
   },
   "dependencies": {
     "@hpcc-js/wasm": "^1.12.9",

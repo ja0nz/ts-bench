@@ -18,5 +18,5 @@
     "doc:api": "yarn @npmjs run doc:api",
     "pub": "yarn @npmjs run pub"
   },
-  "packageManager": "yarn@3.1.1"
+  "packageManager": "yarn@3.2.0"
 }
