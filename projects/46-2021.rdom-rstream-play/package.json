@@ -3,19 +3,24 @@
   "version": "0.0.1",
   "private": true,
   "description": "TODO",
+  "keywords": [],
+  "homepage": "https://github.com/ja0nz/ts-bench/tree/main/projects/46-2021.rdom-rstream-play#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/ja0nz/ts-bench.git",
-    "directory": "projects/46-2021.rdom-rsteam-play"
+    "directory": "projects/46-2021.rdom-rstream-play"
   },
   "license": "Apache-2.0",
   "author": "Ja0nz <mail@ja.nz>",
+  "type": "module",
+  "main": "src/index.js",
   "scripts": {
     "build": "tsc && vite build",
     "clean": "rimraf dist node_modules/.vite",
-    "docs": "typedoc --entryPoints src --out dist --watch & yarn preview",
+    "doc": "typedoc --excludePrivate --excludeInternal --out doc --darkHighlightTheme dracula src/index.ts",
     "preview": "vite preview --open",
-    "start": "vite --open"
+    "start": "vite --open",
+    "test": "testament test"
   },
   "dependencies": {
     "@thi.ng/expose": "^1.1.3",

@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir } from "node:fs/promises"
+import { readFile, writeFile, mkdir, opendir } from "node:fs/promises"
 import { resolve, join, sep, dirname, basename } from "node:path";
 import { walk } from "./walkdir.js";
 
@@ -24,10 +24,13 @@ const target = basename(dest);
 const skel = join(dirname(dest), STENCIL);
 
 (async () => {
-    // Generate destination directory first
     try {
+        await opendir(skel)
+        // Generate destination directory first
         await mkdir(dest);
-    } catch (e) { }
+    } catch (e) {
+        return;
+    }
 
     // Walk over files and place them
     for await (let dest of walk(skel)) {
