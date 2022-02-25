@@ -8,14 +8,17 @@
     "url": "https://github.com/ja0nz/ts-bench.git",
     "directory": "projects/48-2021.es6-modules-playground"
   },
-  "author": "Ja0nz <mail@ja.nz>",
   "license": "Apache-2.0",
+  "author": "Ja0nz <mail@ja.nz>",
+  "type": "module",
+  "main": "src/index.js",
   "scripts": {
     "build": "tsc && vite build",
     "clean": "rimraf dist node_modules/.vite",
-    "docs": "typedoc --entryPoints src --out dist --watch & yarn preview",
+    "doc": "typedoc --excludePrivate --excludeInternal --out doc --darkHighlightTheme dracula src/index.ts",
     "preview": "vite preview --open",
-    "start": "vite --open"
+    "start": "vite --open",
+    "test": "testament test"
   },
   "dependencies": {
     "@thi.ng/hiccup-html": "^2.1.3",
@@ -23,6 +26,7 @@
     "twind": "^0.16.16"
   },
   "devDependencies": {
+    "@thi.ng/testament": "^0.2.3",
     "@types/rimraf": "^3.0.2",
     "rimraf": "^3.0.2",
     "typedoc": "^0.22.12",

@@ -1,9 +1,0 @@
-* 52-2021.adaptive-threshold
-
-** Authors
-
-- Ja0nz
-
-** License
-
-&copy; 2021 Ja0nz // Apache Software License 2.0

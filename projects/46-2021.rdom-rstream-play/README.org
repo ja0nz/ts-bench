@@ -1,3 +1,0 @@
-* 46-2021.rdom-rstream-play
-Just a small demo of various usage patterns with rstreams
-https://docs.thi.ng/umbrella/rstream/

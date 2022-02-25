@@ -1,9 +1,0 @@
-* 05-2022.multiplex-bug
-
-** Authors
-
-- Ja0nz
-
-** License
-
-&copy; 2021 Ja0nz // Apache Software License 2.0

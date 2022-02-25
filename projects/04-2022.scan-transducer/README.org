@@ -1,9 +1,0 @@
-* 04-2022.scan-transducer
-
-** Authors
-
-- Ja0nz
-
-** License
-
-&copy; 2021 Ja0nz // Apache Software License 2.0
