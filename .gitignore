@@ -14,3 +14,5 @@ dist
 .ae
 doc
 dev
+
+.svelte-kit
