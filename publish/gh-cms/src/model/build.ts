@@ -16,6 +16,7 @@ import {
   interleave,
   scan,
   maxCompare,
+  distinct,
 } from '@thi.ng/transducers';
 import {
   get_CMS_id,
@@ -196,6 +197,7 @@ export function preBuild(
             filter(([_, tag]: string[]) =>
               farLabels.filter((x) => x.name === tag).length ? false : true
             ),
+            distinct({ key: x => x[1] }),
             sideEffect((x: string[]) => {
               if (opts.dryRun)
                 logger.info(`DRY; Create missing label: ${x[1]}`);
