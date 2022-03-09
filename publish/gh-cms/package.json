@@ -1,6 +1,6 @@
 {
   "name": "gh-cms",
-  "version": "0.0.13",
+  "version": "0.0.15",
   "description": "A headless CMS based on GH issues",
   "keywords": [
     "cms",
@@ -27,7 +27,7 @@
     "build": "tsc && node esbuild.config.js",
     "clean": "rimraf dist",
     "pub": "yarn build && yarn npm publish --tolerate-republish",
-    "quick": "node esbuild.config.js && node bin/index.cjs",
+    "quick": "node esbuild.config.js && node dist/index.cjs",
     "test": "testament test"
   },
   "dependencies": {
@@ -49,8 +49,8 @@
     "@thi.ng/testament": "^0.2.3",
     "@types/node": "^17.0.21",
     "@types/rimraf": "^3.0.2",
-    "esbuild": "^0.14.23",
+    "esbuild": "^0.14.25",
     "rimraf": "^3.0.2",
-    "typescript": "^4.5.5"
+    "typescript": "^4.6.2"
   }
 }

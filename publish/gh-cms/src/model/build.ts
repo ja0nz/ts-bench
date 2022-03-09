@@ -188,7 +188,9 @@ export function preBuild(
           comp(
             // flat out tags
             mapcat<GH_CMS, string>((x: GH_CMS) => {
-              return [...interleave(get_CMS_rid(x), get_parsed_tags(x))];
+              const parsedTags = get_parsed_tags(x);
+              if (parsedTags === undefined) return [];
+              return [...interleave(get_CMS_rid(x), parsedTags)];
             }),
             partition<string>(2),
             filter(([_, tag]: string[]) =>
