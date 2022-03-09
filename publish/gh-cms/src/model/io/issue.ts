@@ -12,10 +12,10 @@ import {
 
 const create = `
   mutation createIssue(
-    $ID: String!,
+    $ID: ID!,
     $title: String!,
-    $route: String = null,
-    $labels: [String] = [""],
+    $route: ID = null,
+    $labels: [ID!] = [""],
     $body: String = null) {
       createIssue(input: {
         repositoryId: $ID
@@ -35,11 +35,11 @@ const create = `
 
 const update = `
   mutation updateIssue(
-    $ID: String!,
+    $ID: ID!,
     $title: String!,
-    $state: String!,
-    $route: String = null,
-    $labels: [String] = [""],
+    $state: IssueState,
+    $route: ID = null,
+    $labels: [ID!] = [""],
     $body: String = null) {
       updateIssue(input: {
         id: $ID
@@ -60,8 +60,8 @@ const update = `
 
 const close = `
   mutation closeIssue(
-    $ID: String!
-    $state: String!) {
+    $ID: ID!
+    $state: IssueState) {
       updateIssue(input: {id: $ID, state: $state}) {
         clientMutationId
       }

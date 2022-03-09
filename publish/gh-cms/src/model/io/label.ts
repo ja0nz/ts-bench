@@ -2,7 +2,7 @@ import { qlrequest, rerequest } from './net';
 
 const cLabel = `
   mutation createLabel(
-    $repoID: String!,
+    $repoID: ID!,
     $lname: String!,
     $lcolor: String = "000000") {
       createLabel(input: {

@@ -134,7 +134,7 @@ export function build(
               map((x) => x.id)
             ),
             push(),
-            get_parsed_tags(i)
+            get_parsed_tags(i) ?? []
           );
           const nT = set_tags(i, lIDs);
           return nT;
@@ -149,7 +149,7 @@ export function build(
             last(),
             [get_parsed_route(i)]
           );
-          const nT = set_route(i, lIDs);
+          const nT = set_route(i, lIDs ?? "");
           return nT;
         }),
         // state
@@ -203,7 +203,12 @@ export function preBuild(
             map(([rID, tag]: string[]) => createLabel(opts.repoUrl, rID, tag))
           ),
           comp(
-            map<GH_CMS, string>(get_parsed_route), // wanted milestone
+            // wanted milestone
+            mapcat<GH_CMS, string>((x: GH_CMS) => {
+              const mileStone = get_parsed_route(x);
+              if (mileStone == undefined) return [];
+              return [mileStone];
+            }),
             filter((t: string) =>
               farMilestones.filter((x) => x.title === t).length ? false : true
             ),
@@ -215,7 +220,7 @@ export function preBuild(
           )
         ),
         flatten<Effect[]>(),
-        filter((x) => x !== undefined)
+        filter((x) => x !== undefined),
       ),
       push(),
       rows

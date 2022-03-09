@@ -39,7 +39,9 @@ export function ensureEnv(id: string, env: string, val: string) {
 }
 
 const CP = getEnv('CONTENT_PATH') ?? '';
-export const CONTENT_PATH = !isAbsolute(CP) ? join(INSTALL_DIR, CP) : CP;
+export const CONTENT_PATH = !isAbsolute(CP)
+  ? join(process.cwd(), CP)
+  : CP;
 export const LOG_LEVEL = getEnv('LOG_LEVEL');
 export const REPO_URL = getEnv('REPO_URL');
 export const NO_COLOR = getEnv('NO_COLOR');
