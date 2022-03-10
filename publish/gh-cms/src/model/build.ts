@@ -271,11 +271,21 @@ export function latestContentRows(entries: IObjectOf<GH_CMS[]>): GH_CMS[] {
         const local = ghxs.filter((x) => !get_CMS_id(x));
         // Cond1: if no remote content continue
         if (!remote.length) return true;
+        //-
         const newer = local.filter(
           (x) => get_parsed_date(x) > get_parsed_date(remote[0])
         );
         // Cond2: if local is newer than remote continue
         if (newer.length) return true;
+        //-
+        const undef = local.filter(
+          (x) =>
+            (get_parsed_date(x) === undefined) ||
+            (get_parsed_date(remote[0]) === undefined)
+        );
+        // Cond3: if local or remote has no date at all
+        if (undef.length) return true;
+        //-
         return false;
       }),
       map(reduceToLatest),
