@@ -13,12 +13,12 @@
     "t:yarnup": "yarnup.js"
   },
   "dependencies": {
-    "@hpcc-js/wasm": "^1.12.9",
-    "dependency-cruiser": "^11.3.1"
+    "@hpcc-js/wasm": "^1.13.0",
+    "dependency-cruiser": "^11.4.0"
   },
   "devDependencies": {
     "@types/node": "^17.0.21",
-    "ts-node": "^10.5.0",
-    "typescript": "^4.5.5"
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.2"
   }
 }
