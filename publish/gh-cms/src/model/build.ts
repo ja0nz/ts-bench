@@ -150,7 +150,7 @@ export function build(
             last(),
             [get_parsed_route(i)]
           );
-          const nT = set_route(i, lIDs ?? "");
+          const nT = set_route(i, lIDs ?? '');
           return nT;
         }),
         // state
@@ -197,7 +197,7 @@ export function preBuild(
             filter(([_, tag]: string[]) =>
               farLabels.filter((x) => x.name === tag).length ? false : true
             ),
-            distinct({ key: x => x[1] }),
+            distinct({ key: (x) => x[1] }),
             sideEffect((x: string[]) => {
               if (opts.dryRun)
                 logger.info(`DRY; Create missing label: ${x[1]}`);
@@ -222,7 +222,7 @@ export function preBuild(
           )
         ),
         flatten<Effect[]>(),
-        filter((x) => x !== undefined),
+        filter((x) => x !== undefined)
       ),
       push(),
       rows
@@ -280,8 +280,8 @@ export function latestContentRows(entries: IObjectOf<GH_CMS[]>): GH_CMS[] {
         //-
         const undef = local.filter(
           (x) =>
-            (get_parsed_date(x) === undefined) ||
-            (get_parsed_date(remote[0]) === undefined)
+            get_parsed_date(x) === undefined ||
+            get_parsed_date(remote[0]) === undefined
         );
         // Cond3: if local or remote has no date at all
         if (undef.length) return true;
