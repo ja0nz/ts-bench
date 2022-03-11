@@ -8,7 +8,8 @@ pkgs.mkShell {
    nodePackages.typescript-language-server
    nodePackages.vscode-html-languageserver-bin
    nodePackages.vscode-css-languageserver-bin
-   nodePackages.prettier
    nodePackages.vscode-json-languageserver
+   nodePackages.prettier
+   nodePackages.eslint
   ];
 }
