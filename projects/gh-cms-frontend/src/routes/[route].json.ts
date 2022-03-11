@@ -1,6 +1,6 @@
-import { request } from "../../io/graphql";
-import { get_req_p_ca } from "../../api/svelte";
-import { REPO } from "../../api/node";
+import { request } from "../io/graphql";
+import { get_req_route } from "../api/svelte";
+import { REPO } from "../api/node";
 import type { RequestEvent } from "@sveltejs/kit/types/internal";
 import { URL } from 'node:url';
 
@@ -28,12 +28,12 @@ export const allBlogPosts = `
  }
 `;
 
-export async function get(e: RequestEvent) {
+export async function get(req: RequestEvent) {
   let path: string;
   if (REPO && REPO.length) {
     path = new URL(REPO).pathname;
   } else {
-    path = get_req_p_ca(e);
+    path = get_req_route(req);
   }
   const [owner, repo] = path.split("/").filter(Boolean);
 
