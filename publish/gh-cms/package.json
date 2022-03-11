@@ -1,6 +1,6 @@
 {
   "name": "gh-cms",
-  "version": "0.0.21",
+  "version": "0.0.23",
   "description": "A headless CMS based on GH issues",
   "keywords": [
     "cms",

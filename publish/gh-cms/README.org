@@ -3,7 +3,7 @@
 
 * Table of Content :toc:noexport:
 - [[#tldr][TLDR]]
-- [[#about][About]]
+- [[#the-shape-of-markdown][The shape of markdown]]
   - [[#additional-metadata-mapping][Additional metadata mapping]]
   - [[#what-you-can-do-with-this-cli-tool][What you can do with this CLI tool]]
   - [[#rationale-github-issues-as-cms-for-your-blog][Rationale: GitHub Issues as CMS for your blog]]
@@ -13,10 +13,8 @@
   - [[#point-to-a-remote-gh-repository][Point to a remote gh repository]]
   - [[#create-a-gh-token-and-set-put-in-in-env][Create a GH token and set put in in .env]]
 - [[#cli-manual][CLI manual]]
-  - [[#--help][--help]]
-  - [[#--dry-run][--dry-run]]
-  - [[#gh-cms-build][gh-cms build]]
-  - [[#gh-cms-purge][gh-cms purge]]
+  - [[#major-commands][Major commands]]
+  - [[#major-flags][Major flags]]
 - [[#env-manual][ENV manual]]
   - [[#log_level-default-info][LOG_LEVEL (default: INFO)]]
   - [[#no_color-default-undefined][NO_COLOR (default: undefined)]]
@@ -28,57 +26,76 @@
   - [[#gh_md2state][GH_MD2STATE]]
 
 * TLDR
+![[https://user-images.githubusercontent.com/19622393/157845984-591fe4b9-96ab-4aee-8610-413d84cddec7.png][screenshot_2022-03-11-11:03:14]]
+
 GithubCMS a simple command line tool that maps *markdown files* to *GitHub issues*. This tool was born out of the idea to have a personal blog hosted on GitHub Issues and updated against static markdown files. But you may use it with any other content too.
+
+This tool draws heavy inspiration by [[https://github.com/sw-yx/swyxkit/][SwyxKit]] which is a tookit for *SvelteKit + GitHub Issues*. Yet, I am still in love with markdown files as editing medium. So you can see this tool as bridge between those two worlds.
 
 Be aware that this is *alpha quality*. It does it's job for me but you have to find out yourself. Feel free to report bugs/glitches.
 
-* About
-This package requires YAML-shaped [[https://jekyllrb.com/docs/front-matter/][Front Matter]] which is a metadata header on top of your markdown file. The most critical and required metadata is
+* The shape of markdown
+This package requires markdown with YAML-shaped [[https://jekyllrb.com/docs/front-matter/][Front Matter]] which is a metadata header on top of your markdown file. The most critical and required metadata for this tool is *id* and *date*:
 #+begin_src markdown
 ---
-id: "123abc" -> used to update local->remote
+id: "123abc" -> used to match localContent->remoteContent
 date: 2022-01-23T12:47:00+01:00 -> used to figure out if update is needed. Any valid JS Date will do
 ---
 #+end_src
+*Attention*: This tool gives higher precedence to local machine content. This means, if you don't provide a =date= field it will always push from local->remote assuming that content has changed.
 
 ** Additional metadata mapping
 *** title -> gh issue title
+GitHub Issues can have a title.
 If not set falls back to mandatory issue id
 #+begin_src markdown
 ---
-title: "hello world"
+title: "hello, this is my blogpost" -> String
 ---
 #+end_src
 
 *** tags -> gh issue labels (customizable)
-Not happy with "tags"? Fear not, you can set your own label key like
-=GH_MD2LABEL = label=
+Tags can be used to categorize issues or any content you like.
+#+begin_quote
+Not happy with *tags* as front matter key? Fear not, you can customize your own label in the .env file.
+
+Example: =GH_MD2LABEL=label= -> label: ["foo", "bar"]
+#+end_quote
 #+begin_src markdown
 ---
-tags: ["T1", "T5", "dev"]
+tags: ["frontend", "js", "dev"] -> Array<String>
 ---
 #+end_src
 
 *** route -> gh issue milestone (customizable)
-I use this as slug/endpoint identifier. Not happy with "route"? Set it with
-=GH_MD2MILESTONE = milestone=
+I use this as slug/endpoint/route identifier.
+#+begin_quote
+Not happy with *route* as front matter key? Fear not, you can customize your own label in the .env file.
+
+Example: =GH_MD2MILESTONE=milestone= -> milestone: "/blog/foo"
+#+end_quote
 #+begin_src markdown
 ---
-route: "/welcome-post"
+route: "/blog/welcome-post" -> String
 ---
 #+end_src
 
 *** draft -> gh issue state (CLOSED or OPEN) (customizable)
-I use this as published/unpublished identifier. Not happy with "draft"? Set it with
-=GH_MD2STATE = open=
+I use this as published/unpublished identifier hence i use *draft* as label.
+#+begin_quote
+Not happy with *draft* as front matter key? Fear not, you can customize your own label in the .env file.
+
+Example: =GH_MD2STATE=open= -> open: true
+#+end_quote
 #+begin_src markdown
 ---
-draft: false
+draft: false -> Boolean
 ---
 #+end_src
 where
-- true -> OPEN
-- false -> CLOSED
+- =true= -> OPEN issue state
+- =false= -> CLOSED issue state
+
 ** What you can do with this CLI tool
 - ✅ create and update issues based on an ID
 - ✅ set labels according to your needs
@@ -100,21 +117,21 @@ This package requires some minimal setup to work properly. Please refer to [[id:
 
 ** Install and first run (yarn)
 #+begin_src bash
-yarn install -D X
+yarn install -D gh-cms
 yarn gh-cms --help
 #+end_src
 
 ** Point to a local content directory
 Create an *.env* file at the project root.
-Path can be relative or absolute.
+Path can be relative (to the project root) or absolute.
 #+begin_src bash
 cat <<EOF > .env
-CONTENT_PATH="./content"
+CONTENT_PATH="./content" # evaluates to <project_root>/content
 EOF
 #+end_src
 
 ** Point to a remote gh repository
-This is optional but in most cases wanted.
+This is optional but in most cases wanted. Most likely you want to push to a *single repo*. But technically you push to multiple repos (you own)
 #+begin_src bash
 cat <<EOF > .env
 REPO_URL="https://github.com/<name>/<repo>"
@@ -123,52 +140,59 @@ EOF
 Note: You can specify this with the *-u https:/...* flag when running the command. This has always higher precedence than setting it as ENV.
 
 ** Create a GH token and set put in in .env
-Go to https://github.com/settings/tokens and create a token which matches your needs.
+Go to https://github.com/settings/tokens and create a token which matches your needs. A *public token* should be enough in most situations.
 #+begin_src bash
 cat <<EOF > .env
 GH_TOKEN=ghp_xxx
 EOF
 #+end_src
 
-
 * CLI manual
 :PROPERTIES:
 :ID:       007a85b4-1ef9-4071-a517-5e63e3d42cb5
 :END:
-** --help :minor:
+** Major commands
+*** gh-cms build
+*Flags:* -p -> CONTENT_PATH; -u -> REPO_URL
+- Traverse to the $CONTENT_PATH for markdown files.
+- Create needed milestones/labels and push to Issues
+
+*** gh-cms purge
+*Flags:* -l -> labels; -m -> milestones
+- Check if labels/milestone are referenced and delete if not
+
+** Major flags
+*** --help
 Use with every command to get an overview
 
-** --dry-run :minor:
-
+*** --dry-run
 Log instead of modify
-** gh-cms build :major:
-Flags: -p -> CONTENT_PATH; -u -> REPO_URL
-- Traverse to the $CONTENT_PATH for markdown files.
-- Build accordingly
-
-** gh-cms purge :major:
-Flags: -l -> labels; -m -> milestones
-- Check if labels/milestone are referenced and delete if not
 
 * ENV manual
 :PROPERTIES:
 :ID:       30732088-36d7-4f48-8fd8-0bca699f461f
 :END:
 ** LOG_LEVEL (default: INFO)
-- DEBUG
-- SEVERE
+Increase logging
+=LOG_LEVEL=DEBUG= or SEVERE
 ** NO_COLOR (default: undefined)
 If you need uncolored output
-- set
-- unset
+=NO_COLOR=1= set or unset
 ** REPO_URL
 Full URL to GH repo
-- https://github.com/x/x
+=REPO_URL=https://github.com/x/x=
 ** CONTENT_PATH
 Relative or absolute URL to content, traverses directories
-- "./content"
-
+=CONTENT_PATH=content=
 ** GH_TOKEN
+A token to authenticate. See previous docs.
+=GH_TOKEN=ghp_xxx=
 ** GH_MD2LABEL
+See previous docs.
+=GH_MD2LABEL=label=
 ** GH_MD2MILESTONE
+See previous docs.
+=GH_MD2MILESTONE=milestone=
 ** GH_MD2STATE
+See previous docs.
+=GH_MD2STATE=open=
