@@ -3,31 +3,30 @@ This is just a *trail and error* workbench of TS projects.
 
 * Contents :toc:
 - [[#setup][Setup]]
-  - [[#projects---a-playground-and-testbed][./projects - A playground and testbed]]
-  - [[#packages---own-librariescli-tools][./packages - Own libraries/CLI tools]]
+  - [[#projects---a-playground-sandbox-and-actual-projects][./projects - A playground, sandbox... and actual projects]]
+  - [[#publish---own-librariescli-tools][./publish - Own libraries/CLI tools]]
 - [[#find-a-project-by-technology][Find a project by technology]]
   - [[#thingrstream][@thi.ng/rstream]]
 
 * Setup
-** [[file:projects/][./projects]] - A playground and testbed
-This is a place between super random tests and actual useful code snippets. Or a place to test out WIPs from imported from [[id:f2122de1-b17f-485f-a1b1-d93506c3eab2][./packages]]
+** [[file:projects/][./projects]] - A playground, sandbox... and actual projects
+This is a weird place between super random tests and actual projects of mine. Some projects may graduate to [[id:f2122de1-b17f-485f-a1b1-d93506c3eab2][./publish]] on day, most of them won't.
 
 Scaffold a new project with
 #+begin_src bash
-make-project "good-project-name"
+yarn t:template projects/good-project-name
 #+end_src
-** [[file:packages/][./packages]] - Own libraries/CLI tools
+** [[file:publish/][./publish]] - Own libraries/CLI tools
 :PROPERTIES:
 :ID:       f2122de1-b17f-485f-a1b1-d93506c3eab2
 :END:
-This should be more polished. sometimes is, sometimes not:)
+As the name implies, this is the land of published code consumed by other parties. So I try to put a bigger focus on comleteness in here regarding tests and documentation and principled development
 
-Scaffold a new project with
+Scaffold a new package with
 #+begin_src bash
-make-package "good-package-name"
+yarn t:template publish/good-package-name
 #+end_src
 
 * Find a project by technology
 A lookup map for me
 ** @thi.ng/rstream
-[[file:projects/46-2021.rdom-rstream-play/src/index.ts][W46-2021.rdom-rstream-play]]
