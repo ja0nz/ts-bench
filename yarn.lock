@@ -2404,6 +2404,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"gh-cms-ql@workspace:publish/gh-cms-ql":
+  version: 0.0.0-use.local
+  resolution: "gh-cms-ql@workspace:publish/gh-cms-ql"
+  dependencies:
+    "@microsoft/api-extractor": ^7.19.4
+    "@thi.ng/api": ^8.3.3
+    "@thi.ng/testament": ^0.2.3
+    rimraf: ^3.0.2
+    tools: "workspace:^"
+    typescript: ^4.6.2
+  languageName: unknown
+  linkType: soft
+
 "gh-cms@workspace:publish/gh-cms":
   version: 0.0.0-use.local
   resolution: "gh-cms@workspace:publish/gh-cms"
