@@ -1,7 +1,7 @@
 {
   "name": "gh-cms",
   "version": "0.0.23",
-  "description": "A headless CMS based on GH issues",
+  "description": "A headless CMS based on GitHub Issues",
   "keywords": [
     "cms",
     "github"
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ja0nz/ts-bench.git",
+    "url": "https://github.com/ja0nz/ts-bench.git",
     "directory": "publish/gh-cms"
   },
   "license": "Apache-2.0",

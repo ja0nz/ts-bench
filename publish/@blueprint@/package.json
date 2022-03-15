@@ -22,9 +22,7 @@
   "main": "./src/index.ts",
   "module": "./dist/index.js",
   "typings": "./dist/index.d.ts",
-  "files": [
-    "./dist/*"
-  ],
+  "files": ["./dist/*"],
   "scripts": {
     "build": "yarn clean && tsc --declaration",
     "clean": "rimraf dist",
@@ -37,6 +35,7 @@
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.19.4",
+    "@thi.ng/errors": "^2.1.4",
     "@thi.ng/testament": "^0.2.3",
     "rimraf": "^3.0.2",
     "tools": "workspace:^",

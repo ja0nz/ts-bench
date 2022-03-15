@@ -1,4 +1,4 @@
-#+TITLE: GithubCMS - a headless CMS based on Github Issues
+#+TITLE: GitHubCMS - a headless CMS based on GitHub Issues
 #+OPTIONS: ^:nil
 
 * Table of Content :toc:noexport:
@@ -24,6 +24,8 @@
   - [[#gh_md2label][GH_MD2LABEL]]
   - [[#gh_md2milestone][GH_MD2MILESTONE]]
   - [[#gh_md2state][GH_MD2STATE]]
+- [[#author][Author]]
+- [[#license][License]]
 
 * TLDR
 ![[https://user-images.githubusercontent.com/19622393/157845984-591fe4b9-96ab-4aee-8610-413d84cddec7.png][screenshot_2022-03-11-11:03:14]]
@@ -198,3 +200,9 @@ See previous docs.
 ** GH_MD2STATE
 See previous docs.
 =GH_MD2STATE=open=
+
+* Author
+- Ja0nz
+
+* License
+2022 Ja0nz // Apache Software License 2.0
