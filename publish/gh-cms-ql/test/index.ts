@@ -1,5 +1,10 @@
-import { group } from '@thi.ng/testament';
-// import * as assert from "assert";
-// import { } from "../src";
+import { group } from "@thi.ng/testament";
+import { assert } from "@thi.ng/errors";
+//import { qlrequest } from "../src/index.js"
 
-group('gh-cms-ql', {});
+group("net", {
+    add: () => { assert(1 + 1 === 2); },
+    qlrequest: ({ done, setTimeout }) => {
+        setTimeout(() => { assert(3 - 1 === 1); done(); }, 50);
+    }
+})

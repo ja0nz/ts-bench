@@ -1,9 +1,16 @@
-#+TITLE: gh-cms-ql
+#+TITLE: GitHubCMS QL - a graphQL frontend to GitHub Issues
 #+OPTIONS: ^:nil
 
 * Table of Content :toc:noexport:
+- [[#tldr][TLDR]]
+- [[#installation][Installation]]
+- [[#dependencies][Dependencies]]
+- [[#api][API]]
+- [[#author][Author]]
+- [[#license][License]]
 
 * TLDR
+TODO
 
 * Installation
 
