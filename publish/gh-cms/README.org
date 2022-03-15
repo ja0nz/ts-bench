@@ -11,7 +11,7 @@
   - [[#install-and-first-run-yarn][Install and first run (yarn)]]
   - [[#point-to-a-local-content-directory][Point to a local content directory]]
   - [[#point-to-a-remote-gh-repository][Point to a remote gh repository]]
-  - [[#create-a-gh-token-and-set-put-in-in-env][Create a GH token and set put in in .env]]
+  - [[#create-a-gh-token][Create a GH token]]
 - [[#cli-manual][CLI manual]]
   - [[#major-commands][Major commands]]
   - [[#major-flags][Major flags]]
@@ -125,7 +125,7 @@ yarn gh-cms --help
 Create an *.env* file at the project root.
 Path can be relative (to the project root) or absolute.
 #+begin_src bash
-cat <<EOF > .env
+cat <<EOF>> .env
 CONTENT_PATH="./content" # evaluates to <project_root>/content
 EOF
 #+end_src
@@ -133,16 +133,16 @@ EOF
 ** Point to a remote gh repository
 This is optional but in most cases wanted. Most likely you want to push to a *single repo*. But technically you push to multiple repos (you own)
 #+begin_src bash
-cat <<EOF > .env
+cat <<EOF>> .env
 REPO_URL="https://github.com/<name>/<repo>"
 EOF
 #+end_src
 Note: You can specify this with the *-u https:/...* flag when running the command. This has always higher precedence than setting it as ENV.
 
-** Create a GH token and set put in in .env
-Go to https://github.com/settings/tokens and create a token which matches your needs. A *public token* should be enough in most situations.
+** Create a GH token
+Go to https://github.com/settings/tokens and create a token which matches your needs. A *public token* should be sufficient in most situations.
 #+begin_src bash
-cat <<EOF > .env
+cat <<EOF>> .env
 GH_TOKEN=ghp_xxx
 EOF
 #+end_src
@@ -153,13 +153,13 @@ EOF
 :END:
 ** Major commands
 *** gh-cms build
-*Flags:* -p -> CONTENT_PATH; -u -> REPO_URL
+*Optional Flags:* -p/--content-path PATH; -u/--repo-url URL
 - Traverse to the $CONTENT_PATH for markdown files.
 - Create needed milestones/labels and push to Issues
 
 *** gh-cms purge
-*Flags:* -l -> labels; -m -> milestones
-- Check if labels/milestone are referenced and delete if not
+*Mandatory Flags:* -l/--labels; -m/--milestones
+- Check if labels and/org milestone are referenced by any issue and delete if not
 
 ** Major flags
 *** --help
@@ -181,9 +181,11 @@ If you need uncolored output
 ** REPO_URL
 Full URL to GH repo
 =REPO_URL=https://github.com/x/x=
+Can be overritten by passing *-u/--repo-path* as flag.
 ** CONTENT_PATH
 Relative or absolute URL to content, traverses directories
 =CONTENT_PATH=content=
+Can be overritten by passing *-p/--content-path* as flag.
 ** GH_TOKEN
 A token to authenticate. See previous docs.
 =GH_TOKEN=ghp_xxx=
