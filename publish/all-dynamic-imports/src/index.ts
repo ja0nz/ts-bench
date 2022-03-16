@@ -15,10 +15,10 @@
  * @public
  */
 export interface IWidget {
-    /**
-     * Draws the widget on the screen.
-     */
-    render(): void;
+	/**
+	 * Draws the widget on the screen.
+	 */
+	render(): void;
 }
 
 /**
