@@ -458,6 +458,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@project/gh-cms-sandbox@workspace:projects/gh-cms-sandbox":
+  version: 0.0.0-use.local
+  resolution: "@project/gh-cms-sandbox@workspace:projects/gh-cms-sandbox"
+  dependencies:
+    "@thi.ng/hiccup-html": ^2.1.3
+    "@thi.ng/rdom": ^0.8.5
+    "@thi.ng/testament": ^0.2.3
+    "@types/rimraf": ^3.0.2
+    gh-cms: "workspace:^"
+    rimraf: ^3.0.2
+    tools: "workspace:^"
+    twind: ^0.16.16
+    typescript: ^4.6.2
+    vite: ^2.8.6
+  languageName: unknown
+  linkType: soft
+
 "@rollup/pluginutils@npm:^4.1.2":
   version: 4.1.2
   resolution: "@rollup/pluginutils@npm:4.1.2"
@@ -586,6 +603,13 @@ __metadata:
   version: 8.3.3
   resolution: "@thi.ng/api@npm:8.3.3"
   checksum: 3976c61728b3e0149e4de833d6c08f3a6724a8c1b6d322732e40e7484e6cb8d6710185cf2b162a7aeabcc10ec272aef41aeb96c60b441b618cf675922be23e51
+  languageName: node
+  linkType: hard
+
+"@thi.ng/api@npm:^8.3.4":
+  version: 8.3.4
+  resolution: "@thi.ng/api@npm:8.3.4"
+  checksum: 43d2c1ab14ec1ac7e1839dc5782f1a0c7fae7f16f6e9a52ae47e9c4ec9338b7a9b47bc2a39db90ef86f7cad493d7a02f0f6b2460f1696b67ea740a3783de059a
   languageName: node
   linkType: hard
 
@@ -746,6 +770,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@thi.ng/hex@npm:^2.1.4":
+  version: 2.1.4
+  resolution: "@thi.ng/hex@npm:2.1.4"
+  checksum: 76d29d47991d138b73418f6e73466499b01e3bde4075638ac2f42a72c770000ae26d7fc0dbd9280c0ab6449e656a4c4354c710e4ecb17acb65598210968e1c83
+  languageName: node
+  linkType: hard
+
 "@thi.ng/hiccup-html@npm:^2.1.3":
   version: 2.1.3
   resolution: "@thi.ng/hiccup-html@npm:2.1.3"
@@ -789,6 +820,15 @@ __metadata:
   dependencies:
     "@thi.ng/api": ^8.3.3
   checksum: 1845f1c25cc78f9f55043d86918164badb392de6939af97d3a7fa7b92d7700311b9561a66fbf1e9496d953cfab2e7a51f6ab007f299fa2112b52156704afb28c
+  languageName: node
+  linkType: hard
+
+"@thi.ng/memoize@npm:^3.1.4":
+  version: 3.1.4
+  resolution: "@thi.ng/memoize@npm:3.1.4"
+  dependencies:
+    "@thi.ng/api": ^8.3.4
+  checksum: 70130a6002c7bf8acee010f4d969b9c34f73cf3b702025d1345f8a3570f88125dda373bf8e4f3283d86d74cde3cf1b2ce121c4f9685fbd824352d4f9b15f5eef
   languageName: node
   linkType: hard
 
@@ -863,6 +903,18 @@ __metadata:
     "@thi.ng/hex": ^2.1.3
     "@thi.ng/memoize": ^3.1.3
   checksum: cdc345cfe1165d18159cd77ff51281fa44fe8041d483e917abba1bb0d18c7a87157acd428ebf49e6fc60ee65c06ddc890737d0140ccdd54de982ad2d0626e317
+  languageName: node
+  linkType: hard
+
+"@thi.ng/strings@npm:^3.3.2":
+  version: 3.3.2
+  resolution: "@thi.ng/strings@npm:3.3.2"
+  dependencies:
+    "@thi.ng/api": ^8.3.4
+    "@thi.ng/errors": ^2.1.4
+    "@thi.ng/hex": ^2.1.4
+    "@thi.ng/memoize": ^3.1.4
+  checksum: 57f2b9e89aa5af84060d3d504f0946bc6dee8a600cc847ec680c85725681aeab4a4347fd8b47ddcb3920bf0cea46bf4d4004b8791a2e488bdf6baaaa7ea7d7ee
   languageName: node
   linkType: hard
 
@@ -3634,7 +3686,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"gh-cms@workspace:publish/gh-cms":
+"gh-cms@workspace:^, gh-cms@workspace:publish/gh-cms":
   version: 0.0.0-use.local
   resolution: "gh-cms@workspace:publish/gh-cms"
   dependencies:
@@ -3646,6 +3698,7 @@ __metadata:
     "@thi.ng/errors": ^2.1.3
     "@thi.ng/logger": ^1.1.3
     "@thi.ng/paths": ^5.1.3
+    "@thi.ng/strings": ^3.3.2
     "@thi.ng/system": ^2.1.4
     "@thi.ng/testament": ^0.2.3
     "@thi.ng/text-format": ^1.1.3
@@ -3656,6 +3709,7 @@ __metadata:
     esbuild: ^0.14.25
     gray-matter: ^4.0.3
     rimraf: ^3.0.2
+    type-fest: ^2.12.0
     typescript: ^4.6.2
   bin:
     gh-cms: ./dist/index.cjs
@@ -6657,7 +6711,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^2.0.0":
+"type-fest@npm:^2.0.0, type-fest@npm:^2.12.0":
   version: 2.12.0
   resolution: "type-fest@npm:2.12.0"
   checksum: 3ebe6529db84c7ceb579a0c693b92c4bf83fa5a78b5d6a1d3c2138696ad69e0a1ebc7e1b707ee0a2a6bd5aef71bf2bf4fc6fc81a6c752330e10faf0deea80f05
