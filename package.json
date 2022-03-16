@@ -20,6 +20,9 @@
       "@typescript-eslint/naming-convention": 1
     }
   },
+  "prettier": {
+    "bracketSpacing": true
+  },
   "devDependencies": {
     "tools": "workspace:^",
     "typedoc": "^0.22.13",
