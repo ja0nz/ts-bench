@@ -15,6 +15,7 @@
     "test": "yarn @npmjs run test"
   },
   "xo": {
+    "prettier": true,
     "rules": {
       "@typescript-eslint/naming-convention": 1
     }
