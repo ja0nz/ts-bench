@@ -10,7 +10,5 @@ pkgs.mkShell {
    nodePackages.vscode-css-languageserver-bin
    nodePackages.vscode-json-languageserver
    nodePackages.svelte-language-server
-   nodePackages.prettier
-   nodePackages.eslint
-  ];
+ ];
 }
