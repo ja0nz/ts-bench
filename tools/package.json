@@ -10,6 +10,7 @@
     "t:depgraph": "cruise/index.js",
     "t:node": "ts-node.js",
     "t:template": "template/index.js",
+    "t:xo": "lint.js",
     "t:yarnup": "yarnup.js"
   },
   "dependencies": {

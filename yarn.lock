@@ -3709,6 +3709,7 @@ __metadata:
     esbuild: ^0.14.25
     gray-matter: ^4.0.3
     rimraf: ^3.0.2
+    tools: "workspace:^"
     type-fest: ^2.12.0
     typescript: ^4.6.2
   bin:
@@ -6517,6 +6518,7 @@ __metadata:
     "t:depgraph": cruise/index.js
     "t:node": ts-node.js
     "t:template": template/index.js
+    "t:xo": lint.js
     "t:yarnup": yarnup.js
   languageName: unknown
   linkType: soft
