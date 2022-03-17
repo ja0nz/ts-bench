@@ -2,14 +2,13 @@
 
 import { spawn } from "node:child_process";
 import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 
-const [node, _, ...args] = process.argv;
+const [node, cwd, ...args] = process.argv;
 
-const dir = dirname(fileURLToPath(import.meta.url));
+const dir = dirname(cwd);
 const idx = join(dir, "index.ts");
 
-process.env["TS_NODE_PROJECT"] = join(dir, "..", "tsconfig.json");
+process.env.TS_NODE_PROJECT = join(dirname(dir), "tsconfig.json");
 const p = spawn(node, ["--loader", "ts-node/esm", idx, ...args]);
 
 p.stdout.pipe(process.stdout);

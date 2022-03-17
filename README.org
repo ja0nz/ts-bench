@@ -1,5 +1,5 @@
 #+TITLE: Readme
-This is just a *trail and error* workbench of TS projects.
+Just a *trail and error* workbench for various TS projects.
 
 * Contents :toc:
 - [[#setup][Setup]]
@@ -7,6 +7,7 @@ This is just a *trail and error* workbench of TS projects.
   - [[#publish---own-librariescli-tools][./publish - Own libraries/CLI tools]]
 - [[#find-a-project-by-technology][Find a project by technology]]
   - [[#thingrstream][@thi.ng/rstream]]
+  - [[#mapbox-gl][mapbox-gl]]
 
 * Setup
 ** [[file:projects/][./projects]] - A playground, sandbox... and actual projects
@@ -30,3 +31,5 @@ yarn t:template publish/good-package-name
 * Find a project by technology
 A lookup map for me
 ** @thi.ng/rstream
+** [[https://www.npmjs.com/package/mapbox-gl][mapbox-gl]]
+[[file:projects/11-2022.mapbox-gmaps-clone/README.org][11-2022.mapbox-gmaps-clone]]

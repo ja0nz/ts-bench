@@ -16,6 +16,7 @@
   },
   "xo": {
     "prettier": true,
+    "space": true,
     "rules": {
       "@typescript-eslint/naming-convention": 1
     }
