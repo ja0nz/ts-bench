@@ -78,7 +78,7 @@ export const queryIssues =
   (n = 100, after = '', owner = '$owner') =>
   (...query: string[]) =>
     `issues(first: ${n} ${
-      after ? jSt('after: ', after, '') : ''
+      after && jSt('after: ', after, '')
     } filterBy: {createdBy: ${owner}}) {
         nodes { ${queryId} ${queryStateI} ${jNl(...query)} }
         ${totalCount}
@@ -88,7 +88,7 @@ export const queryIssues =
 export const queryLabels =
   (n = 100, after = '') =>
   (...query: string[]) =>
-    `labels(first: ${n} ${after ? jSt('after: ', after, '') : ''}) {
+    `labels(first: ${n} ${after && jSt('after: ', after, '')}) {
         nodes { ${queryId} ${queryNameL} ${jNl(...query)} }
         ${totalCount}
         ${pageInfo} { ${endCursor} ${hasNextPage} }
@@ -97,7 +97,7 @@ export const queryLabels =
 export const queryMilestones =
   (n = 100, after = '') =>
   (...query: string[]) =>
-    `milestones(first: ${n} ${after ? jSt('after: ', after, '') : ''}) {
+    `milestones(first: ${n} ${after && jSt('after: ', after, '')}) {
         nodes { id title number ${jNl(...query)} }
         ${totalCount}
         ${pageInfo} { ${endCursor} ${hasNextPage} }
