@@ -1,7 +1,84 @@
-import { defGetter } from '@thi.ng/paths';
 import type Process from 'node:process';
+import process from 'node:process';
+import { defGetter } from '@thi.ng/paths';
 
-// process.env
+// Process.env
 const getEnv = (env: string) =>
-    defGetter<typeof Process, 'env'>(['env'])(process)[env];
-export const GH_TOKEN = getEnv('GH_TOKEN'); // github.com -> Settings -> Developer Settings -> Personal access tokens -> token for public repo
+  defGetter<typeof Process, 'env'>(['env'])(process)[env];
+const ghToken = getEnv('GH_TOKEN') ?? ''; // Github.com -> Settings -> Developer Settings -> Personal access tokens -> token for public repo
+export { ghToken as GH_TOKEN };
+
+/*
+ * Helper
+ */
+export function jSt(...args: string[]) {
+  return args.join('"');
+}
+
+export function jNl(...args: string[]) {
+  return args.join('\n');
+}
+
+/*
+ * GraphQL
+ */
+export type Issue = {
+  id: string;
+  state: string;
+  title?: string;
+  body?: string;
+};
+export type Label = {
+  id: string;
+  name: string;
+  issues?: { totalCount: number };
+};
+
+export type Milestone = {
+  id: string;
+  title: string;
+  number: number;
+  issues?: { totalCount: number };
+};
+
+type MappedGhFields = {
+  issues: Issue;
+  labels: Label;
+  milestones: Milestone;
+};
+
+type MappedRep = {
+  repository: {
+    [id in keyof Partial<MappedGhFields>]: {
+      nodes: Array<MappedGhFields[id]>;
+      totalCount: number;
+      pageInfo: {
+        endCursor: string;
+        hasNextPage: boolean;
+      };
+    };
+  };
+};
+
+export type Repository = MappedRep & { repository: { id: string } };
+
+// Const obj: Repository = {
+//   "repository": {
+//     "id": "foo",
+//     "issues": {
+//       nodes: [{ id: "a", state: "b" }],
+//       totalCount: 33,
+//       pageInfo: {
+//         endCursor: "fo",
+//         hasNextPage: true
+//       }
+//     }
+//   }
+// }
+// const obj1: Repository = {
+//   "repository": {
+//     "id": "fo"
+//   }
+// }
+// console.log(obj)
+// console.log(obj1)

@@ -1,5 +1,5 @@
 import { getIn } from '@thi.ng/paths';
-import type { Repository } from '../api.js';
+//import type { Repository } from '../api.js';
 
 export const queryStrRepo = (...query: string[]) => `
   query ($repo: String!, $owner: String!) {
