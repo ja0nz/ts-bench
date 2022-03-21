@@ -1,7 +1,6 @@
 import type Process from 'node:process';
 import process from 'node:process';
-import { defGetter, getIn } from '@thi.ng/paths';
-import { comp } from '@thi.ng/compose';
+import { defGetter } from '@thi.ng/paths';
 
 // Process.env
 const getEnv = (env: string) =>
@@ -12,10 +11,6 @@ export { ghToken as GH_TOKEN };
 /*
  * Helper
  */
-export function jSt(...args: string[]) {
-  return args.join('"');
-}
-
 export function jNl(...args: string[]) {
   return args.join('\n');
 }
@@ -67,8 +62,6 @@ export type Repository = MappedRep & { repository: { id: string } };
  */
 export type R1 = Repository['repository'];
 export type R2 = R1['issues'] | R1['labels'] | R1['milestones'];
-
-
 
 // Const obj: Repository = {
 //   "repository": {

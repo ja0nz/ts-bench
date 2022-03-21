@@ -1,12 +1,12 @@
-import { comp } from "@thi.ng/compose";
-import { defGetter, getIn } from "@thi.ng/paths";
-import { jNl, R1, R2, Repository } from "./api.js";
+import { comp } from '@thi.ng/compose';
+import { defGetter, getIn } from '@thi.ng/paths';
+import { jNl, R1, R2, Repository } from './api.js';
 
 /*
  * Nodes Query
  */
 // Repository
-export const queryIdR = "id";
+export const queryIdR = 'id';
 
 export const queryR = (...query: string[]) =>
   `query ($repo: String!, $owner: String!) {
@@ -15,6 +15,25 @@ export const queryR = (...query: string[]) =>
       ${jNl(...query)}
     }
   }`;
+
+/*
+ * Mutation
+ */
+export const mutateR = (mutation: string) =>
+  `mutation (
+     $id: ID!
+     # Label
+     # $name: String = "label"
+     $color: String = "000000"
+     # Issue
+     $title: String = "issue"
+     # $body: String = null
+     # $labelIds: [ID] = [""]
+     # $milestoneId: ID = null
+     # $state: IssueState
+   ) {
+     ${mutation}
+   }`;
 
 // R2
 export const totalCount = `totalCount`;
