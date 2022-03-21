@@ -1,4 +1,58 @@
+import { comp } from '@thi.ng/compose';
+import { defGetter } from '@thi.ng/paths';
+import { jNl, jSt, Label, R1 } from './api.js';
+import { endCursor, getR, hasNextPage, pageInfo, totalCount } from './repo.js';
 import { qlClient, restClient } from './req-client.js';
+
+/*
+ * Nodes Query
+ */
+export const queryIdL = "id";
+export const queryNameL = "name";
+export const queryIssueCountL = `issues { ${totalCount} }`;
+
+export const queryL =
+  (n = 100, after = '') =>
+  (...query: string[]) =>
+    `labels(first: ${n} ${after && jSt('after: ', after, '')}) {
+        nodes { ${queryIdL} ${jNl(...query)} }
+        ${totalCount}
+        ${pageInfo} { ${endCursor} ${hasNextPage} }
+      }`;
+
+/*
+ * Getters
+ */
+// Repository
+export const getL = comp(defGetter<R1, 'labels'>(['labels']), getR);
+
+// Nodes
+export const getIdL = comp(
+  defGetter<Label, 'id'>([queryIdL]),
+);
+export const getNameL = comp(defGetter<Label, 'name'>([queryNameL]));
+export const getIssueCountL = comp(
+  defGetter<Label, 'issues', 'totalCount'>([
+    'issues',
+    'totalCount',
+  ]),
+);
+/*
+ * Setters
+ */
+
+
+
+
+
+
+
+
+
+/*
+ * Mutation
+ */
+
 
 const cLabel = `
   mutation createLabel(

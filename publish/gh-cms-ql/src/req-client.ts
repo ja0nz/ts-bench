@@ -8,6 +8,10 @@ export const qlClient = (url: string) => {
   return graphql.defaults({
     headers: {
       authorization: `token ${GH_TOKEN}`,
+      // https://docs.github.com/en/graphql/overview/schema-previews#labels-preview
+      // Mutation.createLabel
+      // Mutation.deleteLabel
+      // Mutation.updateLabel
       accept: 'application/vnd.github.bane-preview+json',
     },
     variables: {

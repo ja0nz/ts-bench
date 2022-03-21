@@ -1,6 +1,7 @@
 import type Process from 'node:process';
 import process from 'node:process';
-import { defGetter } from '@thi.ng/paths';
+import { defGetter, getIn } from '@thi.ng/paths';
+import { comp } from '@thi.ng/compose';
 
 // Process.env
 const getEnv = (env: string) =>
@@ -61,6 +62,13 @@ type MappedRep = {
 };
 
 export type Repository = MappedRep & { repository: { id: string } };
+/*
+ * Indexed Shorthands
+ */
+export type R1 = Repository['repository'];
+export type R2 = R1['issues'] | R1['labels'] | R1['milestones'];
+
+
 
 // Const obj: Repository = {
 //   "repository": {
