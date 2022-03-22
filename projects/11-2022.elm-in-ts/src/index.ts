@@ -25,11 +25,10 @@ await $compile(greeter).mount(app);
     });
 
   // Using
-  //const res = toString_(['Run', ['Nothing']]); // ?
+  // const res = toString_(['Run', ['Nothing']]); // ?
   const res = toString_(['Run', ['Just', 100]]); // ?
-  //const res = toString_(['Sleep']); // ?
-  console.log(res)
-
+  // const res = toString_(['Sleep']); // ?
+  console.log(res);
 }
 
 // One level more!
@@ -52,8 +51,8 @@ await $compile(greeter).mount(app);
   const res1 = toString_(['Success', ['Run', ['Just', 10]]]); // ?
   // const res1 = toString_(['Success', ['Sleep']]); // ?
   // const res1 = toString_(['Error', "errorooooo"]); // ?
-  //const res1 = toString_(['Loading']); // ?
-  console.log(res1)
+  // const res1 = toString_(['Loading']); // ?
+  console.log(res1);
 }
 
 // Pattern match over many elements
@@ -66,11 +65,11 @@ await $compile(greeter).mount(app);
     match(x, y, z).with({
       // What compiler is suggesting here?
       'Ok, Ok, Ok': (x, y, z) => [x, y, z],
-      //'Ok, Ok, Error': (x, y, z) => [x, y, "oh no"],
+      'Ok, Ok, Error': (x, y, z) => [x, y, "oh no"],
       _: () => [],
     });
 
-  // const res2 = f(['Ok', 'yes'], ['Ok', "another"], ["Ok", "getting there"])
-  const res2 = f(['Ok', 'yes'], ['Ok', "another"], ["Error", Error("noo")])
+  // Const res2 = f(['Ok', 'yes'], ['Ok', "another"], ["Ok", "getting there"])
+  const res2 = f(['Ok', 'yes'], ['Ok', 'another'], ['Error', new Error('noo')]);
   console.log(res2);
 }

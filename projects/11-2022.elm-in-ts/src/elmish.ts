@@ -110,7 +110,7 @@ type MatchMulti<
   T extends SumTuple,
   R,
   Temporary extends Record<0 | 1 | 2, Pattern<Sum, R>> = {
-    //@ts-ignore - T[K] needs fix but not in prio
+    // @ts-expect-error - T[K] needs fix but not in prio
     [K in (keyof T & 0) | 1 | 2]: Pattern<T[K], R>;
   },
 > = T extends [Sum, Sum, Sum]
