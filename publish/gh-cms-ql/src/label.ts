@@ -1,7 +1,7 @@
 import { comp } from '@thi.ng/compose';
 import { defGetter } from '@thi.ng/paths';
 import { jNl, Label, R1 } from './api.js';
-import { endCursor, getR, hasNextPage, pageInfo, totalCount } from './repo.js';
+import { endCursor, hasNextPage, pageInfo, totalCount } from './repo.js';
 
 /*
  * Nodes Query
@@ -23,7 +23,7 @@ export const queryL =
  * Getters
  */
 // Repository
-export const getL = comp(defGetter<R1, 'labels'>(['labels']), getR);
+export const getL = defGetter<R1, 'labels'>(['labels']);
 
 // Nodes
 export const getIdL = comp(defGetter<Label, 'id'>([queryIdL]));

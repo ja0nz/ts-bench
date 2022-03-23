@@ -41,7 +41,8 @@
     "@thi.ng/api": "^8.3.4",
     "@thi.ng/compose": "^2.1.4",
     "@thi.ng/paths": "^5.1.4",
-    "dotenv": "^16.0.0"
+    "dotenv": "^16.0.0",
+    "gh-cms-ql": "^0.0.2"
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.19.4",
