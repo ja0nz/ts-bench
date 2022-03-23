@@ -1,13 +1,3 @@
-import type Process from 'node:process';
-import process from 'node:process';
-import { defGetter } from '@thi.ng/paths';
-
-// Process.env
-const getEnv = (env: string) =>
-  defGetter<typeof Process, 'env'>(['env'])(process)[env];
-const ghToken = getEnv('GH_TOKEN') ?? ''; // Github.com -> Settings -> Developer Settings -> Personal access tokens -> token for public repo
-export { ghToken as GH_TOKEN };
-
 /*
  * Helper
  */
@@ -62,24 +52,3 @@ export type Repository = MappedRep & { repository: { id: string } };
  */
 export type R1 = Repository['repository'];
 export type R2 = R1['issues'] | R1['labels'] | R1['milestones'];
-
-// Const obj: Repository = {
-//   "repository": {
-//     "id": "foo",
-//     "issues": {
-//       nodes: [{ id: "a", state: "b" }],
-//       totalCount: 33,
-//       pageInfo: {
-//         endCursor: "fo",
-//         hasNextPage: true
-//       }
-//     }
-//   }
-// }
-// const obj1: Repository = {
-//   "repository": {
-//     "id": "fo"
-//   }
-// }
-// console.log(obj)
-// console.log(obj1)

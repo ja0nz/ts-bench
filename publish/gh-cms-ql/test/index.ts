@@ -1,4 +1,4 @@
-import { qlClient as q, restClient as r } from "../src/index.js"
+import { qlClient as q, restClient as r } from "../src/client.js"
 
 // Setup
 export const qlClient = q("https://github.com/ja0nz/ja.nz")

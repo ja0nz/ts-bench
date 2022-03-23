@@ -1,14 +1,22 @@
+import type Process from 'node:process';
+import process from 'node:process';
+
 import { graphql } from '@octokit/graphql';
 import type { RequestParameters } from '@octokit/graphql/dist-types/types';
 import { request } from '@octokit/request';
-import { GH_TOKEN } from './api.js';
+import { defGetter } from '@thi.ng/paths';
+
+// Process.env
+const getEnv = (env: string) =>
+  defGetter<typeof Process, 'env'>(['env'])(process)[env];
+const ghToken = getEnv('GH_TOKEN') ?? ''; // Github.com -> Settings -> Developer Settings -> Personal access tokens -> token for public repo
 
 export const qlClient = (url: string) => {
   const { pathname } = new URL(url);
   const [owner, repo] = pathname.split('/').filter(Boolean);
   return graphql.defaults({
     headers: {
-      authorization: `token ${GH_TOKEN}`,
+      authorization: `token ${ghToken}`,
       // https://docs.github.com/en/graphql/overview/schema-previews#labels-preview
       // Mutation.createLabel
       // Mutation.deleteLabel
@@ -41,7 +49,7 @@ export const restClient =
     const [owner, repo] = pathname.split('/').filter(Boolean);
     return request.defaults({
       headers: {
-        authorization: `token ${GH_TOKEN}`,
+        authorization: `token ${ghToken}`,
         accept: 'application/vnd.github.v3+json',
       },
       owner,
