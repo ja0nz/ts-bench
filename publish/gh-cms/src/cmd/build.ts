@@ -21,7 +21,7 @@ import { getInFs } from '../model/io/fs';
 import {
   queryStrRepo,
   getInRepo,
-  qlrequest,
+  qlClient,
   queryQLIssues,
   queryQLLabels,
   queryQLMilestones,
@@ -48,7 +48,7 @@ export const BUILD: CommandSpec<BuildOpts> = {
     // INPUT
     const pnear: Promise<Issue[]> = getInFs(contentPath);
     const pfar: Fn0<Promise<Repository>> = () =>
-      qlrequest(repoUrl)(
+      qlClient(repoUrl)(
         queryStrRepo(
           queryQLID(),
           queryQLIssues('body'),

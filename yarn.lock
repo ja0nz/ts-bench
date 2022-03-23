@@ -4137,7 +4137,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"gh-cms-ql@workspace:^, gh-cms-ql@workspace:publish/gh-cms-ql":
+"gh-cms-ql@^0.0.2, gh-cms-ql@workspace:^, gh-cms-ql@workspace:publish/gh-cms-ql":
   version: 0.0.0-use.local
   resolution: "gh-cms-ql@workspace:publish/gh-cms-ql"
   dependencies:
@@ -4150,6 +4150,7 @@ __metadata:
     "@thi.ng/paths": ^5.1.4
     "@thi.ng/testament": ^0.2.3
     dotenv: ^16.0.0
+    gh-cms-ql: ^0.0.2
     rimraf: ^3.0.2
     tools: "workspace:^"
     typescript: ^4.6.2
@@ -4177,6 +4178,7 @@ __metadata:
     "@types/rimraf": ^3.0.2
     dotenv: ^16.0.0
     esbuild: ^0.14.25
+    gh-cms-ql: "workspace:^"
     gray-matter: ^4.0.3
     rimraf: ^3.0.2
     tools: "workspace:^"

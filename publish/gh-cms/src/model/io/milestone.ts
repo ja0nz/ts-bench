@@ -1,9 +1,9 @@
-import { rerequest } from './net';
+import { restClient } from './net';
 
 // DELETES
 export function deleteMilestone(url: string, milestone_number: number) {
   return () =>
-    rerequest(url)(
+    restClient(url)(
       'DELETE /repos/{owner}/{repo}/milestones/{milestone_number}',
       { milestone_number } as any
     );
@@ -12,5 +12,5 @@ export function deleteMilestone(url: string, milestone_number: number) {
 // CREATES
 export function createMilestone(url: string, title: string) {
   return () =>
-    rerequest(url)('POST /repos/{owner}/{repo}/milestones', { title } as any);
+    restClient(url)('POST /repos/{owner}/{repo}/milestones', { title } as any);
 }

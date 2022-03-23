@@ -1,18 +1,17 @@
 import type { Fn0, FnAnyT } from '@thi.ng/api';
-import { defGetter, defGetterUnsafe } from '@thi.ng/paths';
 import {
   comp,
   flatten,
-  sideEffect,
   map,
   filter,
   transduce,
   push,
 } from '@thi.ng/transducers';
+import type { Label, DeleteLabel, DeleteMilestone, Milestone } from 'gh-cms-ql';
+import { mutateRestM, mutateL, getNumberM, getIdL, getIssueCountL } from 'gh-cms-ql';
 import type { PurgeOpts } from '../cmd/purge';
 import type { Logger } from '../logger';
-import type { Milestone, Label, Issue } from './api';
-import { deleteLabel, deleteMilestone } from './io/net';
+import { qlClient, restClient } from './io/net';
 
 type PIn = Label | Milestone;
 
@@ -24,33 +23,36 @@ export function purge(
     return transduce(
       comp(
         // throw all out which have an related issue
-        filter((x: PIn) => {
-          const i: Issue[] | undefined = defGetter<PIn, 'issues', 'nodes'>([
-            'issues',
-            'nodes',
-          ])(x);
-          return i && i.length ? false : true;
+        filter((x: PIn) => !getIssueCountL(x)),
+        map((x: PIn) => {
+          if (opts.dryRun) return x;
+          const n = getNumberM(x)
+          if (n !== undefined) {
+            return {
+              type: 'delete',
+              number: n
+            }
+          }
+          return {
+            type: 'delete',
+            id: getIdL(x)
+          }
         }),
-        sideEffect((x: PIn) => {
-          // number only exits on Milestones hence unsafe
-          const num = defGetterUnsafe<PIn>(['number'])(x);
+        map<DeleteLabel | DeleteMilestone, Fn0<unknown>>((x) => {
+          const n = getNumberM(x)
           if (opts.dryRun)
-            logger.info(
+            return () => logger.info(
               `DRY; Subject to removal, ${
-                num ? 'Milestone' : 'Label'
+                n ? 'Milestone' : 'Label'
               } ${logger.pp(x as object)}`
             );
-        }),
-        map((x: PIn) => ({
-          id: defGetter<PIn, 'id'>(['id'])(x),
-          name: defGetterUnsafe<string | undefined>(['name'])(x),
-          number: defGetterUnsafe<number | undefined>(['number'])(x), // ok to be unsafe here
-        })),
-        map((x) =>
-          x.number === undefined
-            ? // ? deleteLabel(opts.repoUrl, x.id) // TODO wait for delteLabel in graphql
-              deleteLabel(opts.repoUrl, x.name ?? '')
-            : deleteMilestone(opts.repoUrl, x.number)
+
+          if (n !== undefined) {
+            const [str, pl] = mutateRestM(x);
+            return () => restClient(opts.repoUrl)(str, pl);
+          }
+          return () => qlClient(opts.repoUrl)(mutateL(x));
+          }
         )
       ),
       push(),

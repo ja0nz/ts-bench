@@ -1,4 +1,4 @@
-import { qlrequest } from './net.js';
+import { qlClient } from './net.js';
 import {
   getMilestone,
   getLabels,
@@ -73,7 +73,7 @@ export function createIssue(url: string, i: GH_CMS) {
   const id = get_CMS_id(i);
   const rid = get_CMS_rid(i);
   return () =>
-    qlrequest(url)(id ? update : create, {
+    qlClient(url)(id ? update : create, {
       ID: id ? id : rid,
       title: getTitle(i),
       route: getMilestone(i),
@@ -86,7 +86,7 @@ export function createIssue(url: string, i: GH_CMS) {
 // UPDATE
 export function modifyState(url: string, ID: string, state: string) {
   return () =>
-    qlrequest(url)(close, {
+    qlClient(url)(close, {
       ID,
       state,
     });
