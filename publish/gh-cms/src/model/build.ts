@@ -20,25 +20,25 @@ import {
 } from '@thi.ng/transducers';
 import {
   get_CMS_id,
-  get_parsed_date,
-  get_parsed_id,
+  getDate,
+  getId,
   GH_CMS,
   CustomGrayMatter,
   get_CMS_parsed,
   Issue,
   Repository,
-  get_parsed_tags,
-  get_parsed_route,
+  getLabels,
+  getMilestone,
   get_CMS_rid,
-  set_tags,
-  set_route,
+  setLabels,
+  setMilestone,
   get_parsed_data,
   get_CMS_state,
-  get_parsed_title,
-  get_parsed_state,
+  getTitle,
+  getState,
   set_CMS_id,
   set_CMS_state,
-  set_title,
+  setTitle,
   Effect,
 } from './api';
 import grayMatter from 'gray-matter';
@@ -75,7 +75,7 @@ export function postBuild(
         // matching by titles may be not enough - only ID is uniqe. But I don't want to parse the doc again
         // and go through all the loops
         map((i: GH_CMS) => {
-          const match = farBuild.filter((x) => x.title === get_parsed_title(i));
+          const match = farBuild.filter((x) => x.title === getTitle(i));
           if (match.length) {
             // new id
             i = set_CMS_id(i, match[0].id);
@@ -86,20 +86,20 @@ export function postBuild(
         }),
         // filter rows which need preBuild
         filter((r: GH_CMS) => {
-          const p = get_parsed_state(r);
+          const p = getState(r);
           const i = get_CMS_state(r);
           if (p === true && i === 'OPEN') return false;
           if (p === false && i === 'CLOSED') return false;
           return true;
         }),
         sideEffect((i: GH_CMS) => {
-          const action = get_parsed_state(i) ? 'Draft' : 'Publish';
+          const action = getState(i) ? 'Draft' : 'Publish';
           if (opts.dryRun)
-            logger.info(`DRY; ${action} issue title: ${get_parsed_title(i)}`);
+            logger.info(`DRY; ${action} issue title: ${getTitle(i)}`);
         }),
         map((i) => [
           get_CMS_id(i),
-          get_parsed_state(i) === false ? 'CLOSED' : 'OPEN',
+          getState(i) === false ? 'CLOSED' : 'OPEN',
         ]),
         map(([id, state]) => modifyState(opts.repoUrl, id, state))
       ),
@@ -135,9 +135,9 @@ export function build(
               map((x) => x.id)
             ),
             push(),
-            get_parsed_tags(i) ?? []
+            getLabels(i) ?? []
           );
-          const nT = set_tags(i, lIDs);
+          const nT = setLabels(i, lIDs);
           return nT;
         }),
         // milestone -> id
@@ -148,14 +148,14 @@ export function build(
               map((x) => x.id)
             ),
             last(),
-            [get_parsed_route(i)]
+            [getMilestone(i)]
           );
-          const nT = set_route(i, lIDs ?? '');
+          const nT = setMilestone(i, lIDs ?? '');
           return nT;
         }),
         // state
         map<GH_CMS, GH_CMS>((i) => {
-          const pState = get_parsed_state(i) === false ? 'CLOSED' : 'OPEN';
+          const pState = getState(i) === false ? 'CLOSED' : 'OPEN';
           const nT = set_CMS_state(i, pState);
           return nT;
         }),
@@ -189,7 +189,7 @@ export function preBuild(
           comp(
             // flat out tags
             mapcat<GH_CMS, string>((x: GH_CMS) => {
-              const parsedTags = get_parsed_tags(x);
+              const parsedTags = getLabels(x);
               if (parsedTags === undefined) return [];
               return [...interleave(get_CMS_rid(x), parsedTags)];
             }),
@@ -207,7 +207,7 @@ export function preBuild(
           comp(
             // wanted milestone
             mapcat<GH_CMS, string>((x: GH_CMS) => {
-              const mileStone = get_parsed_route(x);
+              const mileStone = getMilestone(x);
               if (mileStone == undefined) return [];
               return [mileStone];
             }),
@@ -245,7 +245,7 @@ function reduceToLatest(xs: GH_CMS[]): GH_CMS {
         rest: scan(
           maxCompare(
             () => ({ parsed: { data: { date: new Date(0) } } }),
-            (a, b) => (get_parsed_date(a) > get_parsed_date(b) ? 1 : -1)
+            (a, b) => (getDate(a) > getDate(b) ? 1 : -1)
           )
         ),
       }),
@@ -273,15 +273,15 @@ export function latestContentRows(entries: IObjectOf<GH_CMS[]>): GH_CMS[] {
         if (!remote.length) return true;
         //-
         const newer = local.filter(
-          (x) => get_parsed_date(x) > get_parsed_date(remote[0])
+          (x) => getDate(x) > getDate(remote[0])
         );
         // Cond2: if local is newer than remote continue
         if (newer.length) return true;
         //-
         const undef = local.filter(
           (x) =>
-            get_parsed_date(x) === undefined ||
-            get_parsed_date(remote[0]) === undefined
+            getDate(x) === undefined ||
+            getDate(remote[0]) === undefined
         );
         // Cond3: if local or remote has no date at all
         if (undef.length) return true;
@@ -291,9 +291,9 @@ export function latestContentRows(entries: IObjectOf<GH_CMS[]>): GH_CMS[] {
       map(reduceToLatest),
       // if title is not set use id
       map((gh: GH_CMS) => {
-        const title = get_parsed_title(gh);
+        const title = getTitle(gh);
         if (title === undefined || title.length === 0)
-          return set_title(gh, get_parsed_id(gh));
+          return setTitle(gh, getId(gh));
         return gh;
       })
     ),
@@ -317,7 +317,7 @@ export function parseContentRows(
         })),
         filter((x: GH_CMS) => !get_CMS_parsed(x).isEmpty)
       ),
-      groupByObj({ key: get_parsed_id }),
+      groupByObj({ key: getId }),
       flatten(rows)
     );
 }

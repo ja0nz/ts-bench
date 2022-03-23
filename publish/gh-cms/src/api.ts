@@ -44,9 +44,14 @@ export const LOG_LEVEL = getEnv('LOG_LEVEL');
 export const REPO_URL = getEnv('REPO_URL');
 export const NO_COLOR = getEnv('NO_COLOR');
 export const GH_TOKEN = getEnv('GH_TOKEN'); // github.com -> Settings -> Developer Settings -> Personal access tokens -> token for public repo
-export const GH_MD2LABEL = getEnv('GH_MD2LABEL');
-export const GH_MD2MILESTONE = getEnv('GH_MD2MILESTONE');
-export const GH_MD2STATE = getEnv('GH_MD2STATE');
+
+// MD2X variables
+export const MD2ID = getEnv('MD2ID') ?? 'id';
+export const MD2DATE = getEnv('MD2DATE') ?? 'date';
+export const MD2TITLE = getEnv('MD2TITLE') ?? 'title';
+export const MD2LABELS = getEnv('MD2LABEL') ?? 'labels';
+export const MD2MILESTONE = getEnv('MD2MILESTONE') ?? 'milestone';
+export const MD2STATE = getEnv('MD2STATE') ?? 'state';
 
 // process.argv
 const argv = defGetter<typeof Process, 'argv'>(['argv'])(process);

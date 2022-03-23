@@ -607,6 +607,7 @@ __metadata:
     "@thi.ng/testament": ^0.2.3
     "@types/rimraf": ^3.0.2
     gh-cms: "workspace:^"
+    gh-cms-ql: "workspace:^"
     rimraf: ^3.0.2
     tools: "workspace:^"
     twind: ^0.16.16
@@ -4136,7 +4137,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"gh-cms-ql@workspace:publish/gh-cms-ql":
+"gh-cms-ql@workspace:^, gh-cms-ql@workspace:publish/gh-cms-ql":
   version: 0.0.0-use.local
   resolution: "gh-cms-ql@workspace:publish/gh-cms-ql"
   dependencies:

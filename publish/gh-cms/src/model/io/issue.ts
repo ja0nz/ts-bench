@@ -1,8 +1,8 @@
 import { qlrequest } from './net.js';
 import {
-  get_parsed_route,
-  get_parsed_tags,
-  get_parsed_title,
+  getMilestone,
+  getLabels,
+  getTitle,
   get_CMS_raw,
   GH_CMS,
   get_CMS_id,
@@ -75,9 +75,9 @@ export function createIssue(url: string, i: GH_CMS) {
   return () =>
     qlrequest(url)(id ? update : create, {
       ID: id ? id : rid,
-      title: get_parsed_title(i),
-      route: get_parsed_route(i),
-      labels: get_parsed_tags(i),
+      title: getTitle(i),
+      route: getMilestone(i),
+      labels: getLabels(i),
       body: get_CMS_raw(i),
       state: get_CMS_state(i),
     });

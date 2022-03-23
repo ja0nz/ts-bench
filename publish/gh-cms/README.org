@@ -3,10 +3,16 @@
 
 * Table of Content :toc:noexport:
 - [[#tldr][TLDR]]
-- [[#the-shape-of-markdown][The shape of markdown]]
-  - [[#additional-metadata-mapping][Additional metadata mapping]]
   - [[#what-you-can-do-with-this-cli-tool][What you can do with this CLI tool]]
   - [[#rationale-github-issues-as-cms-for-your-blog][Rationale: GitHub Issues as CMS for your blog]]
+- [[#the-shape-of-markdown][The shape of markdown]]
+  - [[#id-custom-key][id (custom key)]]
+  - [[#date-custom-key][date (custom key)]]
+  - [[#optional-title---gh-issue-title-custom-key][Optional: title -> gh issue title (custom key)]]
+  - [[#optional-labels---gh-issue-labels-custom-key][Optional: labels -> gh issue labels (custom key)]]
+  - [[#optional-milestone---gh-issue-milestone-custom-key][Optional: milestone -> gh issue milestone (custom key)]]
+  - [[#optional-state---gh-issue-state-closed-or-open-custom-key][Optional: state -> gh issue state (CLOSED or OPEN) (custom key)]]
+- [[#content-update-strategies][Content update strategies]]
 - [[#up-and-running][Up and running]]
   - [[#install-and-first-run-yarn][Install and first run (yarn)]]
   - [[#point-to-a-local-content-directory][Point to a local content directory]]
@@ -36,6 +42,21 @@ This tool draws heavy inspiration by [[https://github.com/sw-yx/swyxkit/][SwyxKi
 
 Be aware that this is *alpha quality*. It does it's job for me but you have to find out yourself. Feel free to report bugs/glitches.
 
+** What you can do with this CLI tool
+- ✅ create and update issues based on an ID
+- ✅ set labels according to your needs
+- ✅ set a milestone to indicate an route (or whatever you may use milestone in your context)
+- ✅ work coexistendly with other GH issue content. This tool won't touch content it is not indended to modify
+- ✅ purge milestones which are not in use
+- ✅ purge labels which are not in use
+- ✅ use =--dry-run= in every occasion to get a glimpse whats going on before anything happens
+- ❌ delete/purge issues - this is push only. Delete your content directly on github.com
+** Rationale: GitHub Issues as CMS for your blog
+1. *GitHub Issues have a nice front-end* allowing other people to easily interact and comment on your content. You can browse topics based on labels and have a powerful content search at hand.
+2. *GitHub uses an extensive GraphQL API* which let you fetch content in a granular manner.
+3. *You get a headless CMS for free* which let you embed your content elsewhere.
+4. Using GitHub as discussion medium on articles leads to a *reduction of third parties* and site overload in general. It's quiet convenient.
+
 * The shape of markdown
 This package requires markdown with YAML-shaped [[https://jekyllrb.com/docs/front-matter/][Front Matter]] which is a metadata header on top of your markdown file. The most critical and required metadata for this tool is *id* and *date*:
 #+begin_src markdown
@@ -46,73 +67,101 @@ date: 2022-01-23T12:47:00+01:00 -> used to figure out if update is needed. Any v
 #+end_src
 *Attention*: This tool gives higher precedence to local machine content. This means, if you don't provide a =date= field it will always push from local->remote assuming that content has changed.
 
-** Additional metadata mapping
-*** title -> gh issue title
+** id (custom key)
+:PROPERTIES:
+:ID:       87e9581c-8408-40bd-a2de-35132e82128d
+:END:
+As mentioned, this engine _needs_ an unique ID.
+See [[id:ada6cf93-a2a3-4b34-bb50-a388dc7dc041][Content update strategies]] for an optimized id strategy!
+#+begin_quote
+Not happy with *id* as front matter key? Fear not, you can customize your own label in the .env file.
+
+Example: =MD2ID=unique= -> unique: "hello123"
+#+end_quote
+#+begin_src markdown
+---
+id: "5fb0dcea-dead-4f5f-ab66-1f60ea4951b2" -> String
+---
+#+end_src
+
+** date (custom key)
+:PROPERTIES:
+:ID:       7a60e357-6dfe-4aea-893e-e9794b2693dd
+:END:
+As mentioned, this engine _needs_ any form of JS date/timestamp as updating signal!
+See [[id:ada6cf93-a2a3-4b34-bb50-a388dc7dc041][Content update strategies]] for an optimized date strategy!
+#+begin_quote
+Not happy with *date* as front matter key? Fear not, you can customize your own label in the .env file.
+
+Example: =MD2DATE=timestamp= -> timestamp: "1648049589997"
+#+end_quote
+#+begin_src markdown
+---
+date: 2022-01-12T23:26:00+01:00 -> String | Number
+---
+#+end_src
+
+** Optional: title -> gh issue title (custom key)
 GitHub Issues can have a title.
-If not set falls back to mandatory issue id
+If not set *falls back to mandatory issue id*.
+#+begin_quote
+Not happy with *title* as front matter key? Fear not, you can customize your own label in the .env file.
+
+Example: =MD2TITLE=heading= -> heading: "A walk in the park"
+#+end_quote
 #+begin_src markdown
 ---
 title: "hello, this is my blogpost" -> String
 ---
 #+end_src
 
-*** tags -> gh issue labels (customizable)
-Tags can be used to categorize issues or any content you like.
+** Optional: labels -> gh issue labels (custom key)
+Labels can be used to categorize issues or any content you like.
 #+begin_quote
-Not happy with *tags* as front matter key? Fear not, you can customize your own label in the .env file.
+Not happy with *labels* as front matter key? Fear not, you can customize your own label in the .env file.
 
-Example: =GH_MD2LABEL=label= -> label: ["foo", "bar"]
+Example: =MD2LABELS=tags= -> tags: ["foo", "bar"]
 #+end_quote
 #+begin_src markdown
 ---
-tags: ["frontend", "js", "dev"] -> Array<String>
+labels: ["frontend", "js", "dev"] -> Array<String>
 ---
 #+end_src
 
-*** route -> gh issue milestone (customizable)
+** Optional: milestone -> gh issue milestone (custom key)
 I use this as slug/endpoint/route identifier.
 #+begin_quote
-Not happy with *route* as front matter key? Fear not, you can customize your own label in the .env file.
+Not happy with *milestone* as front matter key? Fear not, you can customize your own label in the .env file.
 
-Example: =GH_MD2MILESTONE=milestone= -> milestone: "/blog/foo"
+Example: =MD2MILESTONE=route= -> route: "/blog/foo"
 #+end_quote
 #+begin_src markdown
 ---
-route: "/blog/welcome-post" -> String
+milestone: "/blog/welcome-post" -> String
 ---
 #+end_src
 
-*** draft -> gh issue state (CLOSED or OPEN) (customizable)
-I use this as published/unpublished identifier hence i use *draft* as label.
+** Optional: state -> gh issue state (CLOSED or OPEN) (custom key)
+I use this as published/unpublished identifier.
 #+begin_quote
-Not happy with *draft* as front matter key? Fear not, you can customize your own label in the .env file.
+Not happy with *state* as front matter key? Fear not, you can customize your own label in the .env file.
 
-Example: =GH_MD2STATE=open= -> open: true
+Example: =MD2STATE=draft= -> draft: true
 #+end_quote
 #+begin_src markdown
 ---
-draft: false -> Boolean
+state: false -> Boolean
 ---
 #+end_src
 where
 - =true= -> OPEN issue state
 - =false= -> CLOSED issue state
 
-** What you can do with this CLI tool
-- ✅ create and update issues based on an ID
-- ✅ set labels according to your needs
-- ✅ set a milestone to indicate an route (or whatever you may use milestone in your context)
-- ✅ work coexistendly with other GH issue content. This tool won't touch content it is not indended to modify
-- ✅ purge milestones which are not in use
-- ✅ purge labels which are not in use
-- ✅ use =--dry-run= in every occasion to get a glimpse whats going on before anything happens
-- ❌ delete/purge issues - this is push only. Delete your content directly on github.com
-
-** Rationale: GitHub Issues as CMS for your blog
-1. *GitHub Issues have a nice front-end* allowing other people to easily interact and comment on your content. You can browse topics based on labels and have a powerful content search at hand.
-2. *GitHub uses an extensive GraphQL API* which let you fetch content in a granular manner.
-3. *You get a headless CMS for free* which let you embed your content elsewhere.
-4. Using GitHub as discussion medium on articles leads to a *reduction of third parties* and site overload in general. It's quiet convenient.
+* Content update strategies
+:PROPERTIES:
+:ID:       ada6cf93-a2a3-4b34-bb50-a388dc7dc041
+:END:
+By this point it should be clear that [[id:87e9581c-8408-40bd-a2de-35132e82128d][id]] and [[id:7a60e357-6dfe-4aea-893e-e9794b2693dd][date]] indeed play an important role in the process.
 
 * Up and running
 This package requires some minimal setup to work properly. Please refer to [[id:007a85b4-1ef9-4071-a517-5e63e3d42cb5][CLI manual]] and [[id:30732088-36d7-4f48-8fd8-0bca699f461f][ENV manual]] for an in-depth manual.

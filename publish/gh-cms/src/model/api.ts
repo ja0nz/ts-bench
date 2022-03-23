@@ -1,7 +1,7 @@
 import { defGetter, defSetter, defSetterUnsafe } from '@thi.ng/paths';
 import { comp } from '@thi.ng/compose';
 import type { GrayMatterFile } from 'gray-matter';
-import { GH_MD2LABEL, GH_MD2MILESTONE, GH_MD2STATE } from '../api';
+import { MD2DATE, MD2ID, MD2LABELS, MD2MILESTONE, MD2STATE, MD2TITLE } from '../api';
 import type { Fn, Fn0 } from '@thi.ng/api';
 
 /*
@@ -106,45 +106,45 @@ export interface FrontMatterSpec {
   tags?: string[];
   route?: string;
 }
-export const get_parsed_id = comp(
-  defGetter<FrontMatterSpec, 'id'>(['id']),
+export const getId = comp(
+  defGetter<FrontMatterSpec, any>([MD2ID]),
   get_parsed_data
 );
-export const get_parsed_date = comp(
-  defGetter<FrontMatterSpec, 'date'>(['date']),
+export const getDate = comp(
+  defGetter<FrontMatterSpec, any>([MD2DATE]),
   get_parsed_data
 );
-export const get_parsed_title = comp(
-  defGetter<FrontMatterSpec, 'title'>(['title']),
+export const getTitle = comp(
+  defGetter<FrontMatterSpec, any>([MD2TITLE]),
   get_parsed_data
 );
-export const set_title = defSetter<GH_CMS, 'parsed', 'data', 'title'>([
+export const setTitle = defSetter<GH_CMS, 'parsed', 'data', any>([
   'parsed',
   'data',
-  'title',
+  MD2TITLE,
 ]);
 
-export const get_parsed_tags: Fn<GH_CMS, string[]> = comp(
-  defGetter<FrontMatterSpec, any>([GH_MD2LABEL ?? 'tags']),
+export const getLabels: Fn<GH_CMS, string[]> = comp(
+  defGetter<FrontMatterSpec, any>([MD2LABELS]),
   get_parsed_data
 );
-export const set_tags = defSetterUnsafe([
+export const setLabels = defSetterUnsafe([
   'parsed',
   'data',
-  GH_MD2LABEL ?? 'tags',
+  MD2LABELS,
 ]);
 
-export const get_parsed_route: Fn<GH_CMS, string> = comp(
-  defGetter<FrontMatterSpec, any>([GH_MD2MILESTONE ?? 'route']),
+export const getMilestone: Fn<GH_CMS, string> = comp(
+  defGetter<FrontMatterSpec, any>([MD2MILESTONE]),
   get_parsed_data
 );
-export const set_route = defSetterUnsafe([
+export const setMilestone = defSetterUnsafe([
   'parsed',
   'data',
-  GH_MD2MILESTONE ?? 'route',
+  MD2MILESTONE,
 ]);
 
-export const get_parsed_state: Fn<GH_CMS, boolean> = comp(
-  defGetter<FrontMatterSpec, any>([GH_MD2STATE ?? 'draft']),
+export const getState: Fn<GH_CMS, boolean> = comp(
+  defGetter<FrontMatterSpec, any>([MD2STATE]),
   get_parsed_data
 );
