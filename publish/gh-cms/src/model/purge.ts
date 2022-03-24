@@ -8,55 +8,68 @@ import {
   push,
 } from '@thi.ng/transducers';
 import type { Label, DeleteLabel, DeleteMilestone, Milestone } from 'gh-cms-ql';
-import { mutateRestM, mutateL, getNumberM, getIdL, getIssueCountL } from 'gh-cms-ql';
+import {
+  mutateRestM,
+  mutateL,
+  getNumberM,
+  getIdL,
+  getIssueCountL,
+} from 'gh-cms-ql';
 import type { PurgeOpts } from '../cmd/purge';
 import type { Logger } from '../logger';
-import { qlClient, restClient } from './io/net';
+import { qlClient, restClient } from './io/net.js';
 
-type PIn = Label | Milestone;
+type LnM = Label | Milestone;
 
 export function purge(
-  opts: PurgeOpts,
-  logger: Logger
-): FnAnyT<PIn[], Fn0<Promise<any>>[]> {
+  options: PurgeOpts,
+  logger: Logger,
+): FnAnyT<LnM[], Array<Fn0<void>>> {
   return (...rows) => {
     return transduce(
       comp(
-        // throw all out which have an related issue
-        filter((x: PIn) => !getIssueCountL(x)),
-        map((x: PIn) => {
-          if (opts.dryRun) return x;
-          const n = getNumberM(x)
-          if (n !== undefined) {
-            return {
-              type: 'delete',
-              number: n
-            }
+        // Throw all out which have an related issue
+        filter((x: LnM) => !getIssueCountL(x)),
+        // Transform to action
+        map((x: LnM) => {
+          const n = getNumberM(x);
+          let r: DeleteLabel | DeleteMilestone;
+          if (n === undefined) {
+            r = {
+              type: 'label',
+              action: 'delete',
+              id: getIdL(x),
+            };
+          } else {
+            r = {
+              type: 'milestone',
+              action: 'delete',
+              number: n,
+            };
           }
-          return {
-            type: 'delete',
-            id: getIdL(x)
-          }
-        }),
-        map<DeleteLabel | DeleteMilestone, Fn0<unknown>>((x) => {
-          const n = getNumberM(x)
-          if (opts.dryRun)
-            return () => logger.info(
-              `DRY; Subject to removal, ${
-                n ? 'Milestone' : 'Label'
-              } ${logger.pp(x as object)}`
-            );
 
-          if (n !== undefined) {
-            const [str, pl] = mutateRestM(x);
-            return () => restClient(opts.repoUrl)(str, pl);
+          return r;
+        }),
+        // Wrap action with client
+        map((x): Fn0<void> => {
+          if (options.dryRun)
+            return () => {
+              logger.info(
+                `DRY; Subject to removal, ${logger.pp(
+                  x as Record<string, unknown>,
+                )}`,
+              );
+            };
+
+          if (x.type === 'milestone') {
+            return async () => restClient(options.repoUrl)(...mutateRestM(x));
           }
-          return () => qlClient(opts.repoUrl)(mutateL(x));
-          }
-        )
+
+          return async () => qlClient(options.repoUrl)(mutateL(x));
+        }),
       ),
       push(),
-      flatten<PIn[]>(rows)
+      flatten<LnM[]>(rows),
     );
   };
 }

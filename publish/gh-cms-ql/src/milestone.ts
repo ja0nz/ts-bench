@@ -43,11 +43,13 @@ export const getIssueCountM = comp(
  * Mutation
  */
 export type CreateMilestone = {
-  type: 'create';
+  type: 'milestone';
+  action: 'create';
   title: string;
 };
 export type DeleteMilestone = {
-  type: 'delete';
+  type: 'milestone';
+  action: 'delete';
   number: number; // Milestone number
 };
 
@@ -59,7 +61,7 @@ export type DeleteMilestone = {
 export function mutateRestM(
   a: CreateMilestone | DeleteMilestone,
 ): [string, RequestParameters] {
-  if (a.type === 'create') {
+  if (a.action === 'create') {
     return [`POST /repos/{owner}/{repo}/milestones`, { title: a.title }];
   }
 

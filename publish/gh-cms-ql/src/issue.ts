@@ -41,22 +41,23 @@ export const getTitleI = comp(defGetter<Issue, 'title'>([queryTitleI]));
  * Mutation
  */
 type IssueAction = {
+  type: 'issue';
   id: string;
   title?: string;
   body?: string;
   labelIds?: string[];
   milestoneId?: string;
 };
-export type CreateIssue = IssueAction & { type: 'create'; title: string };
+export type CreateIssue = IssueAction & { action: 'create'; title: string };
 export type UpdateIssue = IssueAction & {
-  type: 'update';
+  action: 'update';
   state?: 'OPEN' | 'CLOSED';
 };
 
 export const mutateI = (a: CreateIssue | UpdateIssue) =>
   `mutation {
-     ${a.type === 'update' ? 'updateIssue' : 'createIssue'}(input: {
-        ${a.type === 'update' ? 'id' : 'repositoryId'}: "${a.id}"
+     ${a.action === 'update' ? 'updateIssue' : 'createIssue'}(input: {
+        ${a.action === 'update' ? 'id' : 'repositoryId'}: "${a.id}"
         ${a.title ? `title: "${a.title}"` : ''}
         ${a.body ? `body: "${a.body}"` : ''}
         ${
@@ -65,7 +66,7 @@ export const mutateI = (a: CreateIssue | UpdateIssue) =>
             : ''
         }
         ${a.milestoneId ? `milestoneId: "${a.milestoneId}"` : ''}
-        ${a.type === 'update' && a.state ? `state: ${a.state}` : ''}
+        ${a.action === 'update' && a.state ? `state: ${a.state}` : ''}
       }) {
         issue {
           id

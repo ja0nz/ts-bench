@@ -1,11 +1,9 @@
 import { Args, flag } from '@thi.ng/args';
-import { compL } from '@thi.ng/compose';
 import { assert } from '@thi.ng/errors';
-import type { Milestone, Label } from 'gh-cms-ql';
+import type { Labels, R0, Milestones } from 'gh-cms-ql';
 import { queryTitleM, queryNameL } from 'gh-cms-ql';
 import { getL, getM, getNodes, getR, queryIdL, queryIssueCountL, queryIssueCountM, queryL, queryM, queryNumberM, queryR } from 'gh-cms-ql';
 import type { CLIOpts, CommandSpec, DryRunOpts } from '../api';
-import type { Repository } from '../model/api';
 import {
   qlClient,
 } from '../model/io/net';
@@ -26,20 +24,16 @@ export const PURGE: CommandSpec<PurgeOpts> = {
     );
     logger.info('Starting purge');
 
-    // CONF
-    const l = opts.labels;
-    const m = opts.milestones;
-
     // INPUT
-    const far: Repository = await qlClient(opts.repoUrl)(
+    const far: R0<Labels & Milestones> = await qlClient(opts.repoUrl)(
       queryR(
-        l ? queryL()(queryIdL, queryNameL, queryIssueCountL) : '',
-        m ? queryM()(queryNumberM, queryTitleM, queryIssueCountM) : ''
+        queryL()(queryIdL, queryNameL, queryIssueCountL),
+        queryM()(queryNumberM, queryTitleM, queryIssueCountM)
       )
     );
 
-    const labels: Label[] = compL(getR, getL, getNodes<Labels>)(far) ?? [];
-    const milestones: Milestone[] = compL(getR, getM, getNodes)(far) ?? [];
+    const labels = getNodes<Labels>(getL(getR<Labels>(far)));
+    const milestones = getNodes<Milestones>(getM(getR<Milestones>(far)));
 
     const outFx = purge(opts, logger)(labels, milestones);
 

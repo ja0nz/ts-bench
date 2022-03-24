@@ -39,21 +39,23 @@ export const getIssueCountL = comp(
  * Mutation
  */
 export type CreateLabel = {
-  type: 'create';
+  type: 'label';
+  action: 'create';
   id: string;
   name: string;
   color?: string;
 };
 export type DeleteLabel = {
-  type: 'delete';
+  type: 'label';
+  action: 'delete';
   id: string;
 };
 export const mutateL = (a: CreateLabel | DeleteLabel) =>
   `mutation {
-     ${a.type === 'create' ? 'createLabel' : 'deleteLabel'}(input: {
-      ${a.type === 'create' ? 'repositoryId' : 'id'}: "${a.id}"
+     ${a.action === 'create' ? 'createLabel' : 'deleteLabel'}(input: {
+      ${a.action === 'create' ? 'repositoryId' : 'id'}: "${a.id}"
       ${
-        a.type === 'create'
+        a.action === 'create'
           ? `name: "${a.name}"
          color: "${
            a.color ?? Math.floor(Math.random() * 16_777_215).toString(16)
@@ -61,7 +63,7 @@ export const mutateL = (a: CreateLabel | DeleteLabel) =>
           : ''
       }
     }) {
-        ${a.type === 'create' ? 'label{name}' : 'clientMutationId'}
+        ${a.action === 'create' ? 'label{name}' : 'clientMutationId'}
       }
     }
   `;
