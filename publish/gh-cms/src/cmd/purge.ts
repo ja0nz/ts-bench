@@ -1,48 +1,65 @@
+import type { Fn0 } from '@thi.ng/api';
 import { Args, flag } from '@thi.ng/args';
 import { assert } from '@thi.ng/errors';
 import type { Labels, R0, Milestones } from 'gh-cms-ql';
-import { queryTitleM, queryNameL } from 'gh-cms-ql';
-import { getL, getM, getNodes, getR, queryIdL, queryIssueCountL, queryIssueCountM, queryL, queryM, queryNumberM, queryR } from 'gh-cms-ql';
-import type { CLIOpts, CommandSpec, DryRunOpts } from '../api';
 import {
-  qlClient,
-} from '../model/io/net';
-import { purge } from '../model/purge';
-import { ARG_DRY } from './args';
+  queryTitleM,
+  queryNameL,
+  getL,
+  getM,
+  getNodes,
+  getR,
+  queryIdL,
+  queryIssueCountL,
+  queryIssueCountM,
+  queryL,
+  queryM,
+  queryNumberM,
+  queryR,
+} from 'gh-cms-ql';
+import type { CLIOpts, CommandSpec, DryRunOpts } from '../api.js';
+import { qlClient } from '../model/io/net.js';
+import { purgeModel } from '../model/purge.js';
+import { ARG_DRY } from './args.js';
 
-export interface PurgeOpts extends CLIOpts, DryRunOpts {
+export interface PurgeOptions extends CLIOpts, DryRunOpts {
   labels: boolean;
   milestones: boolean;
 }
 
-export const PURGE: CommandSpec<PurgeOpts> = {
-  fn: async (ctx) => {
+export const purgeCmd: CommandSpec<PurgeOptions> = {
+  async fn(ctx) {
     const { opts, logger } = ctx;
     assert(
       opts.labels || opts.milestones,
-      'At least one flag (-l || -m || --help) required'
+      'At least one flag (-l || -m || --help) required',
     );
     logger.info('Starting purge');
 
+    // CMD
+    const l = opts.labels;
+
     // INPUT
+    const qFn = l
+      ? queryL()(queryIdL, queryNameL, queryIssueCountL)
+      : queryM()(queryNumberM, queryTitleM, queryIssueCountM);
+
     const far: R0<Labels & Milestones> = await qlClient(opts.repoUrl)(
-      queryR(
-        queryL()(queryIdL, queryNameL, queryIssueCountL),
-        queryM()(queryNumberM, queryTitleM, queryIssueCountM)
-      )
+      queryR(qFn),
     );
 
-    const labels = getNodes<Labels>(getL(getR<Labels>(far)));
-    const milestones = getNodes<Milestones>(getM(getR<Milestones>(far)));
+    const qLoad = l
+      ? getNodes<Labels>(getL(getR<Labels>(far)))
+      : getNodes<Milestones>(getM(getR<Milestones>(far)));
 
-    const outFx = purge(opts, logger)(labels, milestones);
+    const outFx = purgeModel(opts, logger)(qLoad);
 
     // OUTPUT
-    await Promise.all(outFx.map((x) => x()));
+    await Promise.all(outFx.map(async (x: Fn0<Promise<unknown>>) => x()));
 
     logger.info('Successfully purged');
   },
-  opts: <Args<PurgeOpts>>{
+  opts: <Args<PurgeOptions>>{
     ...ARG_DRY,
     labels: flag({
       alias: 'l',

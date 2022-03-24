@@ -15,16 +15,16 @@ import {
   getIdL,
   getIssueCountL,
 } from 'gh-cms-ql';
-import type { PurgeOpts } from '../cmd/purge';
+import type { PurgeOptions } from '../cmd/purge';
 import type { Logger } from '../logger';
 import { qlClient, restClient } from './io/net.js';
 
 type LnM = Label | Milestone;
 
-export function purge(
-  options: PurgeOpts,
+export function purgeModel(
+  options: PurgeOptions,
   logger: Logger,
-): FnAnyT<LnM[], Array<Fn0<void>>> {
+): FnAnyT<LnM[], Array<Fn0<Promise<unknown>>>> {
   return (...rows) => {
     return transduce(
       comp(
@@ -51,9 +51,9 @@ export function purge(
           return r;
         }),
         // Wrap action with client
-        map((x): Fn0<void> => {
+        map((x): Fn0<Promise<unknown>> => {
           if (options.dryRun)
-            return () => {
+            return async () => {
               logger.info(
                 `DRY; Subject to removal, ${logger.pp(
                   x as Record<string, unknown>,
