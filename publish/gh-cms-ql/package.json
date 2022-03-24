@@ -46,6 +46,7 @@
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.19.4",
+    "@octokit/types": "^6.34.0",
     "@thi.ng/errors": "^2.1.4",
     "@thi.ng/testament": "^0.2.3",
     "rimraf": "^3.0.2",

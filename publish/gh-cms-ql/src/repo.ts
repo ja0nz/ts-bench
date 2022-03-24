@@ -1,6 +1,5 @@
-import { comp } from '@thi.ng/compose';
-import { defGetter, getIn } from '@thi.ng/paths';
-import { jNl, R1, R2, Repository } from './api.js';
+import { getIn } from '@thi.ng/paths';
+import { jNl, R1, R2, R0, Combined } from './api.js';
 
 /*
  * Nodes Query
@@ -46,18 +45,15 @@ export const hasNextPage = `hasNextPage`;
  * Getters
  */
 // Repository
-export const getR = defGetter<Repository, 'repository'>(['repository']);
-export const getIdR = comp(defGetter<R1, 'id'>([queryIdR]), getR);
+export const getR = <T extends Combined>(x: R0<T>) => getIn(x, ['repository']);
+export const getIdR = <T extends Combined>(x: R1<T>) => x.id;
 
 // R2
-export const getNodes = (x: R2) => x && getIn(x, [nodes]);
-export const getTotalCount = (x: R2) => x && getIn(x, [totalCount]);
-export const getPageInfo = (x: R2) => x && getIn(x, [pageInfo]);
-export const getEndCursor = comp(
-  (x) => x && getIn(x, [endCursor]),
-  getPageInfo,
-);
-export const getHasNextPage = comp(
-  (x) => x && getIn(x, [hasNextPage]),
-  getPageInfo,
-);
+export const getNodes = <T extends Combined>(x: R2<T>): R2<T>['nodes'] =>
+  x.nodes;
+export const getTotalCount = <T extends Combined>(x: R2<T>) => x.totalCount;
+export const getPageInfo = <T extends Combined>(x: R2<T>) => x.pageInfo;
+export const getEndCursor = <T extends Combined>(x: R2<T>) =>
+  getPageInfo<T>(x).endCursor;
+export const getHasNextPage = <T extends Combined>(x: R2<T>) =>
+  getPageInfo<T>(x).hasNextPage;

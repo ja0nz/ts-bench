@@ -1,7 +1,8 @@
 import { defGetter } from '@thi.ng/paths';
 import { comp } from '@thi.ng/compose';
-import { jNl, Issue, R1 } from './api.js';
-import { endCursor, getR, hasNextPage, pageInfo, totalCount } from './repo.js';
+import type { Fn } from '@thi.ng/api';
+import { jNl, Issue, Issues, R1, R2 } from './api.js';
+import { endCursor, hasNextPage, pageInfo, totalCount } from './repo.js';
 
 /*
  * Nodes Query
@@ -26,7 +27,9 @@ export const queryI =
  * Getters
  */
 // Repository
-export const getI = comp(defGetter<R1, 'issues'>(['issues']), getR);
+export const getI: Fn<R1<Issues>, R2<Issues>> = defGetter<R1<Issues>, 'issues'>(
+  ['issues'],
+);
 
 // Nodes
 export const getIdI = comp(defGetter<Issue, 'id'>([queryIdI]));

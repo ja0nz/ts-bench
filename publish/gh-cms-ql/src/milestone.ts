@@ -1,7 +1,8 @@
-import type { RequestParameters } from '@octokit/graphql/dist-types/types';
+import type { RequestParameters } from '@octokit/types';
+import type { Fn } from '@thi.ng/api';
 import { comp } from '@thi.ng/compose';
 import { defGetter } from '@thi.ng/paths';
-import { jNl, Milestone, R1 } from './api.js';
+import { jNl, Milestone, Milestones, R1, R2 } from './api.js';
 import { endCursor, hasNextPage, pageInfo, totalCount } from './repo.js';
 
 /*
@@ -25,7 +26,10 @@ export const queryM =
  * Getters
  */
 // Repository
-export const getM = defGetter<R1, 'milestones'>(['milestones']);
+export const getM: Fn<R1<Milestones>, R2<Milestones>> = defGetter<
+  R1<Milestones>,
+  'milestones'
+>(['milestones']);
 
 // Nodes
 export const getIdM = comp(defGetter<Milestone, 'id'>([queryIdM]));

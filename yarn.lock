@@ -4144,6 +4144,7 @@ __metadata:
     "@microsoft/api-extractor": ^7.19.4
     "@octokit/graphql": ^4.8.0
     "@octokit/request": ^5.6.3
+    "@octokit/types": ^6.34.0
     "@thi.ng/api": ^8.3.4
     "@thi.ng/compose": ^2.1.4
     "@thi.ng/errors": ^2.1.4

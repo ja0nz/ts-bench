@@ -38,7 +38,7 @@ export const PURGE: CommandSpec<PurgeOpts> = {
       )
     );
 
-    const labels: Label[] = compL(getR, getL, getNodes)(far) ?? [];
+    const labels: Label[] = compL(getR, getL, getNodes<Labels>)(far) ?? [];
     const milestones: Milestone[] = compL(getR, getM, getNodes)(far) ?? [];
 
     const outFx = purge(opts, logger)(labels, milestones);
