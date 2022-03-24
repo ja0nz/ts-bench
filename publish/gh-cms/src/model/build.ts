@@ -51,11 +51,11 @@ import {
   createMilestone,
 } from './io/net';
 import type { Logger } from '../logger';
-import type { BuildOpts } from '../cmd/build';
+import type { BuildOptions } from '../cmd/build';
 
 type WrapIssue = { issue: Issue };
 export function postBuild(
-  opts: BuildOpts,
+  opts: BuildOptions,
   logger: Logger,
   build: IObjectOf<WrapIssue>[]
 ): Fn<GH_CMS[], Effect[]> {
@@ -109,7 +109,7 @@ export function postBuild(
 }
 
 export function build(
-  opts: BuildOpts,
+  opts: BuildOptions,
   logger: Logger,
   far: Repository
 ): Fn<GH_CMS[], Effect[]> {
@@ -176,7 +176,7 @@ export function build(
 }
 
 export function preBuild(
-  opts: BuildOpts,
+  opts: BuildOptions,
   logger: Logger,
   far: Repository
 ): Fn<GH_CMS[], Effect[]> {

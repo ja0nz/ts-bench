@@ -1,6 +1,6 @@
 import type { IObjectOf } from '@thi.ng/api';
 import type { CommandSpec } from './api';
-import { BUILD } from './cmd/build';
+import { buildCmd } from './cmd/build';
 import { purgeCmd } from './cmd/purge';
 
 /**
@@ -9,7 +9,7 @@ import { purgeCmd } from './cmd/purge';
  */
 export class CommandRegistry {
   registry: IObjectOf<CommandSpec<any>> = {
-    build: BUILD,
+    build: buildCmd,
     purge: purgeCmd,
   };
 }

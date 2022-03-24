@@ -29,18 +29,18 @@ import {
 } from '../model/io/net';
 import { ARG_DRY } from './args';
 
-export interface BuildOpts extends CLIOpts, DryRunOpts {
+export interface BuildOptions extends CLIOpts, DryRunOpts {
   contentPath: string;
 }
 
-export const BUILD: CommandSpec<BuildOpts> = {
+export const buildCmd: CommandSpec<BuildOptions> = {
   fn: async (ctx) => {
     const { opts, logger } = ctx;
     // Guards
     ensureEnv('--content-path', 'env.CONTENT_PATH', opts.contentPath);
     logger.info('Starting build');
 
-    // CONF
+    // CMD
     const dry = opts.dryRun;
     const repoUrl = opts.repoUrl;
     const contentPath = opts.contentPath;
@@ -93,7 +93,7 @@ export const BUILD: CommandSpec<BuildOpts> = {
 
     logger.info('Successfully build');
   },
-  opts: <Args<BuildOpts>>{
+  opts: <Args<BuildOptions>>{
     ...ARG_DRY,
     contentPath: string({
       alias: 'p',
