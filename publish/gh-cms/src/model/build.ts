@@ -19,6 +19,7 @@ import {
   distinct,
   trace,
   iterator,
+  assocMap,
 } from '@thi.ng/transducers';
 import {
   get_CMS_id,
@@ -370,19 +371,37 @@ export function buildDag() {
   return g;
 }
 
-const knownProps = {
-  MD2ID: () => ({
-    sink: "MD2ID",
-    source: "f"
-  }),
-  MD2DATE : "MD2MILESTONE",
-  MD2TITLE : "title,route,no,category",
-  MD2LABELS : "tags",
-  MD2MILESTONE : "date",
-  MD2STATE : "draft"
-  }
+// const knownProps = {
+//   MD2ID: () => ({
+//     sink: "MD2ID",
+//     source: "f"
+//   }),
+//   MD2DATE : "MD2MILESTONE",
+//   MD2TITLE : "title,route,no,category",
+//   MD2LABELS : "tags",
+//   MD2MILESTONE : "date",
+//   MD2STATE : "draft"
+//   }
 
 export function dagAction(g: DGraph<string>) {
   console.log(...g)
+  const out = scan(
+    reducer(
+      () => new Map(),
+      (acc, x: string) => {
+        console.log(x);
+        // collect functions
+        const dep = g.immediateDependencies(x)
+
+        console.log("deps", x, ":", ...dep)
+
+        return acc.set(x, 42)
+      }
+    ),
+    new Map(),
+    g
+  );
+  const map = last(out);
+  console.log(map)
   return 1;
 }
