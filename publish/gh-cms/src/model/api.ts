@@ -1,7 +1,7 @@
 import { defGetter, defSetter, defSetterUnsafe } from '@thi.ng/paths';
 import { comp } from '@thi.ng/compose';
 import type { GrayMatterFile } from 'gray-matter';
-import { MD2DATE, MD2ID, MD2LABELS, MD2MILESTONE, MD2STATE, MD2TITLE } from '../api';
+import { MD2DATE, MD2ID, MD2LABELS, MD2MILESTONE, MD2STATE, MD2TITLE } from '../api.js';
 import type { Fn, Fn0 } from '@thi.ng/api';
 
 /*

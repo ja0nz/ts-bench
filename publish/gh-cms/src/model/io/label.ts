@@ -1,4 +1,4 @@
-import { qlClient, restClient } from './net';
+import { qlClient, restClient } from './net.js';
 
 const cLabel = `
   mutation createLabel(

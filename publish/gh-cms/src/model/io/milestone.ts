@@ -1,4 +1,4 @@
-import { restClient } from './net';
+import { restClient } from './net.js';
 
 // DELETES
 export function deleteMilestone(url: string, milestone_number: number) {

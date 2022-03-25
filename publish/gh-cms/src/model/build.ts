@@ -17,6 +17,8 @@ import {
   scan,
   maxCompare,
   distinct,
+  trace,
+  iterator,
 } from '@thi.ng/transducers';
 import {
   get_CMS_id,
@@ -40,18 +42,23 @@ import {
   set_CMS_state,
   setTitle,
   Effect,
-} from './api';
+  Label,
+  Milestone,
+} from './api.js';
 import grayMatter from 'gray-matter';
 import type { Fn, FnAnyT, IObjectOf } from '@thi.ng/api';
-import { getInRepo } from './io/queryRepo';
+import { getInRepo } from './io/queryRepo.js';
 import {
   modifyState,
   createIssue,
   createLabel,
   createMilestone,
-} from './io/net';
-import type { Logger } from '../logger';
-import type { BuildOptions } from '../cmd/build';
+} from './io/net.js';
+import type { Logger } from '../logger.js';
+import type { BuildOptions } from '../cmd/build.js';
+import { DGraph } from '@thi.ng/dgraph';
+import { assert } from '@thi.ng/errors';
+import { defEquivMap } from '@thi.ng/associative';
 
 type WrapIssue = { issue: Issue };
 export function postBuild(
@@ -131,8 +138,8 @@ export function build(
         map<GH_CMS, GH_CMS>((i) => {
           const lIDs = transduce(
             comp(
-              mapcat((x) => farLabels.filter((y) => y.name === x)),
-              map((x) => x.id)
+              mapcat<string, Label>((x) => farLabels.filter((y: Label) => y.name === x)),
+              map((x: Label) => x.id)
             ),
             push(),
             getLabels(i) ?? []
@@ -144,7 +151,7 @@ export function build(
         map<GH_CMS, GH_CMS>((i) => {
           const lIDs = transduce(
             comp(
-              mapcat((x) => farMilestones.filter((y) => y.title === x)),
+              mapcat<string, Milestone>((x) => farMilestones.filter((y: Milestone) => y.title === x)),
               map((x) => x.id)
             ),
             last(),
@@ -195,7 +202,7 @@ export function preBuild(
             }),
             partition<string>(2),
             filter(([_, tag]: string[]) =>
-              farLabels.filter((x) => x.name === tag).length ? false : true
+              farLabels.filter((x: Label) => x.name === tag).length ? false : true
             ),
             distinct({ key: (x) => x[1] }),
             sideEffect((x: string[]) => {
@@ -212,7 +219,7 @@ export function preBuild(
               return [mileStone];
             }),
             filter((t: string) =>
-              farMilestones.filter((x) => x.title === t).length ? false : true
+              farMilestones.filter((x: Milestone) => x.title === t).length ? false : true
             ),
             sideEffect((x: string) => {
               if (opts.dryRun)
@@ -320,4 +327,62 @@ export function parseContentRows(
       groupByObj({ key: getId }),
       flatten(rows)
     );
+}
+
+export function buildDag() {
+  //dev
+  const env = {
+  MD2ID: "MD2TITLE[2]",
+  MD2DATE : "MD2MILESTONE",
+  MD2TITLE : "title,route,no,category",
+  MD2LABELS : "tags",
+  MD2MILESTONE : "date",
+  MD2STATE : "draft"
+  }
+  // --dev
+
+  const g = new DGraph<string>();
+
+  type Stup = [string, string]
+  const out: IterableIterator<Stup> = iterator(
+    comp(
+      mapcat<Stup, Stup>(([k,v]) => v.split(",").map(v1 => [k, v1])),
+      mapcat<Stup, Stup>(([k,v]) => {
+        const re = /\[\d\]/g
+        const indexs = v.match(re)
+        if (indexs !== null) {
+          assert(
+            indexs.length < 2,
+            `Only one index level allowed: ${v}`
+          )
+          const v1 = v.split(re).filter(Boolean);
+          const deps: Stup[] = v1.map(idx => [v, idx]);
+          return [...deps, [k, v]];
+        }
+        return [[k, v]];
+      }),
+    ),
+    Object.entries(env)
+  );
+  for (let row of out) {
+    g.addDependency(...row)
+  }
+  return g;
+}
+
+const knownProps = {
+  MD2ID: () => ({
+    sink: "MD2ID",
+    source: "f"
+  }),
+  MD2DATE : "MD2MILESTONE",
+  MD2TITLE : "title,route,no,category",
+  MD2LABELS : "tags",
+  MD2MILESTONE : "date",
+  MD2STATE : "draft"
+  }
+
+export function dagAction(g: DGraph<string>) {
+  console.log(...g)
+  return 1;
 }

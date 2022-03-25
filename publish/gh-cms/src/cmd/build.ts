@@ -45,6 +45,9 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     const repoUrl = opts.repoUrl;
     const contentPath = opts.contentPath;
 
+    // DAG
+    // TODO
+
     // INPUT
     const pnear: Promise<Issue[]> = getInFs(contentPath);
     const pfar: Fn0<Promise<Repository>> = () =>
