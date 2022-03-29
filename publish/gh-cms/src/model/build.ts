@@ -26,6 +26,11 @@ import type { Fn, FnAnyT, IObjectOf } from '@thi.ng/api';
 import { DGraph } from '@thi.ng/dgraph';
 import { assert } from '@thi.ng/errors';
 import {
+    getBodyI,
+    getLabelsI,
+    getMilestoneI,
+    getStateI,
+    getTitleI,
   queryBodyI,
   queryL,
   queryMilestoneI,
@@ -347,7 +352,7 @@ const reIndexd = /(?<=\[)(\d+?)(?=])/g;
 export function buildDag() {
   // Dev
   const env = {
-    MD2ID: 'MD2TITLE[2]',
+    MD2ID: 'MD2TITLE[2],MDSTATE',
     MD2DATE: 'MD2MILESTONE',
     MD2TITLE: 'title,route[1],no,category',
     MD2LABELS: 'tags',
@@ -400,24 +405,31 @@ type ReturnValue = {
 const knownKeys: Record<string, ReturnValue> = {
   MD2ID: {
     query: '',
+    getQ: ''
   },
   MD2DATE: {
     query: '',
+    getQ: ''
   },
   MD2TITLE: {
     query: queryTitleI,
+    getQ: getTitleI
   },
   MD2LABELS: {
     query: queryL()(queryNameL),
+    getQ: getLabelsI
   },
   MD2MILESTONE: {
     query: queryMilestoneI,
+    getQ: getMilestoneI
   },
   MD2STATE: {
     query: queryStateI,
+    getQ: getStateI
   },
   _: {
     query: queryBodyI,
+    getQ: getBodyI
   },
 };
 
@@ -449,6 +461,7 @@ export function dagAction(g: DGraph<string>) {
         returnValue.guardsFm = [];
 
         const queryCollect: string[] = [];
+        const queryCollect1: string[] = [];
         // Part 2: Construct (FM) => value
         const index = key.match(reIndexd);
 
@@ -457,6 +470,7 @@ export function dagAction(g: DGraph<string>) {
           if (node) {
             // Collect query tokens -> Part 3
             queryCollect.push(node.query);
+            queryCollect1.push(node.getQ);
             // Compose getter functions
             returnValue.getFm.push(...composeGetFmRec(index, node.getFm ?? []));
             // Push guards
@@ -475,7 +489,10 @@ export function dagAction(g: DGraph<string>) {
           returnValue.query = queryCollect.join(' ');
         }
 
-        // Part 4: GuardsFm
+        // Part 4: getQ
+        if (returnValue.getQ === '') {
+          returnValue.getQ = queryCollect1;
+        }
 
         return acc.set(key, returnValue);
       },
