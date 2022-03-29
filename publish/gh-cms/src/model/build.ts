@@ -26,11 +26,11 @@ import type { Fn, FnAnyT, IObjectOf } from '@thi.ng/api';
 import { DGraph } from '@thi.ng/dgraph';
 import { assert } from '@thi.ng/errors';
 import {
-    getBodyI,
-    getLabelsI,
-    getMilestoneI,
-    getStateI,
-    getTitleI,
+  getBodyI,
+  getLabelsI,
+  getMilestoneI,
+  getStateI,
+  getTitleI,
   queryBodyI,
   queryL,
   queryMilestoneI,
@@ -352,7 +352,7 @@ const reIndexd = /(?<=\[)(\d+?)(?=])/g;
 export function buildDag() {
   // Dev
   const env = {
-    MD2ID: 'MD2TITLE[2],MDSTATE',
+    MD2ID: 'MD2TITLE[2],MD2STATE',
     MD2DATE: 'MD2MILESTONE',
     MD2TITLE: 'title,route[1],no,category',
     MD2LABELS: 'tags',
@@ -398,44 +398,44 @@ type FmFn = Fn<GH_CMS, unknown>;
  */
 type ReturnValue = {
   query: string;
-  getQ?: any;
+  getQ: any[];
   getFm?: FmFn[];
   guardsFm?: string[];
 };
 const knownKeys: Record<string, ReturnValue> = {
   MD2ID: {
     query: '',
-    getQ: ''
+    getQ: [],
   },
   MD2DATE: {
     query: '',
-    getQ: ''
+    getQ: [],
   },
   MD2TITLE: {
     query: queryTitleI,
-    getQ: getTitleI
+    getQ: [getTitleI],
   },
   MD2LABELS: {
     query: queryL()(queryNameL),
-    getQ: getLabelsI
+    getQ: [getLabelsI],
   },
   MD2MILESTONE: {
     query: queryMilestoneI,
-    getQ: getMilestoneI
+    getQ: [getMilestoneI],
   },
   MD2STATE: {
     query: queryStateI,
-    getQ: getStateI
+    getQ: [getStateI],
   },
   _: {
     query: queryBodyI,
-    getQ: getBodyI
+    getQ: [getBodyI],
   },
 };
 
-function composeGetFmRec(index: RegExpMatchArray | null, all: FmFn[]) {
+function composeGetFmRec(index: RegExpMatchArray | false, all: FmFn[]) {
   // QueryCollect.push(acc.get(dep)?.query ?? '');
-  if (index === null) {
+  if (index === false) {
     return all;
   }
 
@@ -453,46 +453,48 @@ export function dagAction(g: DGraph<string>) {
     reducer(
       () => new Map<PropertyKey, ReturnValue>(),
       (acc, key: string) => {
-        // Part 1: Far query string
-        const [cKey] = key.split('[');
-        const returnValue = { ...(knownKeys[cKey] ?? knownKeys._) };
-        // Seeding
-        returnValue.getFm = [];
-        returnValue.guardsFm = [];
+        // Construct returnValue
+        const returnValue = {
+          getFm: [],
+          guardsFm: [],
+          ...(knownKeys[key.split('[')[0]] ?? knownKeys._),
+        };
 
-        const queryCollect: string[] = [];
-        const queryCollect1: string[] = [];
-        // Part 2: Construct (FM) => value
-        const index = key.match(reIndexd);
-
+        // Just some helpers to fill holes after iteration
+        const queryCol: string[] = [];
+        const getQCol: string[] = [];
+        // Iterate leave -> root
         for (const dep of g.immediateDependencies(key)) {
           const node = acc.get(dep);
           if (node) {
-            // Collect query tokens -> Part 3
-            queryCollect.push(node.query);
-            queryCollect1.push(node.getQ);
-            // Compose getter functions
-            returnValue.getFm.push(...composeGetFmRec(index, node.getFm ?? []));
-            // Push guards
+            // Collect to helpers
+            queryCol.push(node.query);
+            getQCol.push(...node.getQ);
+            // Compose previous getter functions to form a consistent path
+            returnValue.getFm.push(
+              ...composeGetFmRec(
+                key.match(reIndexd) ?? false,
+                node.getFm ?? [],
+              ),
+            );
+            // Collect keys needed in front matter
             returnValue.guardsFm.push(...(node.guardsFm ?? []));
           }
         }
 
         // Leaves
         if (returnValue.getFm.length === 0) {
+          // Generate first path function
           returnValue.getFm.push(getInParsed(key));
+          // Generate dependency variable
           returnValue.guardsFm.push(key);
         }
 
-        // Part 3: Fill query holes
-        if (returnValue.query === '') {
-          returnValue.query = queryCollect.join(' ');
-        }
+        // Conditional fill query holes
+        if (returnValue.query === '') returnValue.query = queryCol.join(' ');
 
-        // Part 4: getQ
-        if (returnValue.getQ === '') {
-          returnValue.getQ = queryCollect1;
-        }
+        // Conditional fill getQ holes
+        if (returnValue.getQ.length === 0) returnValue.getQ = getQCol;
 
         return acc.set(key, returnValue);
       },
