@@ -1,8 +1,8 @@
-import { defGetter, defSetter, defSetterUnsafe } from '@thi.ng/paths';
+import { defGetter, defGetterUnsafe, defSetter, defSetterUnsafe } from '@thi.ng/paths';
 import { comp } from '@thi.ng/compose';
 import type { GrayMatterFile } from 'gray-matter';
 import { MD2DATE, MD2ID, MD2LABELS, MD2MILESTONE, MD2STATE, MD2TITLE } from '../api.js';
-import type { Fn, Fn0 } from '@thi.ng/api';
+import type { Fn, Fn0, NumOrString } from '@thi.ng/api';
 
 /*
  * GraphQL
@@ -106,6 +106,11 @@ export interface FrontMatterSpec {
   tags?: string[];
   route?: string;
 }
+export const getInParsed = (key: NumOrString): Fn<GH_CMS, unknown> =>
+  comp(
+    defGetterUnsafe<string>([key]),
+    get_parsed_data
+)
 export const getId = comp(
   defGetter<FrontMatterSpec, any>([MD2ID]),
   get_parsed_data
