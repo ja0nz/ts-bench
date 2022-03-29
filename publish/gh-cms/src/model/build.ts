@@ -385,7 +385,18 @@ export function buildDag() {
 }
 
 type FmFn = Fn<GH_CMS, unknown>;
-type ReturnValue = { query: string; getFm?: FmFn[] };
+/*
+ * Query -> comp(queryI(), queryR, repoQ)(query)
+ * getFm -> GH_CMS / GrayMatter only! -> value
+ * guardsFm -> keys that needs to be present
+ * getQ -> parsedIssue -> value
+ */
+type ReturnValue = {
+  query: string;
+  getQ?: any;
+  getFm?: FmFn[];
+  guardsFm?: string[];
+};
 const knownKeys: Record<string, ReturnValue> = {
   MD2ID: {
     query: '',
@@ -410,6 +421,21 @@ const knownKeys: Record<string, ReturnValue> = {
   },
 };
 
+function composeGetFmRec(index: RegExpMatchArray | null, all: FmFn[]) {
+  // QueryCollect.push(acc.get(dep)?.query ?? '');
+  if (index === null) {
+    return all;
+  }
+
+  const idx = Number(index[0]);
+  const [first, ...rst] = all;
+  return [
+    rst.length > 0
+      ? all[idx]
+      : c((s) => (typeof s === 'string' ? s.split(',')[idx] : s), first),
+  ];
+}
+
 export function dagAction(g: DGraph<string>) {
   const out = scan(
     reducer(
@@ -419,39 +445,37 @@ export function dagAction(g: DGraph<string>) {
         const [cKey] = key.split('[');
         const returnValue = { ...(knownKeys[cKey] ?? knownKeys._) };
         // Seeding
-        returnValue.getFm =
-          returnValue.getFm === undefined ? [] : returnValue.getFm;
+        returnValue.getFm = [];
+        returnValue.guardsFm = [];
+
         const queryCollect: string[] = [];
         // Part 2: Construct (FM) => value
         const index = key.match(reIndexd);
-        for (const dep of g.immediateDependencies(key)) {
-          queryCollect.push(acc.get(dep)?.query ?? '');
-          const all = acc.get(dep)?.getFm ?? [];
-          if (index === null) {
-            returnValue.getFm.push(...all);
-            continue;
-          }
 
-          const idx = Number(index[0]);
-          const [first, ...rst] = all;
-          returnValue.getFm.push(
-            rst.length > 0
-              ? all[idx]
-              : c(
-                  (s) => (typeof s === 'string' ? s.split(',')[idx] : s),
-                  first,
-                ),
-          );
+        for (const dep of g.immediateDependencies(key)) {
+          const node = acc.get(dep);
+          if (node) {
+            // Collect query tokens -> Part 3
+            queryCollect.push(node.query);
+            // Compose getter functions
+            returnValue.getFm.push(...composeGetFmRec(index, node.getFm ?? []));
+            // Push guards
+            returnValue.guardsFm.push(...(node.guardsFm ?? []));
+          }
         }
 
         // Leaves
-        if (returnValue.getFm.length === 0)
+        if (returnValue.getFm.length === 0) {
           returnValue.getFm.push(getInParsed(key));
+          returnValue.guardsFm.push(key);
+        }
 
         // Part 3: Fill query holes
         if (returnValue.query === '') {
           returnValue.query = queryCollect.join(' ');
         }
+
+        // Part 4: GuardsFm
 
         return acc.set(key, returnValue);
       },
@@ -461,3 +485,37 @@ export function dagAction(g: DGraph<string>) {
   );
   return last(out);
 }
+
+// Const composeRet = (
+//   acc: Map<PropertyKey, ReturnValue>,
+//   g: DGraph<string>,
+//   key: string) =>
+//   transduce(
+//     multiplexObj({
+//       queryCollect: map(
+//         x => acc.get(x)?.query ?? ''
+//       ),
+//       queryRetFn: map(
+//         x => composeGetFmRec(key.match(reIndexd),  acc.get(x)?.getFm ?? [])
+//       )
+//     }),
+//     push(),
+//     g.immediateDependencies(key)
+//   )
+
+// const all = acc.get(dep)?.getFm ?? [];
+// if (index === null) {
+//   returnValue.getFm.push(...all);
+//   continue;
+// }
+
+// const idx = Number(index[0]);
+// const [first, ...rst] = all;
+// returnValue.getFm.push(
+//   rst.length > 0
+//     ? all[idx]
+//     : c(
+//       (s) => (typeof s === 'string' ? s.split(',')[idx] : s),
+//       first,
+//     ),
+// );
