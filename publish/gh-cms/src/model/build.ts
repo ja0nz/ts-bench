@@ -28,11 +28,10 @@ import { assert } from '@thi.ng/errors';
 import {
   queryBodyI,
   queryL,
-  queryM,
+  queryMilestoneI,
   queryNameL,
   queryStateI,
   queryTitleI,
-  queryTitleM,
 } from 'gh-cms-ql';
 import type { BuildOptions } from '../cmd/build.js';
 import type { Logger } from '../logger.js';
@@ -350,7 +349,7 @@ export function buildDag() {
   const env = {
     MD2ID: 'MD2TITLE[2]',
     MD2DATE: 'MD2MILESTONE',
-    MD2TITLE: 'title[0],route[1],no,category',
+    MD2TITLE: 'title,route[1],no,category',
     MD2LABELS: 'tags',
     MD2MILESTONE: 'date',
     MD2STATE: 'draft',
@@ -401,7 +400,7 @@ const knownKeys: Record<string, ReturnValue> = {
     query: queryL()(queryNameL),
   },
   MD2MILESTONE: {
-    query: queryM()(queryTitleM),
+    query: queryMilestoneI,
   },
   MD2STATE: {
     query: queryStateI,
@@ -422,31 +421,37 @@ export function dagAction(g: DGraph<string>) {
         // Seeding
         returnValue.getFm =
           returnValue.getFm === undefined ? [] : returnValue.getFm;
+        const queryCollect: string[] = [];
         // Part 2: Construct (FM) => value
         const index = key.match(reIndexd);
         for (const dep of g.immediateDependencies(key)) {
+          queryCollect.push(acc.get(dep)?.query ?? '');
           const all = acc.get(dep)?.getFm ?? [];
           if (index === null) {
-            returnValue.getFm = returnValue.getFm.concat(all);
+            returnValue.getFm.push(...all);
             continue;
           }
 
           const idx = Number(index[0]);
           const [first, ...rst] = all;
-          returnValue.getFm = returnValue.getFm.concat([
+          returnValue.getFm.push(
             rst.length > 0
               ? all[idx]
               : c(
-                  (s: unknown) =>
-                    typeof s === 'string' ? s.split(',')[idx] : s,
+                  (s) => (typeof s === 'string' ? s.split(',')[idx] : s),
                   first,
                 ),
-          ]);
+          );
         }
 
         // Leaves
         if (returnValue.getFm.length === 0)
-          returnValue.getFm = returnValue.getFm.concat([getInParsed(key)]);
+          returnValue.getFm.push(getInParsed(key));
+
+        // Part 3: Fill query holes
+        if (returnValue.query === '') {
+          returnValue.query = queryCollect.join(' ');
+        }
 
         return acc.set(key, returnValue);
       },
