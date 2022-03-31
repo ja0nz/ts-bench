@@ -1,6 +1,5 @@
 import type { RequestParameters } from '@octokit/types';
 import type { Fn } from '@thi.ng/api';
-import { comp } from '@thi.ng/compose';
 import { defGetter } from '@thi.ng/paths';
 import { jNl, Milestone, Milestones, R1, R2 } from './api.js';
 import { endCursor, hasNextPage, pageInfo, totalCount } from './repo.js';
@@ -31,13 +30,14 @@ export const getM: Fn<R1<Milestones>, R2<Milestones>> = defGetter<
   'milestones'
 >(['milestones']);
 
-// Nodes
-export const getIdM = comp(defGetter<Milestone, 'id'>([queryIdM]));
-export const getNumberM = comp(defGetter<Milestone, 'number'>([queryNumberM]));
-export const getTitleM = comp(defGetter<Milestone, 'title'>([queryTitleM]));
-export const getIssueCountM = comp(
-  defGetter<Milestone, 'issues', 'totalCount'>(['issues', 'totalCount']),
-);
+// Nodes/Leaves
+export const getIdM = defGetter<Milestone, 'id'>([queryIdM]);
+export const getNumberM = defGetter<Milestone, 'number'>([queryNumberM]);
+export const getTitleM = defGetter<Milestone, 'title'>([queryTitleM]);
+export const getIssueCountM = defGetter<Milestone, 'issues', 'totalCount'>([
+  'issues',
+  'totalCount',
+]);
 
 /*
  * Mutation

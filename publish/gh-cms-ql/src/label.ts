@@ -1,5 +1,4 @@
 import type { Fn } from '@thi.ng/api';
-import { comp } from '@thi.ng/compose';
 import { defGetter } from '@thi.ng/paths';
 import { jNl, Label, Labels, R1, R2 } from './api.js';
 import { endCursor, hasNextPage, pageInfo, totalCount } from './repo.js';
@@ -29,11 +28,12 @@ export const getL: Fn<R1<Labels>, R2<Labels>> = defGetter<R1<Labels>, 'labels'>(
 );
 
 // Nodes
-export const getIdL = comp(defGetter<Label, 'id'>([queryIdL]));
-export const getNameL = comp(defGetter<Label, 'name'>([queryNameL]));
-export const getIssueCountL = comp(
-  defGetter<Label, 'issues', 'totalCount'>(['issues', 'totalCount']),
-);
+export const getIdL = defGetter<Label, 'id'>([queryIdL]);
+export const getNameL = defGetter<Label, 'name'>([queryNameL]);
+export const getIssueCountL = defGetter<Label, 'issues', 'totalCount'>([
+  'issues',
+  'totalCount',
+]);
 
 /*
  * Mutation

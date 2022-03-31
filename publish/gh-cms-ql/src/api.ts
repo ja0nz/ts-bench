@@ -13,6 +13,8 @@ export type Issue = {
   state?: string;
   title?: string;
   body?: string;
+  milestone?: string;
+  labels?: R2<Labels>;
 };
 export type Label = {
   id: string;
