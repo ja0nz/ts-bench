@@ -19,6 +19,9 @@ import {
   distinct,
   trace,
   iterator,
+  step,
+  Reduced,
+  isReduced,
 } from '@thi.ng/transducers';
 import { comp as c } from '@thi.ng/compose';
 import grayMatter from 'gray-matter';
@@ -27,14 +30,24 @@ import { DGraph } from '@thi.ng/dgraph';
 import { assert } from '@thi.ng/errors';
 import {
   getBodyI,
+  getEndCursor,
+  getHasNextPage,
+  getI,
   getLabelsI,
   getMilestoneI,
+  getNodes,
+  getR,
   getStateI,
   getTitleI,
+  hasNextPage,
+  Issues,
+  Milestone,
   queryBodyI,
+  queryI,
   queryL,
   queryMilestoneI,
   queryNameL,
+  queryR,
   queryStateI,
   queryTitleI,
 } from 'gh-cms-ql';
@@ -70,9 +83,215 @@ import {
   setTitle,
   Effect,
   Label,
-  Milestone,
   getInParsed,
+  indexdIdentifier,
 } from './api.js';
+import { getTitleM } from 'gh-cms-ql';
+import type { MDENV } from '../api.js';
+import type { graphql } from '@octokit/graphql/dist-types/types';
+
+// New implement
+export function buildDag(env: IObjectOf<string>) {
+  const g = new DGraph<string>();
+
+  type Stup = [string, string];
+  const out: IterableIterator<Stup> = iterator(
+    comp(
+      mapcat<Stup, Stup>(([k, v]) => v.split(',').map((v1) => [k, v1])),
+      mapcat<Stup, Stup>(([k, v]) => {
+        const indexs = v.match(indexdIdentifier);
+        const returnValue: Stup[] = [];
+        if (indexs !== null) {
+          assert(indexs.length < 2, `Only one index level allowed: ${v}`);
+          const [v1] = v.split('[');
+          returnValue.push([v, v1]);
+        }
+
+        returnValue.push([k, v]);
+        return returnValue;
+      }),
+    ),
+    Object.entries(env),
+  );
+  for (const row of out) {
+    g.addDependency(...row);
+  }
+
+  return g;
+}
+
+/*
+ * ActionMap type
+ * qlToken -> comp(qlTokenI(), qlTokenR, repoQ)(qlToken)
+ * gm2valueFn -> GH_CMS / GrayMatter only! -> value
+ * gmToken -> keys that needs to be present
+ * issue2valueFn -> parsedIssue -> value
+ */
+type ActionMap = {
+  issue2valueFn: Fn<any, any>;
+  gm2valueFn: Fn<any, any>;
+  qlToken: string;
+  gmToken: string;
+};
+const knownKeys: Record<string, Partial<ActionMap>> = {
+  MD2TITLE: {
+    qlToken: queryTitleI,
+    issue2valueFn: getTitleI,
+  },
+  MD2LABELS: {
+    qlToken: queryL()(queryNameL),
+    issue2valueFn: getLabelsI,
+  },
+  MD2MILESTONE: {
+    qlToken: queryMilestoneI,
+    issue2valueFn: c(
+      (m: Milestone | undefined) => m && getTitleM(m),
+      getMilestoneI
+    ),
+  },
+  MD2STATE: {
+    qlToken: queryStateI,
+    issue2valueFn: getStateI,
+  },
+};
+
+type R = Reduced<ActionMap>;
+function stepTree(
+  acc: Map<PropertyKey, ActionMap[]>,
+  key: string,
+  g: DGraph<string>,
+): ActionMap[] | ActionMap {
+  return step(
+    comp(
+      // Trace('1. traversing ROOT value (gray matter):'),
+      map<string, string | R>((k) => {
+        if (g.isRoot(k))
+          return new Reduced({
+            // TODO: getInParsed(key)
+            gm2valueFn: getInParsed(k),
+            gmToken: k,
+            qlToken: queryBodyI,
+            issue2valueFn: getBodyI,
+          });
+        return k;
+      }),
+      // Trace("2. expand dependencies:"),
+      mapcat<R | string, R | string>((x) => {
+        if (isReduced(x)) return [x];
+        return g.immediateDependencies(x);
+      }),
+      // Trace("2.1. map dependencies to nodes:"),
+      map<R | string, R | ActionMap[]>((x) => {
+        if (isReduced(x)) return x;
+        return acc.get(x) ?? [];
+      }),
+      // Trace("3. Known keys (set in .env):"),
+      mapcat<R | ActionMap[], R | ActionMap[]>((node) => {
+        if (isReduced(node)) return [node];
+        if (knownKeys[key])
+          return node.map(
+            (n) =>
+              new Reduced({
+                ...n,
+                qlToken: knownKeys[key].qlToken ?? '',
+                issue2valueFn: knownKeys[key].issue2valueFn ?? ((x) => x),
+              }),
+          );
+        return [node];
+      }),
+      // Trace('4. Indexed keys[0]:'),
+      mapcat<R | ActionMap[], R | ActionMap[]>((node) => {
+        if (isReduced(node)) return [node];
+        const k = key.match(indexdIdentifier);
+        const getIndex =
+          (n: number): Fn<string, string> =>
+          (x: string) =>
+            typeof x === 'string' ? x.split(',')[n] : x;
+        if (k) {
+          const k0 = Number(k[0]);
+          return node.length === 1
+            ? node.map(
+                (n: ActionMap) =>
+                  new Reduced({
+                    ...n,
+                    gm2valueFn: c(getIndex(k0), n.gm2valueFn),
+                  }),
+              )
+            : [node[k0]].map(
+                (n: ActionMap) =>
+                  new Reduced({
+                    ...n,
+                    issue2valueFn: c(getIndex(k0), n.issue2valueFn),
+                  }),
+              );
+        }
+
+        return [node];
+      }),
+      // Trace('5. LEAF values just copy:'),
+      mapcat((node) => {
+        if (isReduced(node)) return [node];
+        return node.map((n) => new Reduced(n));
+      }),
+      // Trace("6. All values Reduced; extract/deref!"),
+      map((node) => node.deref()),
+      // Trace("7. Finished!"),
+      trace('---------------------'),
+    ),
+  )(key);
+}
+
+
+export function dagAction(g: DGraph<string>): Map<keyof (typeof MDENV), [ActionMap]> {
+  return last(
+    scan(
+      reducer(
+        () => new Map<PropertyKey, ActionMap[]>(),
+        (acc, key: string) => {
+          const returnValue = stepTree(acc, key, g);
+          return acc.set(
+            key,
+            Array.isArray(returnValue) ? returnValue : [returnValue],
+          );
+        },
+      ),
+      new Map(),
+      g,
+    ),
+  );
+}
+
+export function preFarPageFn(actionMap: Map<keyof (typeof MDENV), [ActionMap]>): Fn<string, string> {
+  const id = actionMap.get("MD2ID");
+  const date = actionMap.get("MD2DATE");
+  console.log("id", id)
+  console.log("date", date)
+  const join = [...id ?? [], ...date ?? []].reduce(
+    (acc, x) => acc + '\n' + x.qlToken,
+    ''
+  );
+  return (s: string) => c(queryR, queryI(s))(join)
+}
+
+export async function allIssues(client: graphql, query: Fn<string, string>) {
+  const nodes = [];
+  let cursor = '';
+  while (true) {
+    const ql = await client(query(cursor));
+    const issues = c(getI, getR)(ql);
+    nodes.push(...getNodes<Issues>(issues));
+    if (getHasNextPage<Issues>(issues)) {
+      cursor = getEndCursor<Issues>(issues);
+      continue;
+    }
+    break;
+  }
+  return nodes;
+}
+
+
+// End new implement
+
 
 type WrapIssue = { issue: Issue };
 export function postBuild(
@@ -346,195 +565,3 @@ export function parseContentRows(
       flatten(rows),
     );
 }
-
-// Make const
-const reIndexd = /(?<=\[)(\d+?)(?=])/g;
-export function buildDag() {
-  // Dev
-  const env = {
-    MD2ID: 'MD2TITLE[2],MD2STATE',
-    MD2DATE: 'MD2MILESTONE',
-    MD2TITLE: 'title,route[1],no,category',
-    MD2LABELS: 'tags',
-    MD2MILESTONE: 'date',
-    MD2STATE: 'draft',
-  };
-  // --dev
-
-  const g = new DGraph<string>();
-
-  type Stup = [string, string];
-  const out: IterableIterator<Stup> = iterator(
-    comp(
-      mapcat<Stup, Stup>(([k, v]) => v.split(',').map((v1) => [k, v1])),
-      mapcat<Stup, Stup>(([k, v]) => {
-        const indexs = v.match(reIndexd);
-        const returnValue: Stup[] = [];
-        if (indexs !== null) {
-          assert(indexs.length < 2, `Only one index level allowed: ${v}`);
-          const [v1] = v.split('[');
-          returnValue.push([v, v1]);
-        }
-
-        returnValue.push([k, v]);
-        return returnValue;
-      }),
-    ),
-    Object.entries(env),
-  );
-  for (const row of out) {
-    g.addDependency(...row);
-  }
-
-  return g;
-}
-
-type FmFn = Fn<GH_CMS, unknown>;
-/*
- * Query -> comp(queryI(), queryR, repoQ)(query)
- * getFm -> GH_CMS / GrayMatter only! -> value
- * guardsFm -> keys that needs to be present
- * getQ -> parsedIssue -> value
- */
-type ReturnValue = {
-  query: string;
-  getQ: any[];
-  getFm?: FmFn[];
-  guardsFm?: string[];
-};
-const knownKeys: Record<string, ReturnValue> = {
-  MD2ID: {
-    query: '',
-    getQ: [],
-  },
-  MD2DATE: {
-    query: '',
-    getQ: [],
-  },
-  MD2TITLE: {
-    query: queryTitleI,
-    getQ: [getTitleI],
-  },
-  MD2LABELS: {
-    query: queryL()(queryNameL),
-    getQ: [getLabelsI],
-  },
-  MD2MILESTONE: {
-    query: queryMilestoneI,
-    getQ: [getMilestoneI],
-  },
-  MD2STATE: {
-    query: queryStateI,
-    getQ: [getStateI],
-  },
-  _: {
-    query: queryBodyI,
-    getQ: [getBodyI],
-  },
-};
-
-function composeGetFmRec(index: RegExpMatchArray | false, all: FmFn[]) {
-  // QueryCollect.push(acc.get(dep)?.query ?? '');
-  if (index === false) {
-    return all;
-  }
-
-  const idx = Number(index[0]);
-  const [first, ...rst] = all;
-  return [
-    rst.length > 0
-      ? all[idx]
-      : c((s) => (typeof s === 'string' ? s.split(',')[idx] : s), first),
-  ];
-}
-
-export function dagAction(g: DGraph<string>) {
-  const out = scan(
-    reducer(
-      () => new Map<PropertyKey, ReturnValue>(),
-      (acc, key: string) => {
-        // Construct returnValue
-        const returnValue = {
-          getFm: [],
-          guardsFm: [],
-          ...(knownKeys[key.split('[')[0]] ?? knownKeys._),
-        };
-
-        // Just some helpers to fill holes after iteration
-        const queryCol: string[] = [];
-        const getQCol: string[] = [];
-        // Iterate leave -> root
-        for (const dep of g.immediateDependencies(key)) {
-          const node = acc.get(dep);
-          if (node) {
-            // Collect to helpers
-            queryCol.push(node.query);
-            getQCol.push(...node.getQ);
-            // Compose previous getter functions to form a consistent path
-            returnValue.getFm.push(
-              ...composeGetFmRec(
-                key.match(reIndexd) ?? false,
-                node.getFm ?? [],
-              ),
-            );
-            // Collect keys needed in front matter
-            returnValue.guardsFm.push(...(node.guardsFm ?? []));
-          }
-        }
-
-        // Leaves
-        if (returnValue.getFm.length === 0) {
-          // Generate first path function
-          returnValue.getFm.push(getInParsed(key));
-          // Generate dependency variable
-          returnValue.guardsFm.push(key);
-        }
-
-        // Conditional fill query holes
-        if (returnValue.query === '') returnValue.query = queryCol.join(' ');
-
-        // Conditional fill getQ holes
-        if (returnValue.getQ.length === 0) returnValue.getQ = getQCol;
-
-        return acc.set(key, returnValue);
-      },
-    ),
-    new Map(),
-    g,
-  );
-  return last(out);
-}
-
-// Const composeRet = (
-//   acc: Map<PropertyKey, ReturnValue>,
-//   g: DGraph<string>,
-//   key: string) =>
-//   transduce(
-//     multiplexObj({
-//       queryCollect: map(
-//         x => acc.get(x)?.query ?? ''
-//       ),
-//       queryRetFn: map(
-//         x => composeGetFmRec(key.match(reIndexd),  acc.get(x)?.getFm ?? [])
-//       )
-//     }),
-//     push(),
-//     g.immediateDependencies(key)
-//   )
-
-// const all = acc.get(dep)?.getFm ?? [];
-// if (index === null) {
-//   returnValue.getFm.push(...all);
-//   continue;
-// }
-
-// const idx = Number(index[0]);
-// const [first, ...rst] = all;
-// returnValue.getFm.push(
-//   rst.length > 0
-//     ? all[idx]
-//     : c(
-//       (s) => (typeof s === 'string' ? s.split(',')[idx] : s),
-//       first,
-//     ),
-// );

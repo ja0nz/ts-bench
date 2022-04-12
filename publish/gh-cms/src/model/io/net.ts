@@ -24,6 +24,7 @@ export const qlClient = (url: string) => {
   });
 };
 
+
 /**
  * Query the GitHub API with REST (only needed with milestone modification)
  * @param url A repostitory url related to the injected GH_TOKEN

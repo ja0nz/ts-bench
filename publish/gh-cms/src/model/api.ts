@@ -1,8 +1,10 @@
 import { defGetter, defGetterUnsafe, defSetter, defSetterUnsafe } from '@thi.ng/paths';
 import { comp } from '@thi.ng/compose';
 import type { GrayMatterFile } from 'gray-matter';
-import { MD2DATE, MD2ID, MD2LABELS, MD2MILESTONE, MD2STATE, MD2TITLE } from '../api.js';
+import { MDENV } from '../api.js';
 import type { Fn, Fn0, NumOrString } from '@thi.ng/api';
+
+export const indexdIdentifier = /(?<=\[)(\d+?)(?=])/g;
 
 /*
  * GraphQL
@@ -112,44 +114,44 @@ export const getInParsed = (key: NumOrString): Fn<GH_CMS, unknown> =>
     get_parsed_data
 )
 export const getId = comp(
-  defGetter<FrontMatterSpec, any>([MD2ID]),
+  defGetter<FrontMatterSpec, any>([MDENV.MD2ID]),
   get_parsed_data
 );
 export const getDate = comp(
-  defGetter<FrontMatterSpec, any>([MD2DATE]),
+  defGetter<FrontMatterSpec, any>([MDENV.MD2DATE]),
   get_parsed_data
 );
 export const getTitle = comp(
-  defGetter<FrontMatterSpec, any>([MD2TITLE]),
+  defGetter<FrontMatterSpec, any>([MDENV.MD2TITLE]),
   get_parsed_data
 );
 export const setTitle = defSetter<GH_CMS, 'parsed', 'data', any>([
   'parsed',
   'data',
-  MD2TITLE,
+  MDENV.MD2TITLE,
 ]);
 
 export const getLabels: Fn<GH_CMS, string[]> = comp(
-  defGetter<FrontMatterSpec, any>([MD2LABELS]),
+  defGetter<FrontMatterSpec, any>([MDENV.MD2LABELS]),
   get_parsed_data
 );
 export const setLabels = defSetterUnsafe([
   'parsed',
   'data',
-  MD2LABELS,
+  MDENV.MD2LABELS,
 ]);
 
 export const getMilestone: Fn<GH_CMS, string> = comp(
-  defGetter<FrontMatterSpec, any>([MD2MILESTONE]),
+  defGetter<FrontMatterSpec, any>([MDENV.MD2MILESTONE]),
   get_parsed_data
 );
 export const setMilestone = defSetterUnsafe([
   'parsed',
   'data',
-  MD2MILESTONE,
+  MDENV.MD2MILESTONE,
 ]);
 
 export const getState: Fn<GH_CMS, boolean> = comp(
-  defGetter<FrontMatterSpec, any>([MD2STATE]),
+  defGetter<FrontMatterSpec, any>([MDENV.MD2STATE]),
   get_parsed_data
 );
