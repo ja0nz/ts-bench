@@ -15,7 +15,7 @@ export const queryBodyI = 'body';
 export const queryMilestoneI = `milestone { ${queryIdM} ${queryTitleM} }`;
 
 export const queryI =
-  (n = 100, after = '', owner = '$owner') =>
+  (after = '', n = 100, owner = '$owner') =>
   (...query: string[]) =>
     `issues(first: ${n} ${
       after && `after: "${after}"`

@@ -13,7 +13,7 @@ export type Issue = {
   state?: string;
   title?: string;
   body?: string;
-  milestone?: string;
+  milestone?: Milestone;
   labels?: R2<Labels>;
 };
 export type Label = {

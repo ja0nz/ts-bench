@@ -11,7 +11,7 @@ export const queryNameL = 'name';
 export const queryIssueCountL = `issues { ${totalCount} }`;
 
 export const queryL =
-  (n = 100, after = '') =>
+  (after = '', n = 100) =>
   (...query: string[]) =>
     `labels(first: ${n} ${after && `after: "${after}"`}) {
         nodes { ${queryIdL} ${jNl(...query)} }

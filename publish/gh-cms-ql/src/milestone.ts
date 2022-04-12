@@ -13,7 +13,7 @@ export const queryTitleM = 'title';
 export const queryIssueCountM = `issues { ${totalCount} }`;
 
 export const queryM =
-  (n = 100, after = '') =>
+  (after = '', n = 100) =>
   (...query: string[]) =>
     `milestones(first: ${n} ${after && `after: "${after}"`}) {
         nodes { ${queryIdM} ${jNl(...query)} }
