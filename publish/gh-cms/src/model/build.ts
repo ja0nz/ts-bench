@@ -24,7 +24,7 @@ import {
   isReduced,
 } from '@thi.ng/transducers';
 import { comp as c } from '@thi.ng/compose';
-import grayMatter from 'gray-matter';
+import grayMatter, { GrayMatterFile } from 'gray-matter';
 import type { Fn, FnAnyT, IObjectOf } from '@thi.ng/api';
 import { DGraph } from '@thi.ng/dgraph';
 import { assert } from '@thi.ng/errors';
@@ -167,7 +167,6 @@ function stepTree(
       map<string, string | R>((k) => {
         if (g.isRoot(k))
           return new Reduced({
-            // TODO: getInParsed(key)
             gm2valueFn: getInParsed(k),
             gmToken: k,
             qlToken: queryBodyI,
@@ -205,25 +204,25 @@ function stepTree(
         const k = key.match(indexdIdentifier);
         const getIndex =
           (n: number): Fn<string, string> =>
-          (x: string) =>
-            typeof x === 'string' ? x.split(',')[n] : x;
+            (x: string) =>
+              typeof x === 'string' ? x.split(',')[n] : x;
         if (k) {
           const k0 = Number(k[0]);
           return node.length === 1
             ? node.map(
-                (n: ActionMap) =>
-                  new Reduced({
-                    ...n,
-                    gm2valueFn: c(getIndex(k0), n.gm2valueFn),
-                  }),
-              )
+              (n: ActionMap) =>
+                new Reduced({
+                  ...n,
+                  gm2valueFn: c(getIndex(k0), n.gm2valueFn),
+                }),
+            )
             : [node[k0]].map(
-                (n: ActionMap) =>
-                  new Reduced({
-                    ...n,
-                    issue2valueFn: c(getIndex(k0), n.issue2valueFn),
-                  }),
-              );
+              (n: ActionMap) =>
+                new Reduced({
+                  ...n,
+                  issue2valueFn: c(getIndex(k0), n.issue2valueFn),
+                }),
+            );
         }
 
         return [node];
@@ -264,8 +263,6 @@ export function dagAction(g: DGraph<string>): Map<keyof (typeof MDENV), [ActionM
 export function preFarPageFn(actionMap: Map<keyof (typeof MDENV), [ActionMap]>): Fn<string, string> {
   const id = actionMap.get("MD2ID");
   const date = actionMap.get("MD2DATE");
-  console.log("id", id)
-  console.log("date", date)
   const join = [...id ?? [], ...date ?? []].reduce(
     (acc, x) => acc + '\n' + x.qlToken,
     ''
@@ -290,7 +287,36 @@ export async function allIssues(client: graphql, query: Fn<string, string>) {
 }
 
 
-// End new implement
+export const setGrayMatter = (
+  raw: unknown[],
+  getter = ((o: any) => o),
+  setter = ((_: any, p: any) => p)) =>
+  transduce(
+    comp(
+      map((o) => [o, getter(o)]),
+      map(([o, p]) => [o, grayMatter(p)]),
+      map(([o, p]) => setter(o, p))
+    ),
+    push(),
+    raw)
+
+type NewIssue = {
+  id: string;
+  date: Date;
+  iId: string;
+  iTitle: string;
+  iLabels: string[];
+  iMilestone: string;
+  iState: boolean;
+  isEmpty: boolean;
+  raw: string;
+} & GrayMatterFile<string>
+
+export function setNewIssue(o: any, actionMap) {
+  return
+}
+
+// :End new implement
 
 
 type WrapIssue = { issue: Issue };

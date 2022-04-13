@@ -92,10 +92,12 @@ export const get_parsed_content = comp(
   defGetter<CustomGrayMatter, 'content'>(['content']),
   get_CMS_parsed
 );
-export const get_parsed_data = comp(
-  defGetter<CustomGrayMatter, 'data'>(['data']),
-  get_CMS_parsed
-);
+// export const get_parsed_data = comp(
+//   defGetter<CustomGrayMatter, 'data'>(['data']),
+//   get_CMS_parsed
+// );
+export const get_parsed_data =
+  defGetter<CustomGrayMatter, 'data'>(['data'])
 
 /*
  *

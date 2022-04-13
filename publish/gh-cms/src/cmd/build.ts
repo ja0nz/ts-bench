@@ -23,6 +23,7 @@ import {
   postBuild,
   preBuild,
   preFarPageFn,
+  setGrayMatter,
 } from '../model/build';
 import { getInFs } from '../model/io/fs';
 import {
@@ -63,10 +64,22 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     const actionMap = dagAction(dag);
     // 2. Preflight - Get essential MD2ID, MD2DATE in memory
     // 2.1. Fetch preflight (title, state, ... or body?)
-    const preIssues: Issue[] = await allIssues(repoQ, preFarPageFn(actionMap));
+    const issuesFar: Issue[] = await allIssues(repoQ, preFarPageFn(actionMap));
+    console.log(issuesFar);
+    const pFar = setGrayMatter(issuesFar, actionMap.get("MD2ID")[0].issue2valueFn)
+    console.log(pFar)
+    // const id = actionMap.get("MD2ID")[0]
+    // const idXs = preIssues.map(x => id.issue2valueFn(x))
+    // console.log("idXS", idXs)
+    //
+    // if glToken === 'body'
+    // const body = actionMap.get("MD2DATE")[0]
+    // const bodyXs = preIssues.map(x => body.gm2valueFn(grayMatter(body.issue2valueFn(x))))
+    // console.log("bodyXS", bodyXs)
+    //
     // 2.1. Retrieve local fs
-    const pnear: Issue[] = await getInFs(contentPath);
-    console.log(pnear)
+    //const mdNear = setGrayMatter(await getInFs(contentPath));
+    //console.log(mdNear)
 
     // 2.2. Parse
     // 2.3. Check if all keys are set properly

@@ -1,6 +1,5 @@
 import { opendir, readFile } from 'node:fs/promises';
 import { join, extname } from 'node:path';
-import type { Issue } from '../api';
 
 async function* fswalk(dir: string): AsyncGenerator<string> {
   for await (const d of await opendir(dir)) {
@@ -11,14 +10,15 @@ async function* fswalk(dir: string): AsyncGenerator<string> {
 }
 
 // Local content files
-export async function getInFs(contentDir: string): Promise<Issue[]> {
-  const fxs: Issue[] = [];
+export async function getInFs(contentDir: string): Promise<string[]> {
+  const fxs: string[] = [];
   for await (const f of fswalk(contentDir)) {
     if (extname(f) === '.md') {
       const file = await readFile(f);
       const buffer = Buffer.from(file).toString('utf-8');
+      fxs.push(buffer);
       // Wrap in empty issue
-      fxs.push({ id: '', state: '', body: buffer });
+      //fxs.push({ id: '', state: '', body: buffer });
     }
   }
   return fxs;
