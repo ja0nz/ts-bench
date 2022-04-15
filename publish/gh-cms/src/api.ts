@@ -54,6 +54,21 @@ export const MDENV = {
   MD2MILESTONE: getEnv('MD2MILESTONE') ?? 'milestone',
   MD2STATE: getEnv('MD2STATE') ?? 'state'
 }
+/*
+ * ActionObj type
+ * qlToken -> comp(qlTokenI(), qlTokenR, repoQ)(qlToken)
+ * gm2valueFn -> GH_CMS / GrayMatter only! -> value
+ * gmToken -> keys that needs to be present
+ * issue2valueFn -> parsedIssue -> value
+ */
+export type ActionObj = {
+  issue2valueFn: Fn<any, any>;
+  gm2valueFn: Fn<any, any>;
+  qlToken: string;
+  gmToken: string;
+};
+export type DGraphFields = string | keyof typeof MDENV;
+export type MDActionMap = Map<DGraphFields, ActionObj[]>
 
 // process.argv
 const argv = defGetter<typeof Process, 'argv'>(['argv'])(process);

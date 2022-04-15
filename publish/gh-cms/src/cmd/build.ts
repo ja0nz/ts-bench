@@ -17,9 +17,10 @@ import {
     allIssues,
   build,
   buildDag,
-  dagAction,
+  dag2MDActionMap,
   latestContentRows,
   parseContentRows,
+  parseIssues,
   postBuild,
   preBuild,
   preFarPageFn,
@@ -61,13 +62,18 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     // 1. Build DAG
     const dag = buildDag(MDENV);
     // 2. Expand to action map
-    const actionMap = dagAction(dag);
+    const actionMap = dag2MDActionMap(dag);
+    console.log(actionMap)
     // 2. Preflight - Get essential MD2ID, MD2DATE in memory
     // 2.1. Fetch preflight (title, state, ... or body?)
     const issuesFar: Issue[] = await allIssues(repoQ, preFarPageFn(actionMap));
-    console.log(issuesFar);
-    const pFar = setGrayMatter(issuesFar, actionMap.get("MD2ID")[0].issue2valueFn)
-    console.log(pFar)
+    console.log(issuesFar)
+    // 2.2. Turn to issue
+    //const issuesParsedFar = parseIssues(issuesFar, actionMap);
+    //console.log(issuesParsedFar);
+
+    // const pFar = setGrayMatter(issuesFar, actionMap.get("MD2ID")[0].issue2valueFn)
+    // console.log(pFar)
     // const id = actionMap.get("MD2ID")[0]
     // const idXs = preIssues.map(x => id.issue2valueFn(x))
     // console.log("idXS", idXs)
@@ -78,7 +84,8 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     // console.log("bodyXS", bodyXs)
     //
     // 2.1. Retrieve local fs
-    //const mdNear = setGrayMatter(await getInFs(contentPath));
+    const mdNear = setGrayMatter(await getInFs(contentPath));
+    const issuesParsedNear = parseIssues(mdNear, actionMap);
     //console.log(mdNear)
 
     // 2.2. Parse

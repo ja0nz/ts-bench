@@ -50,9 +50,12 @@ import {
   queryR,
   queryStateI,
   queryTitleI,
+  getTitleM,
 } from 'gh-cms-ql';
+import type { graphql } from '@octokit/graphql/dist-types/types';
 import type { BuildOptions } from '../cmd/build.js';
 import type { Logger } from '../logger.js';
+import type { ActionObj, DGraphFields, MDActionMap, MDENV } from '../api.js';
 import {
   modifyState,
   createIssue,
@@ -86,21 +89,23 @@ import {
   getInParsed,
   indexdIdentifier,
 } from './api.js';
-import { getTitleM } from 'gh-cms-ql';
-import type { MDENV } from '../api.js';
-import type { graphql } from '@octokit/graphql/dist-types/types';
 
 // New implement
-export function buildDag(env: IObjectOf<string>) {
-  const g = new DGraph<string>();
 
-  type Stup = [string, string];
-  const out: IterableIterator<Stup> = iterator(
+/*
+ * IN: { "MD2ID": string, ... }
+ * OUT: DGraph<string> (MD2TITLE, MD2TITLE[2], draft)
+ */
+export function buildDag(env: typeof MDENV): DGraph<DGraphFields> {
+  const g = new DGraph<DGraphFields>();
+
+  type ROW = [string, string];
+  const out: IterableIterator<ROW> = iterator(
     comp(
-      mapcat<Stup, Stup>(([k, v]) => v.split(',').map((v1) => [k, v1])),
-      mapcat<Stup, Stup>(([k, v]) => {
+      mapcat<ROW, ROW>(([k, v]) => v.split(',').map((v1) => [k, v1])),
+      mapcat(([k, v]) => {
         const indexs = v.match(indexdIdentifier);
-        const returnValue: Stup[] = [];
+        const returnValue: ROW[] = [];
         if (indexs !== null) {
           assert(indexs.length < 2, `Only one index level allowed: ${v}`);
           const [v1] = v.split('[');
@@ -120,20 +125,7 @@ export function buildDag(env: IObjectOf<string>) {
   return g;
 }
 
-/*
- * ActionMap type
- * qlToken -> comp(qlTokenI(), qlTokenR, repoQ)(qlToken)
- * gm2valueFn -> GH_CMS / GrayMatter only! -> value
- * gmToken -> keys that needs to be present
- * issue2valueFn -> parsedIssue -> value
- */
-type ActionMap = {
-  issue2valueFn: Fn<any, any>;
-  gm2valueFn: Fn<any, any>;
-  qlToken: string;
-  gmToken: string;
-};
-const knownKeys: Record<string, Partial<ActionMap>> = {
+const knownKeys: Record<string, Partial<ActionObj>> = {
   MD2TITLE: {
     qlToken: queryTitleI,
     issue2valueFn: getTitleI,
@@ -146,7 +138,7 @@ const knownKeys: Record<string, Partial<ActionMap>> = {
     qlToken: queryMilestoneI,
     issue2valueFn: c(
       (m: Milestone | undefined) => m && getTitleM(m),
-      getMilestoneI
+      getMilestoneI,
     ),
   },
   MD2STATE: {
@@ -155,16 +147,18 @@ const knownKeys: Record<string, Partial<ActionMap>> = {
   },
 };
 
-type R = Reduced<ActionMap>;
 function stepTree(
-  acc: Map<PropertyKey, ActionMap[]>,
-  key: string,
-  g: DGraph<string>,
-): ActionMap[] | ActionMap {
+  acc: MDActionMap,
+  key: DGraphFields,
+  g: DGraph<DGraphFields>,
+): ActionObj[] | ActionObj {
+  // May be MD2ID, MD2ID[2], id, or Reduced
+  type ActionFieldsReduced = DGraphFields | Reduced<ActionObj>;
+  type ActionReduced = Reduced<ActionObj> | ActionObj[];
   return step(
     comp(
       // Trace('1. traversing ROOT value (gray matter):'),
-      map<string, string | R>((k) => {
+      map<DGraphFields, ActionFieldsReduced>((k) => {
         if (g.isRoot(k))
           return new Reduced({
             gm2valueFn: getInParsed(k),
@@ -175,17 +169,17 @@ function stepTree(
         return k;
       }),
       // Trace("2. expand dependencies:"),
-      mapcat<R | string, R | string>((x) => {
+      mapcat<ActionFieldsReduced, ActionFieldsReduced>((x) => {
         if (isReduced(x)) return [x];
         return g.immediateDependencies(x);
       }),
       // Trace("2.1. map dependencies to nodes:"),
-      map<R | string, R | ActionMap[]>((x) => {
+      map<ActionFieldsReduced, ActionReduced>((x) => {
         if (isReduced(x)) return x;
         return acc.get(x) ?? [];
       }),
       // Trace("3. Known keys (set in .env):"),
-      mapcat<R | ActionMap[], R | ActionMap[]>((node) => {
+      mapcat<ActionReduced, ActionReduced>((node) => {
         if (isReduced(node)) return [node];
         if (knownKeys[key])
           return node.map(
@@ -199,36 +193,36 @@ function stepTree(
         return [node];
       }),
       // Trace('4. Indexed keys[0]:'),
-      mapcat<R | ActionMap[], R | ActionMap[]>((node) => {
+      mapcat<ActionReduced, ActionReduced>((node) => {
         if (isReduced(node)) return [node];
         const k = key.match(indexdIdentifier);
         const getIndex =
           (n: number): Fn<string, string> =>
-            (x: string) =>
-              typeof x === 'string' ? x.split(',')[n] : x;
+          (x: string) =>
+            typeof x === 'string' ? x.split(',')[n] : x;
         if (k) {
           const k0 = Number(k[0]);
           return node.length === 1
             ? node.map(
-              (n: ActionMap) =>
-                new Reduced({
-                  ...n,
-                  gm2valueFn: c(getIndex(k0), n.gm2valueFn),
-                }),
-            )
+                (n: ActionObj) =>
+                  new Reduced({
+                    ...n,
+                    gm2valueFn: c(getIndex(k0), n.gm2valueFn),
+                  }),
+              )
             : [node[k0]].map(
-              (n: ActionMap) =>
-                new Reduced({
-                  ...n,
-                  issue2valueFn: c(getIndex(k0), n.issue2valueFn),
-                }),
-            );
+                (n: ActionObj) =>
+                  new Reduced({
+                    ...n,
+                    issue2valueFn: c(getIndex(k0), n.issue2valueFn),
+                  }),
+              );
         }
 
         return [node];
       }),
       // Trace('5. LEAF values just copy:'),
-      mapcat((node) => {
+      mapcat<ActionReduced, Reduced<ActionObj>>((node) => {
         if (isReduced(node)) return [node];
         return node.map((n) => new Reduced(n));
       }),
@@ -240,17 +234,20 @@ function stepTree(
   )(key);
 }
 
-
-export function dagAction(g: DGraph<string>): Map<keyof (typeof MDENV), [ActionMap]> {
+/*
+ * IN: DGraph<string>
+ * OUT: Map<string, ActionObj[]>
+ */
+export function dag2MDActionMap(g: DGraph<DGraphFields>): MDActionMap {
   return last(
     scan(
       reducer(
-        () => new Map<PropertyKey, ActionMap[]>(),
-        (acc, key: string) => {
-          const returnValue = stepTree(acc, key, g);
+        () => new Map<DGraphFields, ActionObj[]>(),
+        (acc, key: DGraphFields) => {
+          const actionObject = stepTree(acc, key, g);
           return acc.set(
             key,
-            Array.isArray(returnValue) ? returnValue : [returnValue],
+            Array.isArray(actionObject) ? actionObject : [actionObject],
           );
         },
       ),
@@ -260,19 +257,20 @@ export function dagAction(g: DGraph<string>): Map<keyof (typeof MDENV), [ActionM
   );
 }
 
-export function preFarPageFn(actionMap: Map<keyof (typeof MDENV), [ActionMap]>): Fn<string, string> {
-  const id = actionMap.get("MD2ID");
-  const date = actionMap.get("MD2DATE");
-  const join = [...id ?? [], ...date ?? []].reduce(
-    (acc, x) => acc + '\n' + x.qlToken,
-    ''
-  );
-  return (s: string) => c(queryR, queryI(s))(join)
+/*
+ * A function that helps to page through GitHub Issues
+ */
+type GHCursor = string;
+export function preFarPageFn(actionMap: MDActionMap): Fn<GHCursor, string> {
+  const id = actionMap.get('MD2ID') ?? [];
+  const date = actionMap.get('MD2DATE') ?? [];
+  const join = [...id, ...date].reduce((acc, x) => acc + '\n' + x.qlToken, '');
+  return (s: GHCursor) => c(queryR, queryI(s))(join);
 }
 
-export async function allIssues(client: graphql, query: Fn<string, string>) {
+export async function allIssues(client: graphql, query: Fn<GHCursor, string>) {
   const nodes = [];
-  let cursor = '';
+  let cursor: GHCursor = '';
   while (true) {
     const ql = await client(query(cursor));
     const issues = c(getI, getR)(ql);
@@ -281,24 +279,27 @@ export async function allIssues(client: graphql, query: Fn<string, string>) {
       cursor = getEndCursor<Issues>(issues);
       continue;
     }
+
     break;
   }
+
   return nodes;
 }
 
-
 export const setGrayMatter = (
   raw: unknown[],
-  getter = ((o: any) => o),
-  setter = ((_: any, p: any) => p)) =>
+  getter = (o: any) => o,
+  setter = (_: any, p: any) => p,
+) =>
   transduce(
     comp(
       map((o) => [o, getter(o)]),
       map(([o, p]) => [o, grayMatter(p)]),
-      map(([o, p]) => setter(o, p))
+      map(([o, p]) => setter(o, p)),
     ),
     push(),
-    raw)
+    raw,
+  );
 
 type NewIssue = {
   id: string;
@@ -310,14 +311,49 @@ type NewIssue = {
   iState: boolean;
   isEmpty: boolean;
   raw: string;
-} & GrayMatterFile<string>
+} & GrayMatterFile<string>;
 
-export function setNewIssue(o: any, actionMap) {
-  return
+export function parseIssues(ixs: any, actionMap: MDActionMap) {
+  return transduce(
+    comp(
+      // Trace("1. MD2ID"),
+      map((s) => {
+        const aXs = actionMap.get('MD2ID') ?? [];
+        const out = aXs.map((a) => {
+          const id = a.issue2valueFn(s) ?? a.gm2valueFn(s);
+          // Must be a issues far
+          if (typeof id === 'string' && a.qlToken === 'body') {
+            return a.gm2valueFn(grayMatter(id));
+          }
+
+          return id;
+        });
+
+        return [s, { id: out.join(',') }];
+      }),
+      trace('1. MD2DATE'),
+      map(([s, o]) => {
+        const aXs = actionMap.get('MD2STATE') ?? [];
+        const out = aXs.map((a) => {
+          const id = a.issue2valueFn(s) ?? a.gm2valueFn(s);
+          // Must be a issues far
+          if (typeof id === 'string' && a.qlToken === 'body') {
+            return a.gm2valueFn(grayMatter(id));
+          }
+
+          return id;
+        });
+
+        return [s, out.join(',')];
+      }),
+      trace('1. MD2DATE'),
+    ),
+    push(),
+    ixs,
+  );
 }
 
 // :End new implement
-
 
 type WrapIssue = { issue: Issue };
 export function postBuild(
