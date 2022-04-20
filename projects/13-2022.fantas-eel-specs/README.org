@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID:       ca226110-75c5-428f-802d-e5240e29558d
+:END:
+#+TITLE: 13-2022.fantas-eel-specs
+#+OPTIONS: ^:nil
+
+* TLDR
+Speeding through the absolute beautiful series
+[[http://www.tomharding.me/fantasy-land][Fantasy Land]] by Tom Harding
+See also the code repo: https://github.com/i-am-tom/fantas-eel-and-specification
+
+* Architecture
+#+begin_src bash :results drawer
+cd src && fd . | as-tree
+#+end_src
+
+#+RESULTS:
+:results:
+.
+├── data
+│   ├── bool.ts
+│   ├── coord.ts
+│   ├── line.ts
+│   ├── list.ts
+│   └── shape.ts
+├── index.ts
+├── setoid.ts
+└── vite-env.d.ts
+:end:
+
+* PROJ Tasks
+** TODO 9. Apply
+:PROPERTIES:
+:Effort:   0:25
+:CATEGORY: feat
+:END:
+Doc: [[id:4dae47a1-2c23-4635-a014-68d08011f377][fantasyland]]
+Repo: [[id:ca226110-75c5-428f-802d-e5240e29558d][13-2022.fantas-eel-specs]]
+http://www.tomharding.me/2017/03/09/fantas-eel-and-specification-8/
+** TODO 8. Contravariant
+:PROPERTIES:
+:Effort:   0:25
+:CATEGORY: feat
+:END:
+Doc: [[id:4dae47a1-2c23-4635-a014-68d08011f377][fantasyland]]
+Repo: [[id:ca226110-75c5-428f-802d-e5240e29558d][13-2022.fantas-eel-specs]]
+http://www.tomharding.me/2017/03/09/fantas-eel-and-specification-7/
+** TODO 7. Functor
+:PROPERTIES:
+:Effort:   0:25
+:CATEGORY: feat
+:END:
+Doc: [[id:4dae47a1-2c23-4635-a014-68d08011f377][fantasyland]]
+Repo: [[id:ca226110-75c5-428f-802d-e5240e29558d][13-2022.fantas-eel-specs]]
+http://www.tomharding.me/2017/03/09/fantas-eel-and-specification-6/
+** TODO 6. Monoid
+:PROPERTIES:
+:Effort:   0:25
+:CATEGORY: feat
+:END:
+Doc: [[id:4dae47a1-2c23-4635-a014-68d08011f377][fantasyland]]
+Repo: [[id:ca226110-75c5-428f-802d-e5240e29558d][13-2022.fantas-eel-specs]]
+http://www.tomharding.me/2017/03/09/fantas-eel-and-specification-5/
+* Log
+** [2022-03-28 Mo]
+Defined types (Bool, Coord, Line), intro to daggy
+-> taggedSum for sum types
+-> catamorphism & anamorphism
+
+
+
+* Authors
+- Ja0nz
+
+* License
+2022 Ja0nz // Apache Software License 2.0
