@@ -50,7 +50,7 @@ export const MDENV = {
   MD2ID: getEnv('MD2ID') ?? 'id',
   MD2DATE: getEnv('MD2DATE') ?? 'date',
   MD2TITLE: getEnv('MD2TITLE') ?? 'title',
-  MD2LABELS: getEnv('MD2LABEL') ?? 'labels',
+  MD2LABELS: getEnv('MD2LABELS') ?? 'labels',
   MD2MILESTONE: getEnv('MD2MILESTONE') ?? 'milestone',
   MD2STATE: getEnv('MD2STATE') ?? 'state'
 }
