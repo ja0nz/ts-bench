@@ -24,6 +24,7 @@ import {
   isReduced,
   cat,
   str,
+  assocMap,
 } from '@thi.ng/transducers';
 import { comp as c } from '@thi.ng/compose';
 import grayMatter, { GrayMatterFile } from 'gray-matter';
@@ -200,25 +201,25 @@ function stepTree(
         const k = key.match(indexdIdentifier);
         const getIndex =
           (n: number): Fn<string, string> =>
-            (x: string) =>
-              typeof x === 'string' ? x.split(',')[n] : x;
+          (x: string) =>
+            typeof x === 'string' ? x.split(',')[n] : x;
         if (k) {
           const k0 = Number(k[0]);
           return node.length === 1
             ? node.map(
-              (n: ActionObj) =>
-                new Reduced({
-                  ...n,
-                  gm2valueFn: c(getIndex(k0), n.gm2valueFn),
-                }),
-            )
+                (n: ActionObj) =>
+                  new Reduced({
+                    ...n,
+                    gm2valueFn: c(getIndex(k0), n.gm2valueFn),
+                  }),
+              )
             : [node[k0]].map(
-              (n: ActionObj) =>
-                new Reduced({
-                  ...n,
-                  issue2valueFn: c(getIndex(k0), n.issue2valueFn),
-                }),
-            );
+                (n: ActionObj) =>
+                  new Reduced({
+                    ...n,
+                    issue2valueFn: c(getIndex(k0), n.issue2valueFn),
+                  }),
+              );
         }
 
         return [node];
@@ -263,20 +264,25 @@ export function dag2MDActionMap(g: DGraph<DGraphFields>): MDActionMap {
  * A function that helps to page through GitHub Issues
  */
 type GHCursor = string;
-export function query(...actionObj: (ActionObj[] | undefined)[]): Fn<GHCursor, string> {
+export function query(
+  ...actionObject: Array<ActionObj[] | undefined>
+): Fn<GHCursor, string> {
   const join = transduce(
     comp(
       filter(Array.isArray),
       cat<ActionObj>(),
-      map((x: ActionObj) => x.qlToken)
+      map((x: ActionObj) => x.qlToken),
     ),
-    str("\n"),
-    actionObj
+    str('\n'),
+    actionObject,
   );
   return (s: GHCursor) => c(queryR, queryI(s))(join);
 }
 
-export async function fetchIssues(client: graphql, query: Fn<GHCursor, string>) {
+export async function fetchIssues(
+  client: graphql,
+  query: Fn<GHCursor, string>,
+) {
   const nodes = [];
   let cursor: GHCursor = '';
   while (true) {
@@ -321,9 +327,8 @@ type NewIssue = {
   raw: string;
 } & GrayMatterFile<string>;
 
-
 /*
-export const MDENV = {
+Export const MDENV = {
   MD2ID: getEnv('MD2ID') ?? 'id',
   MD2DATE: getEnv('MD2DATE') ?? 'date',
   MD2TITLE: getEnv('MD2TITLE') ?? 'title',
@@ -333,36 +338,92 @@ export const MDENV = {
 }
  *
  */
-export function parseIssues(iXs: any, ...actionObj: (ActionObj[] | undefined)[]) {
+export function parseIssues(
+  iXs: any,
+  ...actionObject: Array<ActionObj[] | undefined>
+) {
+  // --- iXs (issues)
   return transduce(
-    // --- iXs (issues)
-    map((issue) => transduce(
-      // --- aXs (actions)
-      comp(
-        filter(Array.isArray),
-        map((aXs: ActionObj[]) => transduce(
-          // --- each action
-          map((a: ActionObj) => {
-            const pValue = a.issue2valueFn(issue) ?? a.gm2valueFn(issue);
-            // Must be a issues far
-            if (typeof pValue === 'string' && a.qlToken === 'body') {
-              return a.gm2valueFn(grayMatter(pValue));
-            }
-            return pValue;
-          }),
-          // -- end each action (connect to one value)
+    map(
+      (issue) =>
+        // --- aXs (actions)
+        transduce(
+          comp(
+            filter(Array.isArray),
+            map(
+              (aXs: ActionObj[]) =>
+                // --- each action
+                map((a: ActionObj) => {
+                  const pValue = a.issue2valueFn(issue) ?? a.gm2valueFn(issue);
+                  // Must be a issues far
+                  if (typeof pValue === 'string' && a.qlToken === 'body') {
+                    return a.gm2valueFn(grayMatter(pValue));
+                  }
+
+                  return pValue;
+                }, aXs),
+              // -- end each action
+            ),
+            map((a) => [...a]), // Flat iterator
+            mapcat((a) => (a.length > 1 ? [a.join(',')] : a)), // Join if combined value (= must be string)
+          ),
           push(),
-          aXs)
+          actionObject,
         ),
-        mapcat((a) => a.length > 1 ? [a.join(",")] : a),
-      ),
-      // -- end aXs
-      push(),
-      actionObj
-    )),
-    // -- end iXs
+        // -- end aXs
+    ),
     push(),
     iXs,
+  );
+  // -- end iXs
+}
+export function patchedIssued2Map(
+  patchedIdFar: any
+) {
+  return transduce(
+    map(([[id, date], rId]) => [id, [date, rId]]),
+    assocMap(),
+    patchedIdFar
+  )
+}
+
+export function changedNewRows(near: any, far: any) {
+  // a bit of a hack
+  const isValidDate = (dateLike: any) => dateLike instanceof Date && !isNaN(dateLike as any);
+
+  return transduce(
+    comp(
+      // Flatten out zipped content
+      // Interleave remote GH issue id
+      map(([[id, date, ...r1], ...r2]) => {
+        // 'Null' from no remote id
+        if (!far.has(id)) return [null, id, date, ...r1, ...r2];
+        const [_, rId] = far.get(id);
+        // prepend remote id
+        return [rId, id, date, ...r1, ...r2];
+      }),
+      // Filter content for rows without update
+      filter(([_, id, date]) => {
+
+        // 1. no far equivalent == new content
+        if (!far.has(id)) return true;
+
+        // 2. no near date means push anyway - no dropping here
+        const nearDate = new Date(isNaN(date) ? date : Number(date));
+        if (!isValidDate(nearDate)) return true;
+
+        // 3. no far date means push anyway - after this far has a date
+        const [dateFar] = far.get(id);
+        const farDate = new Date(isNaN(dateFar) ? dateFar : Number(dateFar));
+        if (!isValidDate(farDate)) return true;
+
+        // 4. if modified content push it
+        if (nearDate > farDate) return true;
+        return false;
+      }),
+    ),
+    push(),
+    near
   );
 }
 
@@ -551,92 +612,3 @@ export function preBuild(
     );
 }
 
-function reduceToLatest(xs: GH_CMS[]): GH_CMS {
-  return transduce(
-    comp(
-      multiplexObj<GH_CMS, { id: string; rest: GH_CMS }>({
-        id: comp(
-          map(get_CMS_id),
-          scan(
-            reducer(
-              () => '',
-              (acc, x) => (acc ? acc : x),
-            ),
-          ),
-        ),
-        rest: scan(
-          maxCompare(
-            () => ({ parsed: { data: { date: new Date(0) } } }),
-            (a, b) => (getDate(a) > getDate(b) ? 1 : -1),
-          ),
-        ),
-      }),
-      // Fold to single GH_CMS
-      map((x: { id: string; rest: GH_CMS }) => set_CMS_id(x.rest, x.id)),
-    ),
-    last(),
-    xs,
-  );
-}
-
-export function latestContentRows(entries: IObjectOf<GH_CMS[]>): GH_CMS[] {
-  return transduce(
-    comp(
-      // If remote entry has no matching local id -> skip
-      filter((ghxs: GH_CMS[]) => {
-        if (ghxs.length === 1 && get_CMS_id(ghxs[0])) return false;
-        return true;
-      }),
-      // Remote.date >= local.date -> skip
-      filter((ghxs: GH_CMS[]) => {
-        const remote = ghxs.filter((x) => get_CMS_id(x));
-        const local = ghxs.filter((x) => !get_CMS_id(x));
-        // Cond1: if no remote content continue
-        if (remote.length === 0) return true;
-        //-
-        const newer = local.filter((x) => getDate(x) > getDate(remote[0]));
-        // Cond2: if local is newer than remote continue
-        if (newer.length > 0) return true;
-        //-
-        const undef = local.filter(
-          (x) => getDate(x) === undefined || getDate(remote[0]) === undefined,
-        );
-        // Cond3: if local or remote has no date at all
-        if (undef.length > 0) return true;
-        //-
-        return false;
-      }),
-      map(reduceToLatest),
-      // If title is not set use id
-      map((gh: GH_CMS) => {
-        const title = getTitle(gh);
-        if (title === undefined || title.length === 0)
-          return setTitle(gh, getId(gh));
-        return gh;
-      }),
-    ),
-    push(),
-    Object.values(entries),
-  );
-}
-
-export function parseContentRows(
-  far: Repository,
-): FnAnyT<Issue[], IObjectOf<GH_CMS[]>> {
-  const repoID = getInRepo(far, 'id') ?? '';
-  return (...rows) =>
-    transduce(
-      comp(
-        filter((x: Issue) => Boolean(x.body) ?? false),
-        map<Issue, GH_CMS>((x: Issue) => ({
-          issue: { ...x, rid: repoID },
-          raw: x.body ?? '',
-          parsed: grayMatter(x.body!) as CustomGrayMatter,
-        })),
-        filter((x: GH_CMS) => !get_CMS_parsed(x).isEmpty),
-        trace('remote'),
-      ),
-      groupByObj({ key: getId }),
-      flatten(rows),
-    );
-}

@@ -2,7 +2,8 @@ import type { Fn0 } from '@thi.ng/api';
 import { Args, string } from '@thi.ng/args';
 import { comp } from '@thi.ng/compose';
 import { assert } from '@thi.ng/errors';
-import type { Issue } from 'gh-cms-ql';
+import { assocMap, cat, map, trace, transduce, zip } from '@thi.ng/transducers';
+import { getIdI, Issue } from 'gh-cms-ql';
 import {
   CLIOpts,
   DryRunOpts,
@@ -14,17 +15,18 @@ import {
 } from '../api';
 import type { Repository } from '../model/api';
 import {
-    fetchIssues,
+  fetchIssues,
   build,
   buildDag,
   dag2MDActionMap,
-  latestContentRows,
+  changedNewRows,
   parseContentRows,
   parseIssues,
   postBuild,
   preBuild,
   query,
   setGrayMatter,
+  patchedIssued2Map,
 } from '../model/build';
 import { getInFs } from '../model/io/fs';
 import {
@@ -43,7 +45,7 @@ export interface BuildOptions extends CLIOpts, DryRunOpts {
 }
 
 export const buildCmd: CommandSpec<BuildOptions> = {
-  fn: async (ctx) => {
+  async fn(ctx) {
     const { opts, logger } = ctx;
     // Guards
     ensureEnv('--content-path', 'env.CONTENT_PATH', opts.contentPath);
@@ -55,52 +57,49 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     const contentPath = opts.contentPath;
     const repoQ = qlClient(repoUrl);
 
-    console.log(repoUrl)
-    console.log(contentPath)
-    console.log(MDENV)
+    console.log(repoUrl);
+    console.log(contentPath);
+    console.log(MDENV);
 
     // 1. Build DAG
     const dag = buildDag(MDENV);
     // 2. Expand to action map
     const actionMap = dag2MDActionMap(dag);
-    const idPlusDate = [actionMap.get('MD2ID'), actionMap.get('MD2DATE')]
-    // 2. Preflight - Get essential MD2ID, MD2DATE
+    // 3. FAR part
     const issuesFar: Issue[] = await fetchIssues(
       repoQ,
-      query(...idPlusDate)
+      query(actionMap.get('MD2ID'), actionMap.get('MD2DATE')),
     );
-    const mdNear = setGrayMatter(await getInFs(contentPath));
+    const patchedIdFar = comp(
+      (xs) => zip(xs, issuesFar.map(getIdI)),
+      parseIssues,
+    )(issuesFar, actionMap.get('MD2ID'), actionMap.get('MD2DATE'));
+    const idDateFar = patchedIssued2Map(patchedIdFar);
+    console.log('far', idDateFar);
 
-    // 2.2. Turn to issue
-    const idDateFar = parseIssues(issuesFar, ...idPlusDate);
-    console.log(idDateFar);
-    // 2.1. Retrieve local fs
-    const idDateNear = parseIssues(mdNear, ...idPlusDate);
-    console.log(idDateNear)
+    // 4. NEAR part
+    const mdNearRaw = await getInFs(contentPath);
+    const mdNearParsed = setGrayMatter(mdNearRaw);
 
-    // 2.2. Parse
-    // 2.3. Check if all keys are set properly
+    const idDateNear = parseIssues(
+      mdNearParsed,
+      actionMap.get('MD2ID'),
+      actionMap.get('MD2DATE'),
+      actionMap.get('MD2TITLE'),
+      actionMap.get('MD2LABELS'),
+      actionMap.get('MD2MILESTONE'),
+      actionMap.get('MD2STATE'),
+    );
+    console.log('near', idDateNear);
 
-    // INPUT
-    // const pfar: Fn0<Promise<Repository>> = () =>
-    //   qlClient(repoUrl)(
-    //     queryStrRepo(
-    //       queryQLID(),
-    //       queryQLIssues('body'),
-    //       queryQLLabels(),
-    //       queryQLMilestones()
-    //     )
-    //   );
-    // const near = await pnear;
-    // let far = await pfar();
-
-    // // transform
-    // const content2Build = comp(
-    //   // extract
-    //   latestContentRows,
-    //   // parse content with grayMatter and group them by id
-    //   parseContentRows(far)
-    // )(getInRepo(far, 'issues')?.nodes ?? [], near);
+    const rows = changedNewRows(
+      zip(
+        idDateNear,
+        // MdNearRaw
+      ),
+      idDateFar,
+    );
+    console.log('update', rows);
 
     // // Prebuild
     // const preBuildFx = preBuild(opts, logger, far)(content2Build);
