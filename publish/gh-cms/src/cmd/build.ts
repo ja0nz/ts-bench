@@ -14,7 +14,7 @@ import {
 } from '../api';
 import type { Repository } from '../model/api';
 import {
-    allIssues,
+    fetchIssues,
   build,
   buildDag,
   dag2MDActionMap,
@@ -23,7 +23,7 @@ import {
   parseIssues,
   postBuild,
   preBuild,
-  preFarPageFn,
+  query,
   setGrayMatter,
 } from '../model/build';
 import { getInFs } from '../model/io/fs';
@@ -63,30 +63,20 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     const dag = buildDag(MDENV);
     // 2. Expand to action map
     const actionMap = dag2MDActionMap(dag);
-    console.log(actionMap)
-    // 2. Preflight - Get essential MD2ID, MD2DATE in memory
-    // 2.1. Fetch preflight (title, state, ... or body?)
-    const issuesFar: Issue[] = await allIssues(repoQ, preFarPageFn(actionMap));
-    console.log(issuesFar)
-    // 2.2. Turn to issue
-    //const issuesParsedFar = parseIssues(issuesFar, actionMap);
-    //console.log(issuesParsedFar);
-
-    // const pFar = setGrayMatter(issuesFar, actionMap.get("MD2ID")[0].issue2valueFn)
-    // console.log(pFar)
-    // const id = actionMap.get("MD2ID")[0]
-    // const idXs = preIssues.map(x => id.issue2valueFn(x))
-    // console.log("idXS", idXs)
-    //
-    // if glToken === 'body'
-    // const body = actionMap.get("MD2DATE")[0]
-    // const bodyXs = preIssues.map(x => body.gm2valueFn(grayMatter(body.issue2valueFn(x))))
-    // console.log("bodyXS", bodyXs)
-    //
-    // 2.1. Retrieve local fs
+    const idPlusDate = [actionMap.get('MD2ID'), actionMap.get('MD2DATE')]
+    // 2. Preflight - Get essential MD2ID, MD2DATE
+    const issuesFar: Issue[] = await fetchIssues(
+      repoQ,
+      query(...idPlusDate)
+    );
     const mdNear = setGrayMatter(await getInFs(contentPath));
-    const issuesParsedNear = parseIssues(mdNear, actionMap);
-    //console.log(mdNear)
+
+    // 2.2. Turn to issue
+    const idDateFar = parseIssues(issuesFar, ...idPlusDate);
+    console.log(idDateFar);
+    // 2.1. Retrieve local fs
+    const idDateNear = parseIssues(mdNear, ...idPlusDate);
+    console.log(idDateNear)
 
     // 2.2. Parse
     // 2.3. Check if all keys are set properly

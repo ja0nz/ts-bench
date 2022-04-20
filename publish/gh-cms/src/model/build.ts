@@ -22,6 +22,8 @@ import {
   step,
   Reduced,
   isReduced,
+  cat,
+  str,
 } from '@thi.ng/transducers';
 import { comp as c } from '@thi.ng/compose';
 import grayMatter, { GrayMatterFile } from 'gray-matter';
@@ -198,25 +200,25 @@ function stepTree(
         const k = key.match(indexdIdentifier);
         const getIndex =
           (n: number): Fn<string, string> =>
-          (x: string) =>
-            typeof x === 'string' ? x.split(',')[n] : x;
+            (x: string) =>
+              typeof x === 'string' ? x.split(',')[n] : x;
         if (k) {
           const k0 = Number(k[0]);
           return node.length === 1
             ? node.map(
-                (n: ActionObj) =>
-                  new Reduced({
-                    ...n,
-                    gm2valueFn: c(getIndex(k0), n.gm2valueFn),
-                  }),
-              )
+              (n: ActionObj) =>
+                new Reduced({
+                  ...n,
+                  gm2valueFn: c(getIndex(k0), n.gm2valueFn),
+                }),
+            )
             : [node[k0]].map(
-                (n: ActionObj) =>
-                  new Reduced({
-                    ...n,
-                    issue2valueFn: c(getIndex(k0), n.issue2valueFn),
-                  }),
-              );
+              (n: ActionObj) =>
+                new Reduced({
+                  ...n,
+                  issue2valueFn: c(getIndex(k0), n.issue2valueFn),
+                }),
+            );
         }
 
         return [node];
@@ -229,7 +231,7 @@ function stepTree(
       // Trace("6. All values Reduced; extract/deref!"),
       map((node) => node.deref()),
       // Trace("7. Finished!"),
-      trace('---------------------'),
+      // trace('---------------------'),
     ),
   )(key);
 }
@@ -261,14 +263,20 @@ export function dag2MDActionMap(g: DGraph<DGraphFields>): MDActionMap {
  * A function that helps to page through GitHub Issues
  */
 type GHCursor = string;
-export function preFarPageFn(actionMap: MDActionMap): Fn<GHCursor, string> {
-  const id = actionMap.get('MD2ID') ?? [];
-  const date = actionMap.get('MD2DATE') ?? [];
-  const join = [...id, ...date].reduce((acc, x) => acc + '\n' + x.qlToken, '');
+export function query(...actionObj: (ActionObj[] | undefined)[]): Fn<GHCursor, string> {
+  const join = transduce(
+    comp(
+      filter(Array.isArray),
+      cat<ActionObj>(),
+      map((x: ActionObj) => x.qlToken)
+    ),
+    str("\n"),
+    actionObj
+  );
   return (s: GHCursor) => c(queryR, queryI(s))(join);
 }
 
-export async function allIssues(client: graphql, query: Fn<GHCursor, string>) {
+export async function fetchIssues(client: graphql, query: Fn<GHCursor, string>) {
   const nodes = [];
   let cursor: GHCursor = '';
   while (true) {
@@ -313,43 +321,48 @@ type NewIssue = {
   raw: string;
 } & GrayMatterFile<string>;
 
-export function parseIssues(ixs: any, actionMap: MDActionMap) {
+
+/*
+export const MDENV = {
+  MD2ID: getEnv('MD2ID') ?? 'id',
+  MD2DATE: getEnv('MD2DATE') ?? 'date',
+  MD2TITLE: getEnv('MD2TITLE') ?? 'title',
+  MD2LABELS: getEnv('MD2LABELS') ?? 'labels',
+  MD2MILESTONE: getEnv('MD2MILESTONE') ?? 'milestone',
+  MD2STATE: getEnv('MD2STATE') ?? 'state'
+}
+ *
+ */
+export function parseIssues(iXs: any, ...actionObj: (ActionObj[] | undefined)[]) {
   return transduce(
-    comp(
-      // Trace("1. MD2ID"),
-      map((s) => {
-        const aXs = actionMap.get('MD2ID') ?? [];
-        const out = aXs.map((a) => {
-          const id = a.issue2valueFn(s) ?? a.gm2valueFn(s);
-          // Must be a issues far
-          if (typeof id === 'string' && a.qlToken === 'body') {
-            return a.gm2valueFn(grayMatter(id));
-          }
-
-          return id;
-        });
-
-        return [s, { id: out.join(',') }];
-      }),
-      trace('1. MD2DATE'),
-      map(([s, o]) => {
-        const aXs = actionMap.get('MD2STATE') ?? [];
-        const out = aXs.map((a) => {
-          const id = a.issue2valueFn(s) ?? a.gm2valueFn(s);
-          // Must be a issues far
-          if (typeof id === 'string' && a.qlToken === 'body') {
-            return a.gm2valueFn(grayMatter(id));
-          }
-
-          return id;
-        });
-
-        return [s, out.join(',')];
-      }),
-      trace('1. MD2DATE'),
-    ),
+    // --- iXs (issues)
+    map((issue) => transduce(
+      // --- aXs (actions)
+      comp(
+        filter(Array.isArray),
+        map((aXs: ActionObj[]) => transduce(
+          // --- each action
+          map((a: ActionObj) => {
+            const pValue = a.issue2valueFn(issue) ?? a.gm2valueFn(issue);
+            // Must be a issues far
+            if (typeof pValue === 'string' && a.qlToken === 'body') {
+              return a.gm2valueFn(grayMatter(pValue));
+            }
+            return pValue;
+          }),
+          // -- end each action (connect to one value)
+          push(),
+          aXs)
+        ),
+        mapcat((a) => a.length > 1 ? [a.join(",")] : a),
+      ),
+      // -- end aXs
+      push(),
+      actionObj
+    )),
+    // -- end iXs
     push(),
-    ixs,
+    iXs,
   );
 }
 
