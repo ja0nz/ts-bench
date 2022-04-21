@@ -4,6 +4,7 @@ import { comp } from '@thi.ng/compose';
 import { assert } from '@thi.ng/errors';
 import { assocMap, cat, map, trace, transduce, zip } from '@thi.ng/transducers';
 import { getIdI, Issue } from 'gh-cms-ql';
+import grayMatter from 'gray-matter';
 import {
   CLIOpts,
   DryRunOpts,
@@ -50,6 +51,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     // Guards
     ensureEnv('--content-path', 'env.CONTENT_PATH', opts.contentPath);
     logger.info('Starting build');
+    logger.debug(`Build: Mapping envs to fields: ${logger.pp(MDENV)}`);
 
     // CMD
     const dry = opts.dryRun;
@@ -57,12 +59,9 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     const contentPath = opts.contentPath;
     const repoQ = qlClient(repoUrl);
 
-    console.log(repoUrl);
-    console.log(contentPath);
-    console.log(MDENV);
-
     // 1. Build DAG
     const dag = buildDag(MDENV);
+    logger.debug(`Build: Dependency graph (leave->root): ${logger.pp(dag.sort())}`);
     // 2. Expand to action map
     const actionMap = dag2MDActionMap(dag);
     // 3. FAR part
@@ -70,16 +69,18 @@ export const buildCmd: CommandSpec<BuildOptions> = {
       repoQ,
       query(actionMap.get('MD2ID'), actionMap.get('MD2DATE')),
     );
-    const patchedIdFar = comp(
-      (xs) => zip(xs, issuesFar.map(getIdI)),
-      parseIssues,
-    )(issuesFar, actionMap.get('MD2ID'), actionMap.get('MD2DATE'));
+    logger.debug(`Build: GH Issues fetched: ${logger.pp(issuesFar)}`);
+
+    const patchedIdFar: IterableIterator<[unknown[], string]> = zip(
+      parseIssues(issuesFar, actionMap.get('MD2ID'), actionMap.get('MD2DATE')),
+      issuesFar.map(getIdI)
+    );
     const idDateFar = patchedIssued2Map(patchedIdFar);
-    console.log('far', idDateFar);
+    logger.debug(`Build: GH Issue (key => [date,remoteID]): ${logger.pp(idDateFar)}`);
 
     // 4. NEAR part
     const mdNearRaw = await getInFs(contentPath);
-    const mdNearParsed = setGrayMatter(mdNearRaw);
+    const mdNearParsed = mdNearRaw.map(i => grayMatter(i));
 
     const idDateNear = parseIssues(
       mdNearParsed,
@@ -90,7 +91,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
       actionMap.get('MD2MILESTONE'),
       actionMap.get('MD2STATE'),
     );
-    console.log('near', idDateNear);
+    //logger.debug(`Build: Parsed local content: ${logger.pp(idDateNear)}`);
 
     const rows = changedNewRows(
       zip(
@@ -99,7 +100,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
       ),
       idDateFar,
     );
-    console.log('update', rows);
+    logger.debug(`Build: Content to build: ${logger.pp(rows)}`);
 
     // // Prebuild
     // const preBuildFx = preBuild(opts, logger, far)(content2Build);

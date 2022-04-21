@@ -1,4 +1,5 @@
 import { ConsoleLogger, LogLevel } from '@thi.ng/logger';
+import { inspect } from 'node:util';
 import type { AppConfig } from './config.js';
 
 /**
@@ -20,7 +21,7 @@ export class Logger extends ConsoleLogger {
   }
 
   pp(arg: object) {
-    return JSON.stringify(arg, null, 2);
+    return inspect(arg, { colors: this.config.isColor  })
   }
 
   protected log(level: string, args: any[]) {

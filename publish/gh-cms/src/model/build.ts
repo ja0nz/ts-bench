@@ -54,6 +54,7 @@ import {
   queryStateI,
   queryTitleI,
   getTitleM,
+  Issue,
 } from 'gh-cms-ql';
 import type { graphql } from '@octokit/graphql/dist-types/types';
 import type { BuildOptions } from '../cmd/build.js';
@@ -73,7 +74,6 @@ import {
   GH_CMS,
   CustomGrayMatter,
   get_CMS_parsed,
-  Issue,
   Repository,
   getLabels,
   getMilestone,
@@ -328,20 +328,14 @@ type NewIssue = {
 } & GrayMatterFile<string>;
 
 /*
-Export const MDENV = {
-  MD2ID: getEnv('MD2ID') ?? 'id',
-  MD2DATE: getEnv('MD2DATE') ?? 'date',
-  MD2TITLE: getEnv('MD2TITLE') ?? 'title',
-  MD2LABELS: getEnv('MD2LABELS') ?? 'labels',
-  MD2MILESTONE: getEnv('MD2MILESTONE') ?? 'milestone',
-  MD2STATE: getEnv('MD2STATE') ?? 'state'
-}
- *
+ * parse remote or local issues
+ * depending on the number of actionObjects the output rows differ
+ * in size and shape. Therefore unkown[] typed.
  */
 export function parseIssues(
-  iXs: any,
+  iXs: (Issue | GrayMatterFile<string>)[],
   ...actionObject: Array<ActionObj[] | undefined>
-) {
+) : Array<unknown[]> {
   // --- iXs (issues)
   return transduce(
     map(
@@ -377,13 +371,21 @@ export function parseIssues(
   );
   // -- end iXs
 }
+
+/*
+ * Just a little helper to pull in the remote ID to parsedIssues
+ * A lot of unknown here. Is on purpose as various datatypes (string, date, number,...)
+ * can be used for decode the specific variable
+ */
 export function patchedIssued2Map(
-  patchedIdFar: any
+  patchedIdFar : IterableIterator<[unknown[], string]>
 ) {
+  type I = IterableIterator<[[unknown, unknown, ...unknown[]], string]>;
+  type O = [unknown, unknown[]];
   return transduce(
-    map(([[id, date], rId]) => [id, [date, rId]]),
-    assocMap(),
-    patchedIdFar
+    map<I, O>(([[id, date], rId]) => [id, [date, rId]]),
+    assocMap<unknown, unknown[]>(),
+    patchedIdFar as any
   )
 }
 
