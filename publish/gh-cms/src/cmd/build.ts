@@ -1,9 +1,19 @@
+import { graphql } from '@octokit/graphql';
 import type { Fn0 } from '@thi.ng/api';
 import { Args, string } from '@thi.ng/args';
 import { comp } from '@thi.ng/compose';
 import { assert } from '@thi.ng/errors';
 import { assocMap, cat, map, trace, transduce, zip } from '@thi.ng/transducers';
-import { getIdI, Issue } from 'gh-cms-ql';
+import {
+  getI,
+  getM,
+  Issues,
+  Labels,
+  Milestones,
+  getIdI,
+  getL,
+  Issue,
+} from 'gh-cms-ql';
 import grayMatter from 'gray-matter';
 import {
   CLIOpts,
@@ -16,7 +26,7 @@ import {
 } from '../api';
 import type { Repository } from '../model/api';
 import {
-  fetchIssues,
+  fetchExhaust,
   build,
   buildDag,
   dag2MDActionMap,
@@ -25,9 +35,12 @@ import {
   parseIssues,
   postBuild,
   preBuild,
-  query,
-  setGrayMatter,
+  queryIPager,
   patchedIssued2Map,
+  queryLPager,
+  queryMPager,
+  labelsMilestones2Map,
+  preBuildLM,
 } from '../model/build';
 import { getInFs } from '../model/io/fs';
 import {
@@ -61,26 +74,31 @@ export const buildCmd: CommandSpec<BuildOptions> = {
 
     // 1. Build DAG
     const dag = buildDag(MDENV);
-    logger.debug(`Build: Dependency graph (leave->root): ${logger.pp(dag.sort())}`);
+    logger.debug(
+      `Build: Dependency graph (leave->root): ${logger.pp(dag.sort())}`,
+    );
     // 2. Expand to action map
     const actionMap = dag2MDActionMap(dag);
     // 3. FAR part
-    const issuesFar: Issue[] = await fetchIssues(
+    const issuesFar = await fetchExhaust<Issues>(
       repoQ,
-      query(actionMap.get('MD2ID'), actionMap.get('MD2DATE')),
+      queryIPager(actionMap.get('MD2ID'), actionMap.get('MD2DATE')),
+      getI,
     );
-    logger.debug(`Build: GH Issues fetched: ${logger.pp(issuesFar)}`);
+    logger.debug(`Build: GH issues fetched: ${logger.pp(issuesFar)}`);
 
     const patchedIdFar: IterableIterator<[unknown[], string]> = zip(
       parseIssues(issuesFar, actionMap.get('MD2ID'), actionMap.get('MD2DATE')),
-      issuesFar.map(getIdI)
+      issuesFar.map(getIdI),
     );
     const idDateFar = patchedIssued2Map(patchedIdFar);
-    logger.debug(`Build: GH Issue (key => [date,remoteID]): ${logger.pp(idDateFar)}`);
+    logger.debug(
+      `Build: GH Issue (key => [date,remoteID]): ${logger.pp(idDateFar)}`,
+    );
 
     // 4. NEAR part
     const mdNearRaw = await getInFs(contentPath);
-    const mdNearParsed = mdNearRaw.map(i => grayMatter(i));
+    const mdNearParsed = mdNearRaw.map((i) => grayMatter(i));
 
     const idDateNear = parseIssues(
       mdNearParsed,
@@ -91,7 +109,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
       actionMap.get('MD2MILESTONE'),
       actionMap.get('MD2STATE'),
     );
-    //logger.debug(`Build: Parsed local content: ${logger.pp(idDateNear)}`);
+    // Logger.debug(`Build: Parsed local content: ${logger.pp(idDateNear)}`);
 
     const rows = changedNewRows(
       zip(
@@ -102,8 +120,20 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     );
     logger.debug(`Build: Content to build: ${logger.pp(rows)}`);
 
-    // // Prebuild
-    // const preBuildFx = preBuild(opts, logger, far)(content2Build);
+    // 5. Prebuild (labels, milestones)
+    const labelsFar = await fetchExhaust<Labels>(repoQ, queryLPager(), getL);
+    const labelsMap = labelsMilestones2Map(labelsFar);
+    logger.debug(`Build: GH labels fetched: ${logger.pp(labelsFar)}`);
+    const milestonesFar = await fetchExhaust<Milestones>(
+      repoQ,
+      queryMPager(),
+      getM,
+    );
+    const milestonesMap = labelsMilestones2Map(milestonesFar);
+    logger.debug(`Build: GH milestones fetched: ${logger.pp(milestonesFar)}`);
+    console.log(labelsMap)
+
+    const prebuild = preBuildLM(rows, labelsMap, milestonesMap);
 
     // // OUTPUT
     // if (!dry) {

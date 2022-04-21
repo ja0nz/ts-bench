@@ -55,6 +55,18 @@ import {
   queryTitleI,
   getTitleM,
   Issue,
+  getL,
+  Labels,
+  R2,
+  R1,
+  Milestones,
+  Combined,
+  R0,
+  queryM,
+  queryTitleM,
+  Label,
+  getIdL,
+  getNameL,
 } from 'gh-cms-ql';
 import type { graphql } from '@octokit/graphql/dist-types/types';
 import type { BuildOptions } from '../cmd/build.js';
@@ -88,7 +100,6 @@ import {
   set_CMS_state,
   setTitle,
   Effect,
-  Label,
   getInParsed,
   indexdIdentifier,
 } from './api.js';
@@ -201,25 +212,25 @@ function stepTree(
         const k = key.match(indexdIdentifier);
         const getIndex =
           (n: number): Fn<string, string> =>
-          (x: string) =>
-            typeof x === 'string' ? x.split(',')[n] : x;
+            (x: string) =>
+              typeof x === 'string' ? x.split(',')[n] : x;
         if (k) {
           const k0 = Number(k[0]);
           return node.length === 1
             ? node.map(
-                (n: ActionObj) =>
-                  new Reduced({
-                    ...n,
-                    gm2valueFn: c(getIndex(k0), n.gm2valueFn),
-                  }),
-              )
+              (n: ActionObj) =>
+                new Reduced({
+                  ...n,
+                  gm2valueFn: c(getIndex(k0), n.gm2valueFn),
+                }),
+            )
             : [node[k0]].map(
-                (n: ActionObj) =>
-                  new Reduced({
-                    ...n,
-                    issue2valueFn: c(getIndex(k0), n.issue2valueFn),
-                  }),
-              );
+              (n: ActionObj) =>
+                new Reduced({
+                  ...n,
+                  issue2valueFn: c(getIndex(k0), n.issue2valueFn),
+                }),
+            );
         }
 
         return [node];
@@ -264,7 +275,7 @@ export function dag2MDActionMap(g: DGraph<DGraphFields>): MDActionMap {
  * A function that helps to page through GitHub Issues
  */
 type GHCursor = string;
-export function query(
+export function queryIPager(
   ...actionObject: Array<ActionObj[] | undefined>
 ): Fn<GHCursor, string> {
   const join = transduce(
@@ -279,18 +290,27 @@ export function query(
   return (s: GHCursor) => c(queryR, queryI(s))(join);
 }
 
-export async function fetchIssues(
+export function queryLPager(): Fn<GHCursor, string> {
+  return (s: GHCursor) => c(queryR, queryL(s))(queryNameL);
+}
+
+export function queryMPager(): Fn<GHCursor, string> {
+  return (s: GHCursor) => c(queryR, queryM(s))(queryTitleM);
+}
+
+export async function fetchExhaust<T extends Combined>(
   client: graphql,
   query: Fn<GHCursor, string>,
-) {
-  const nodes = [];
+  getter: Fn<R1<T>, R2<T>>,
+): Promise<Array<T[keyof T]>> {
+  const nodes: Array<T[keyof T]> = [];
   let cursor: GHCursor = '';
   while (true) {
     const ql = await client(query(cursor));
-    const issues = c(getI, getR)(ql);
-    nodes.push(...getNodes<Issues>(issues));
-    if (getHasNextPage<Issues>(issues)) {
-      cursor = getEndCursor<Issues>(issues);
+    const qPayLoad = c(getter, getR)(ql);
+    nodes.push(...(getNodes<T>(qPayLoad) as Array<T[keyof T]>));
+    if (getHasNextPage<T>(qPayLoad)) {
+      cursor = getEndCursor<T>(qPayLoad);
       continue;
     }
 
@@ -299,21 +319,6 @@ export async function fetchIssues(
 
   return nodes;
 }
-
-export const setGrayMatter = (
-  raw: unknown[],
-  getter = (o: any) => o,
-  setter = (_: any, p: any) => p,
-) =>
-  transduce(
-    comp(
-      map((o) => [o, getter(o)]),
-      map(([o, p]) => [o, grayMatter(p)]),
-      map(([o, p]) => setter(o, p)),
-    ),
-    push(),
-    raw,
-  );
 
 type NewIssue = {
   id: string;
@@ -328,14 +333,14 @@ type NewIssue = {
 } & GrayMatterFile<string>;
 
 /*
- * parse remote or local issues
+ * Parse remote or local issues
  * depending on the number of actionObjects the output rows differ
  * in size and shape. Therefore unkown[] typed.
  */
 export function parseIssues(
-  iXs: (Issue | GrayMatterFile<string>)[],
+  iXs: Array<Issue | GrayMatterFile<string>>,
   ...actionObject: Array<ActionObj[] | undefined>
-) : Array<unknown[]> {
+): unknown[][] {
   // --- iXs (issues)
   return transduce(
     map(
@@ -364,7 +369,7 @@ export function parseIssues(
           push(),
           actionObject,
         ),
-        // -- end aXs
+      // -- end aXs
     ),
     push(),
     iXs,
@@ -378,20 +383,36 @@ export function parseIssues(
  * can be used for decode the specific variable
  */
 export function patchedIssued2Map(
-  patchedIdFar : IterableIterator<[unknown[], string]>
+  patchedIdFar: IterableIterator<[unknown[], string]>,
 ) {
   type I = IterableIterator<[[unknown, unknown, ...unknown[]], string]>;
   type O = [unknown, unknown[]];
   return transduce(
     map<I, O>(([[id, date], rId]) => [id, [date, rId]]),
     assocMap<unknown, unknown[]>(),
-    patchedIdFar as any
+    patchedIdFar as any,
+  );
+}
+export function labelsMilestones2Map<T extends Label | Milestone>(
+  labelMilestoneNodes: T[]
+) {
+  return transduce(
+    comp(
+      map(x => {
+        const id = getIdL(x);
+        const key = getNameL(x) ?? getTitleM(x);
+        return [key, id]
+      })
+    ),
+    assocMap(),
+    labelMilestoneNodes
   )
 }
 
 export function changedNewRows(near: any, far: any) {
-  // a bit of a hack
-  const isValidDate = (dateLike: any) => dateLike instanceof Date && !isNaN(dateLike as any);
+  // A bit of a hack
+  const isValidDate = (dateLike: any) =>
+    dateLike instanceof Date && !isNaN(dateLike as any);
 
   return transduce(
     comp(
@@ -401,12 +422,11 @@ export function changedNewRows(near: any, far: any) {
         // 'Null' from no remote id
         if (!far.has(id)) return [null, id, date, ...r1, ...r2];
         const [_, rId] = far.get(id);
-        // prepend remote id
+        // Prepend remote id
         return [rId, id, date, ...r1, ...r2];
       }),
       // Filter content for rows without update
       filter(([_, id, date]) => {
-
         // 1. no far equivalent == new content
         if (!far.has(id)) return true;
 
@@ -425,8 +445,35 @@ export function changedNewRows(near: any, far: any) {
       }),
     ),
     push(),
-    near
+    near,
   );
+}
+
+export function preBuildLM(
+  rows: unknown[],
+  lM: Map<string, string>,
+  mM: Map<string, string>
+) {
+  return transduce(
+    comp(
+      multiplex(
+        comp(
+          // labels
+          map(([_0, _1, _2, _3, l]) => {
+            console.log(l)
+          })
+        ),
+        comp(
+          // milestones
+          map(([_0, _1, _2, _3, _4, m]) => {
+            console.log(m)
+          })
+        )
+      )
+    ),
+    push(),
+    rows
+  )
 }
 
 // :End new implement
@@ -613,4 +660,3 @@ export function preBuild(
       rows,
     );
 }
-
