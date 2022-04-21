@@ -1,4 +1,3 @@
-import { getIn } from '@thi.ng/paths';
 import { jNl, R1, R2, R0, Combined } from './api.js';
 
 /*
@@ -45,7 +44,7 @@ export const hasNextPage = `hasNextPage`;
  * Getters
  */
 // Repository
-export const getR = <T extends Combined>(x: R0<T>) => getIn(x, ['repository']);
+export const getR = <T extends Combined>(x: R0<T>) => x.repository;
 export const getIdR = <T extends Combined>(x: R1<T>) => x.id;
 
 // R2
