@@ -1,6 +1,6 @@
 import type { Fn } from '@thi.ng/api';
 import { defGetter } from '@thi.ng/paths';
-import { jNl, Label, Labels, R1, R2 } from './api.js';
+import { CreateLabelQL, jNl, Label, Labels, R1, R2 } from './api.js';
 import { endCursor, hasNextPage, pageInfo, totalCount } from './repo.js';
 
 /*
@@ -63,7 +63,23 @@ export const mutateL = (a: CreateLabel | DeleteLabel) =>
           : ''
       }
     }) {
-        ${a.action === 'create' ? 'label{name}' : 'clientMutationId'}
+        ${a.action === 'create' ? 'label{id,name}' : 'clientMutationId'}
       }
     }
   `;
+
+/*
+ * Mutation Getter
+ */
+export const getCreateIdL = defGetter<
+  CreateLabelQL,
+  'createLabel',
+  'label',
+  'id'
+>(['createLabel', 'label', 'id']);
+export const getCreateNameL = defGetter<
+  CreateLabelQL,
+  'createLabel',
+  'label',
+  'name'
+>(['createLabel', 'label', 'name']);

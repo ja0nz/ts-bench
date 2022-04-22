@@ -1,4 +1,4 @@
-import type { RequestParameters } from '@octokit/types';
+import type { RequestParameters, OctokitResponse } from '@octokit/types';
 import type { Fn } from '@thi.ng/api';
 import { defGetter } from '@thi.ng/paths';
 import { jNl, Milestone, Milestones, R1, R2 } from './api.js';
@@ -67,3 +67,14 @@ export function mutateRestM(
 
   return [`DELETE /repos/{owner}/{repo}/milestones/${a.number}`, {}];
 }
+
+/*
+ * Mutation Getter
+ */
+export const getCreateIdM = defGetter<OctokitResponse<any>, 'data', 'node_id'>([
+  'data',
+  'node_id',
+]);
+export const getCreateTitleM = defGetter<OctokitResponse<any>, 'data', 'title'>(
+  ['data', 'title'],
+);

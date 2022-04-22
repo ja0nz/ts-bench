@@ -52,3 +52,8 @@ export type R0<T extends Combined> = {
  */
 export type R1<T extends Combined> = R0<T>['repository'];
 export type R2<T extends Combined> = R1<T>[keyof T];
+
+/*
+ * Mutation Query
+ */
+export type CreateLabelQL = { createLabel: { label: Label } }
