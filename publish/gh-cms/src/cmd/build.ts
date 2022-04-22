@@ -16,6 +16,10 @@ import {
   queryR,
   getIdR,
   getR,
+  getCreateNameL,
+  getCreateIdL,
+  getCreateIdM,
+  getCreateTitleM,
 } from 'gh-cms-ql';
 import grayMatter from 'gray-matter';
 import {
@@ -98,7 +102,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
       issuesFar.map(getIdI),
     );
     const idDateFar = patchedIssued2Map(patchedIdFar);
-    // logger.debug(
+    // Logger.debug(
     //   `Build: GH Issue (key => [date,remoteID]): ${logger.pp(idDateFar)}`,
     // );
 
@@ -139,15 +143,30 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     logger.debug(`Build: GH milestones fetched: ${logger.pp(milestonesFar)}`);
 
     const prebuild = preBuildLM(rows, labelsMap, milestonesMap);
-    const outpre = await Promise.all(
-      prebuild.map(([left, right]) => (dry ? left : right)({
-        repoQ,
-        repoR,
-        repoUrl,
-        repoID,
-        logger
-      })));
-    console.log(outpre)
+    const outpre: Array<['label' | 'milestone', any]> = await Promise.all(
+      prebuild.map(([left, right]) =>
+        (dry ? left : right)({
+          repoQ,
+          repoR,
+          repoUrl,
+          repoID,
+          logger,
+        }),
+      ),
+    );
+
+    // Pushing new labels milestones in related list
+    for (const [k, v] of outpre) {
+      const id = (k === 'label' ? getCreateNameL : getCreateTitleM)(v) ?? '';
+      const value = (k === 'label' ? getCreateIdL : getCreateIdM)(v);
+      assert(
+        value !== undefined,
+        `Build: ${k}; Value is unset. Stack trace: ${logger.pp(v)}`,
+      );
+      const vmap = k === 'label' ? labelsMap : milestonesMap;
+      vmap.set(id, value);
+    }
+    console.log(milestonesMap)
 
     // // Build
     // far = await pfar();
