@@ -67,6 +67,8 @@ import {
   Label,
   getIdL,
   getNameL,
+  mutateL,
+  mutateRestM,
 } from 'gh-cms-ql';
 import type { graphql } from '@octokit/graphql/dist-types/types';
 import type { BuildOptions } from '../cmd/build.js';
@@ -212,25 +214,25 @@ function stepTree(
         const k = key.match(indexdIdentifier);
         const getIndex =
           (n: number): Fn<string, string> =>
-            (x: string) =>
-              typeof x === 'string' ? x.split(',')[n] : x;
+          (x: string) =>
+            typeof x === 'string' ? x.split(',')[n] : x;
         if (k) {
           const k0 = Number(k[0]);
           return node.length === 1
             ? node.map(
-              (n: ActionObj) =>
-                new Reduced({
-                  ...n,
-                  gm2valueFn: c(getIndex(k0), n.gm2valueFn),
-                }),
-            )
+                (n: ActionObj) =>
+                  new Reduced({
+                    ...n,
+                    gm2valueFn: c(getIndex(k0), n.gm2valueFn),
+                  }),
+              )
             : [node[k0]].map(
-              (n: ActionObj) =>
-                new Reduced({
-                  ...n,
-                  issue2valueFn: c(getIndex(k0), n.issue2valueFn),
-                }),
-            );
+                (n: ActionObj) =>
+                  new Reduced({
+                    ...n,
+                    issue2valueFn: c(getIndex(k0), n.issue2valueFn),
+                  }),
+              );
         }
 
         return [node];
@@ -393,20 +395,21 @@ export function patchedIssued2Map(
     patchedIdFar as any,
   );
 }
+
 export function labelsMilestones2Map<T extends Label | Milestone>(
-  labelMilestoneNodes: T[]
-) {
+  labelMilestoneNodes: T[],
+): Map<string, string> {
   return transduce(
     comp(
-      map(x => {
+      map((x) => {
         const id = getIdL(x);
         const key = getNameL(x) ?? getTitleM(x);
-        return [key, id]
-      })
+        return [key, id];
+      }),
     ),
     assocMap(),
-    labelMilestoneNodes
-  )
+    labelMilestoneNodes,
+  );
 }
 
 export function changedNewRows(near: any, far: any) {
@@ -449,31 +452,68 @@ export function changedNewRows(near: any, far: any) {
   );
 }
 
+/*
+ * Generate sideEffects
+ * - labels and milestones
+ */
 export function preBuildLM(
-  rows: unknown[],
+  rows: any[],
   lM: Map<string, string>,
-  mM: Map<string, string>
+  mM: Map<string, string>,
 ) {
+  const isValidDate = (dateLike: any) =>
+    dateLike instanceof Date && !isNaN(dateLike as any);
   return transduce(
     comp(
       multiplex(
         comp(
-          // labels
-          map(([_0, _1, _2, _3, l]) => {
-            console.log(l)
-          })
+          // Labels
+          mapcat(([_0, _1, _2, _3, l]) => (Array.isArray(l) ? l : [l])),
+          // Only exception for dates; because String(date) is not portable
+          map((x) => (isValidDate(x) ? x.toISOString() : x)),
+          map(String),
+          filter((l) => l !== 'undefined' && !lM.has(l)), // String(undefined)
+          distinct(),
+          map((l) => [
+            ({ logger }) => logger.info(`DRY; Create missing label: ${l}`),
+            ({ repoQ, repoID }) =>
+              repoQ(
+                mutateL({
+                  type: 'label',
+                  action: 'create',
+                  id: repoID,
+                  name: l,
+                }),
+              ).then((x) => ['label', x ]),
+          ]),
         ),
         comp(
-          // milestones
-          map(([_0, _1, _2, _3, _4, m]) => {
-            console.log(m)
-          })
-        )
-      )
+          // Milestones
+          map(([_0, _1, _2, _3, _4, m]) => m),
+          // Only exception for dates; because String(date) is not portable
+          map((x) => (isValidDate(x) ? x.toISOString() : x)),
+          map(String),
+          filter((m) => m !== 'undefined' && !mM.has(m)), // String(undefined)
+          distinct(),
+          map((m) => [
+            ({ logger }) => logger.info(`DRY; Create missing milestone: ${m}`),
+            ({ repoR }) =>
+              repoR(
+                ...mutateRestM({
+                  type: 'milestone',
+                  action: 'create',
+                  title: m,
+                }),
+              ).then((x) =>  ['milestone', x ]),
+          ]),
+        ),
+      ),
+      cat(),
+      filter((x) => x !== undefined),
     ),
     push(),
-    rows
-  )
+    rows,
+  );
 }
 
 // :End new implement

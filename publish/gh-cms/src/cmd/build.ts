@@ -13,6 +13,9 @@ import {
   getIdI,
   getL,
   Issue,
+  queryR,
+  getIdR,
+  getR,
 } from 'gh-cms-ql';
 import grayMatter from 'gray-matter';
 import {
@@ -51,6 +54,7 @@ import {
   queryQLLabels,
   queryQLMilestones,
   queryQLID,
+  restClient,
 } from '../model/io/net';
 import { ARG_DRY } from './args';
 
@@ -68,9 +72,11 @@ export const buildCmd: CommandSpec<BuildOptions> = {
 
     // CMD
     const dry = opts.dryRun;
-    const repoUrl = opts.repoUrl;
     const contentPath = opts.contentPath;
+    const repoUrl = opts.repoUrl;
     const repoQ = qlClient(repoUrl);
+    const repoR = restClient(repoUrl);
+    const repoID = comp(getIdR, getR)(await repoQ(queryR()));
 
     // 1. Build DAG
     const dag = buildDag(MDENV);
@@ -92,9 +98,9 @@ export const buildCmd: CommandSpec<BuildOptions> = {
       issuesFar.map(getIdI),
     );
     const idDateFar = patchedIssued2Map(patchedIdFar);
-    logger.debug(
-      `Build: GH Issue (key => [date,remoteID]): ${logger.pp(idDateFar)}`,
-    );
+    // logger.debug(
+    //   `Build: GH Issue (key => [date,remoteID]): ${logger.pp(idDateFar)}`,
+    // );
 
     // 4. NEAR part
     const mdNearRaw = await getInFs(contentPath);
@@ -131,14 +137,17 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     );
     const milestonesMap = labelsMilestones2Map(milestonesFar);
     logger.debug(`Build: GH milestones fetched: ${logger.pp(milestonesFar)}`);
-    console.log(labelsMap)
 
     const prebuild = preBuildLM(rows, labelsMap, milestonesMap);
-
-    // // OUTPUT
-    // if (!dry) {
-    //   await Promise.all(preBuildFx.map((x) => x()));
-    // }
+    const outpre = await Promise.all(
+      prebuild.map(([left, right]) => (dry ? left : right)({
+        repoQ,
+        repoR,
+        repoUrl,
+        repoID,
+        logger
+      })));
+    console.log(outpre)
 
     // // Build
     // far = await pfar();
