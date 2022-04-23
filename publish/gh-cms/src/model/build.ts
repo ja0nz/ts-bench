@@ -216,25 +216,25 @@ function stepTree(
         const k = key.match(indexdIdentifier);
         const getIndex =
           (n: number): Fn<string, string> =>
-          (x: string) =>
-            typeof x === 'string' ? x.split(',')[n] : x;
+            (x: string) =>
+              typeof x === 'string' ? x.split(',')[n] : x;
         if (k) {
           const k0 = Number(k[0]);
           return node.length === 1
             ? node.map(
-                (n: ActionObj) =>
-                  new Reduced({
-                    ...n,
-                    gm2valueFn: c(getIndex(k0), n.gm2valueFn),
-                  }),
-              )
+              (n: ActionObj) =>
+                new Reduced({
+                  ...n,
+                  gm2valueFn: c(getIndex(k0), n.gm2valueFn),
+                }),
+            )
             : [node[k0]].map(
-                (n: ActionObj) =>
-                  new Reduced({
-                    ...n,
-                    issue2valueFn: c(getIndex(k0), n.issue2valueFn),
-                  }),
-              );
+              (n: ActionObj) =>
+                new Reduced({
+                  ...n,
+                  issue2valueFn: c(getIndex(k0), n.issue2valueFn),
+                }),
+            );
         }
 
         return [node];
@@ -448,18 +448,7 @@ export function changedNewRows(near: any, far: any) {
         if (nearDate > farDate) return true;
         return false;
       }),
-      // 5. Labels and Milestones to string (GH issue format):
-      // transform dates to ISO strings because String(date) is not portable
-      map(([_0, _1, _2, _3, l, m, ...r1]) => {
-        const labels = l
-          ? l.map((x: unknown) =>
-            isValidDate(x) ? (x as Date).toISOString() : String(x),
-            )
-          : l;
-        const milestone = isValidDate(m) ? m.toISOString() : String(m);
-        return [_0, _1, _2, _3, labels, milestone, ...r1];
-      }),
-      // 6. Flip row to object
+      // 5. Flip row to object
       map(([rId, id, date, title, labels, milestone, state, ...body]) => ({
         rId,
         id,
@@ -470,6 +459,15 @@ export function changedNewRows(near: any, far: any) {
         state,
         body,
       })),
+      // 5. Labels and Milestones to string (GH issue format):
+      // transform dates to ISO strings because String(date) is not portable
+      map(({ labels, milestone, ...r }) => {
+        const lMapped = labels?.map?.((x: unknown) =>
+          String((x as Date)?.toISOString?.() ?? x),
+        ) ?? String(labels);
+        const mMapped = String(milestone?.toISOString?.() ?? milestone);
+        return { ...r, labels: lMapped, milestone: mMapped };
+      }),
     ),
     push(),
     near,
@@ -552,7 +550,7 @@ export function buildModel(
           action,
           title,
           body: body.join(''),
-          labelIds: (labels ?? []).map((l) => lM.get(l) ?? `DRY:${l}`),
+          labelIds: labels?.map?.((l) => lM.get(l) ?? `DRY:${l}`) ?? [],
           milestoneId: mM.get(milestone) ?? '',
         };
         return [

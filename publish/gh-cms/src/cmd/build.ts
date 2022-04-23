@@ -182,6 +182,10 @@ export const buildCmd: CommandSpec<BuildOptions> = {
         ),
     );
 
+    // 7. Postbuild (issues)
+    // match rows on title
+    // check if row.state == build.state
+    // if not mutate
     /*
      [
       {
