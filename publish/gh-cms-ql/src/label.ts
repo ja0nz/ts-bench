@@ -59,7 +59,7 @@ export const mutateL = (a: CreateLabel | DeleteLabel) =>
     a.action === 'create'
       ? '$color: String = '.concat(
           '"',
-          Math.floor(Math.random() * 16_777_215).toString(16),
+         (Math.random()*0xFFFFFF<<0).toString(16),
           '"',
         )
       : '',
