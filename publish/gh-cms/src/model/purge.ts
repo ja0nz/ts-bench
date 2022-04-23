@@ -1,4 +1,3 @@
-import type { Fn0, FnAnyT } from '@thi.ng/api';
 import {
   comp,
   flatten,
@@ -15,35 +14,32 @@ import {
   getIdL,
   getIssueCountL,
 } from 'gh-cms-ql';
+import type { Either } from './api';
 
 type LnM = Label | Milestone;
 
-export function purgeModel(
-  ...rows: any[]
-): FnAnyT<LnM[], Array<Fn0<Promise<unknown>>>> {
+export function purgeModel(...rows: LnM[][]): Either[] {
   return transduce(
     comp(
       // Throw all out which have an related issue
       filter((x: LnM) => !getIssueCountL(x)),
       // Transform to action
-      map<LnM, DeleteLabel | DeleteMilestone>((x: LnM) => {
+      map<LnM, Either>((x: LnM) => {
         const n = getNumberM(x);
-        const ql = {
-          action: 'delete',
+        const ql: DeleteMilestone | DeleteLabel = {
           type: n === undefined ? 'label' : 'milestone',
-          [n === undefined ? 'id' : 'number']: n === undefined ? getIdL(x) : n,
+          action: 'delete',
+          id: n === undefined ? getIdL(x) : String(n),
         };
 
         return [
-          ({ logger }) =>
-            logger.info(`DRY; ${ql.type} removal, ${logger.pp(x)}`),
-          ({ repoQ, repoR }) => {
-            if (ql.type === 'milestone') {
-              return repoR(...mutateRestM(ql));
-            }
-
-            return repoQ(mutateL(ql), ql);
+          ({ logger }) => {
+            logger.info(`DRY; ${ql.type} removal, ${logger.pp(x)}`);
           },
+          async ({ repoQ, repoR }) =>
+            ql.type === 'milestone'
+              ? repoR(...mutateRestM(ql))
+              : repoQ(mutateL(ql), ql),
         ];
       }),
     ),

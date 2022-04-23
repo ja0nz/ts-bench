@@ -1,4 +1,3 @@
-import type { Fn0 } from '@thi.ng/api';
 import { Args, flag } from '@thi.ng/args';
 import { assert } from '@thi.ng/errors';
 import type { Labels, R0, Milestones } from 'gh-cms-ql';

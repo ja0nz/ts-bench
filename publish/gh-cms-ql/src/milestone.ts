@@ -50,7 +50,7 @@ export type CreateMilestone = {
 export type DeleteMilestone = {
   type: 'milestone';
   action: 'delete';
-  number: number; // Milestone number
+  id: string; // Milestone number, not node id!
 };
 
 /**
@@ -65,7 +65,7 @@ export function mutateRestM(
     return [`POST /repos/{owner}/{repo}/milestones`, { title: a.title }];
   }
 
-  return [`DELETE /repos/{owner}/{repo}/milestones/${a.number}`, {}];
+  return [`DELETE /repos/{owner}/{repo}/milestones/${a.id}`, {}];
 }
 
 /*

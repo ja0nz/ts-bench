@@ -1,10 +1,19 @@
 import { defGetter, defGetterUnsafe, defSetter, defSetterUnsafe } from '@thi.ng/paths';
 import { comp } from '@thi.ng/compose';
 import type { GrayMatterFile } from 'gray-matter';
+import type { RequestParameters } from '@octokit/types';
 import { MDENV } from '../api.js';
-import type { Fn, Fn0, NumOrString } from '@thi.ng/api';
+import type { Fn, Fn0, Fn2, NumOrString } from '@thi.ng/api';
+import type { Logger } from '../logger.js';
 
 export const indexdIdentifier = /(?<=\[)(\d+?)(?=])/g;
+
+export type Fx = Fn2<string, RequestParameters, Promise<unknown>>;
+export type Either = [
+  Fn<{ logger: Logger }, void>,
+  Fn<{ repoQ: Fx; repoR: Fx }, Promise<unknown>>,
+];
+
 
 /*
  * GraphQL
