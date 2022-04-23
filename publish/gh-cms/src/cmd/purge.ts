@@ -18,7 +18,7 @@ import {
   queryR,
 } from 'gh-cms-ql';
 import type { CLIOpts, CommandSpec, DryRunOpts } from '../api.js';
-import { qlClient } from '../model/io/net.js';
+import { qlClient, restClient } from '../model/io/net.js';
 import { purgeModel } from '../model/purge.js';
 import { ARG_DRY } from './args.js';
 
@@ -38,6 +38,10 @@ export const purgeCmd: CommandSpec<PurgeOptions> = {
 
     // CMD
     const l = opts.labels;
+    const dry = opts.dryRun;
+    const repoUrl = opts.repoUrl;
+    const repoQ = qlClient(repoUrl);
+    const repoR = restClient(repoUrl);
 
     // INPUT
     const qFn = l
@@ -48,14 +52,20 @@ export const purgeCmd: CommandSpec<PurgeOptions> = {
       queryR(qFn),
     );
 
-    const qLoad = l
+    const rows = l
       ? getNodes<Labels>(getL(getR<Labels>(far)))
       : getNodes<Milestones>(getM(getR<Milestones>(far)));
 
-    const outFx = purgeModel(opts, logger)(qLoad);
-
     // OUTPUT
-    await Promise.all(outFx.map(async (x: Fn0<Promise<unknown>>) => x()));
+    await Promise.all(
+      purgeModel(rows).map(([left, right]) =>
+        (dry ? left : right)({
+          repoQ,
+          repoR,
+          logger,
+        }),
+      ),
+    );
 
     logger.info('Successfully purged');
   },

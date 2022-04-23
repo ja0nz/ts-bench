@@ -48,6 +48,7 @@ import {
   queryMPager,
   labelsMilestones2Map,
   preBuildLM,
+  buildI,
 } from '../model/build';
 import { getInFs } from '../model/io/fs';
 import {
@@ -124,7 +125,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     const rows = changedNewRows(
       zip(
         idDateNear,
-        // MdNearRaw
+        mdNearRaw
       ),
       idDateFar,
     );
@@ -142,21 +143,23 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     const milestonesMap = labelsMilestones2Map(milestonesFar);
     logger.debug(`Build: GH milestones fetched: ${logger.pp(milestonesFar)}`);
 
-    const prebuild = preBuildLM(rows, labelsMap, milestonesMap);
     const outpre: Array<['label' | 'milestone', any]> = await Promise.all(
-      prebuild.map(([left, right]) =>
-        (dry ? left : right)({
-          repoQ,
-          repoR,
-          repoUrl,
-          repoID,
-          logger,
-        }),
-      ),
+      preBuildLM(rows, labelsMap, milestonesMap)
+        .map(([left, right]) =>
+          (dry ? left : right)({
+            repoQ,
+            repoR,
+            repoUrl,
+            repoID,
+            logger,
+          }),
+        )
     );
 
     // Pushing new labels milestones in related list
-    for (const [k, v] of outpre) {
+    for (const row of outpre) {
+      if (row === undefined) break;
+      const [k, v] = row;
       const id = (k === 'label' ? getCreateNameL : getCreateTitleM)(v) ?? '';
       const value = (k === 'label' ? getCreateIdL : getCreateIdM)(v);
       assert(
@@ -166,11 +169,39 @@ export const buildCmd: CommandSpec<BuildOptions> = {
       const vmap = k === 'label' ? labelsMap : milestonesMap;
       vmap.set(id, value);
     }
-    console.log(milestonesMap)
 
-    // // Build
-    // far = await pfar();
-    // const buildFx = build(opts, logger, far)(content2Build);
+    // 6. Build (issues)
+    const outbuild: Array<['label' | 'milestone', any]> = await Promise.all(
+      buildI(rows, labelsMap, milestonesMap)
+        .map(([left, right]) =>
+          (dry ? left : right)({
+            repoQ,
+            repoID,
+            logger,
+          }),
+        ),
+    );
+
+    /*
+     {
+      createIssue: {
+        issue: {
+          id: 'I_kwDOG-ZMMM5ISezT',
+          title: 'zigzag-10-m,1650412800000',
+          state: 'OPEN'
+        }
+      }
+    }
+    {
+      updateIssue: {
+        issue: {
+          id: 'I_kwDOG-ZMMM5GOY4-',
+          title: 'zig-7-m,1650412800003',
+          state: 'OPEN'
+        }
+      }
+    }
+     */
 
     // // OUTPUT
     // let issues;

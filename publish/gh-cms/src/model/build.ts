@@ -25,6 +25,7 @@ import {
   cat,
   str,
   assocMap,
+  mapKeys,
 } from '@thi.ng/transducers';
 import { comp as c } from '@thi.ng/compose';
 import grayMatter, { GrayMatterFile } from 'gray-matter';
@@ -69,6 +70,7 @@ import {
   getNameL,
   mutateL,
   mutateRestM,
+  mutateI,
 } from 'gh-cms-ql';
 import type { graphql } from '@octokit/graphql/dist-types/types';
 import type { BuildOptions } from '../cmd/build.js';
@@ -414,7 +416,7 @@ export function labelsMilestones2Map<T extends Label | Milestone>(
 
 export function changedNewRows(near: any, far: any) {
   // A bit of a hack
-  const isValidDate = (dateLike: any) =>
+  const isValidDate = (dateLike: any): boolean =>
     dateLike instanceof Date && !isNaN(dateLike as any);
 
   return transduce(
@@ -446,6 +448,28 @@ export function changedNewRows(near: any, far: any) {
         if (nearDate > farDate) return true;
         return false;
       }),
+      // 5. Labels and Milestones to string (GH issue format):
+      // transform dates to ISO strings because String(date) is not portable
+      map(([_0, _1, _2, _3, l, m, ...r1]) => {
+        const labels = l
+          ? l.map((x: unknown) =>
+              isValidDate(x) ? x.toISOString() : String(x),
+            )
+          : l;
+        const milestone = isValidDate(m) ? m.toISOString() : String(m);
+        return [_0, _1, _2, _3, labels, milestone, ...r1];
+      }),
+      // 6. Flip row to object
+      map(([rId, id, date, title, labels, milestone, state, ...body]) => ({
+        rId,
+        id,
+        date,
+        title,
+        labels,
+        milestone,
+        state,
+        body,
+      })),
     ),
     push(),
     near,
@@ -460,39 +484,31 @@ export function preBuildLM(
   rows: any[],
   lM: Map<string, string>,
   mM: Map<string, string>,
-) {
-  const isValidDate = (dateLike: any) =>
-    dateLike instanceof Date && !isNaN(dateLike as any);
+): Array<[Fn<any, any>, Fn<any, any>]> {
   return transduce(
     comp(
       multiplex(
         comp(
           // Labels
-          mapcat(([_0, _1, _2, _3, l]) => (Array.isArray(l) ? l : [l])),
-          // Only exception for dates; because String(date) is not portable
-          map((x) => (isValidDate(x) ? x.toISOString() : x)),
-          map(String),
+          mapcat(({ labels }) => (Array.isArray(labels) ? labels : [labels])),
           filter((l) => l !== 'undefined' && !lM.has(l)), // String(undefined)
           distinct(),
           map((l) => [
             ({ logger }) => logger.info(`DRY; Create missing label: ${l}`),
-            ({ repoQ, repoID }) =>
-              repoQ(
-                mutateL({
-                  type: 'label',
-                  action: 'create',
-                  id: repoID,
-                  name: l,
-                }),
-              ).then((x) => ['label', x ]),
+            ({ repoQ, repoID }) => {
+              const ql = {
+                type: 'label',
+                action: 'create',
+                id: repoID,
+                name: l,
+              };
+              return repoQ(mutateL(ql), ql).then((x) => ['label', x]);
+            },
           ]),
         ),
         comp(
           // Milestones
-          map(([_0, _1, _2, _3, _4, m]) => m),
-          // Only exception for dates; because String(date) is not portable
-          map((x) => (isValidDate(x) ? x.toISOString() : x)),
-          map(String),
+          map(({ milestone }) => milestone),
           filter((m) => m !== 'undefined' && !mM.has(m)), // String(undefined)
           distinct(),
           map((m) => [
@@ -504,12 +520,50 @@ export function preBuildLM(
                   action: 'create',
                   title: m,
                 }),
-              ).then((x) =>  ['milestone', x ]),
+              ).then((x) => ['milestone', x]),
           ]),
         ),
       ),
-      cat(),
+      cat(), // Flatting to remove undefined (labels or milestones)
       filter((x) => x !== undefined),
+      flatten(), // Completely flatten
+      partition(2), // Repartition by 2
+    ),
+    push(),
+    rows,
+  );
+}
+
+/*
+ * Generate sideEffects
+ * - issues
+ */
+export function buildI(
+  rows: any[],
+  lM: Map<string, string>,
+  mM: Map<string, string>,
+): Array<[Fn<any, any>, Fn<any, any>]> {
+  return transduce(
+    comp(
+      map(({ rId, title, labels, milestone, body }) => {
+        const action = rId ? 'update' : 'create';
+        const data = {
+          type: 'issue',
+          action,
+          title,
+          body: body.join(''),
+          labelIds: (labels ?? []).map((l) => lM.get(l) ?? `DRY:${l}`),
+          milestoneId: mM.get(milestone) ?? '',
+        };
+        return [
+          ({ logger }) =>
+            logger.info(`DRY; ${action} issue: ${logger.pp(data)}`),
+          ({ repoQ, repoID }) => {
+            const ql = { ...data, id: rId ?? repoID };
+            return repoQ(mutateI(ql), ql).then((x) => ['issue', x]);
+          },
+        ];
+      }),
     ),
     push(),
     rows,

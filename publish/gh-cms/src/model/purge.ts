@@ -15,61 +15,39 @@ import {
   getIdL,
   getIssueCountL,
 } from 'gh-cms-ql';
-import type { PurgeOptions } from '../cmd/purge';
-import type { Logger } from '../logger';
-import { qlClient, restClient } from './io/net.js';
 
 type LnM = Label | Milestone;
 
 export function purgeModel(
-  options: PurgeOptions,
-  logger: Logger,
+  ...rows: any[]
 ): FnAnyT<LnM[], Array<Fn0<Promise<unknown>>>> {
-  return (...rows) => {
-    return transduce(
-      comp(
-        // Throw all out which have an related issue
-        filter((x: LnM) => !getIssueCountL(x)),
-        // Transform to action
-        map((x: LnM) => {
-          const n = getNumberM(x);
-          let r: DeleteLabel | DeleteMilestone;
-          if (n === undefined) {
-            r = {
-              type: 'label',
-              action: 'delete',
-              id: getIdL(x),
-            };
-          } else {
-            r = {
-              type: 'milestone',
-              action: 'delete',
-              number: n,
-            };
-          }
+  return transduce(
+    comp(
+      // Throw all out which have an related issue
+      filter((x: LnM) => !getIssueCountL(x)),
+      // Transform to action
+      map<LnM, DeleteLabel | DeleteMilestone>((x: LnM) => {
+        const n = getNumberM(x);
+        const ql = {
+          action: 'delete',
+          type: n === undefined ? 'label' : 'milestone',
+          [n === undefined ? 'id' : 'number']: n === undefined ? getIdL(x) : n,
+        };
 
-          return r;
-        }),
-        // Wrap action with client
-        map((x): Fn0<Promise<unknown>> => {
-          if (options.dryRun)
-            return async () => {
-              logger.info(
-                `DRY; Subject to removal, ${logger.pp(
-                  x as Record<string, unknown>,
-                )}`,
-              );
-            };
+        return [
+          ({ logger }) =>
+            logger.info(`DRY; ${ql.type} removal, ${logger.pp(x)}`),
+          ({ repoQ, repoR }) => {
+            if (ql.type === 'milestone') {
+              return repoR(...mutateRestM(ql));
+            }
 
-          if (x.type === 'milestone') {
-            return async () => restClient(options.repoUrl)(...mutateRestM(x));
-          }
-
-          return async () => qlClient(options.repoUrl)(mutateL(x));
-        }),
-      ),
-      push(),
-      flatten<LnM[]>(rows),
-    );
-  };
+            return repoQ(mutateL(ql), ql);
+          },
+        ];
+      }),
+    ),
+    push(),
+    flatten<LnM[]>(rows),
+  );
 }
