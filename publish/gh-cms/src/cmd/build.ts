@@ -47,8 +47,8 @@ import {
   queryLPager,
   queryMPager,
   labelsMilestones2Map,
-  preBuildLM,
-  buildI,
+  preBuildModel,
+  buildModel,
 } from '../model/build';
 import { getInFs } from '../model/io/fs';
 import {
@@ -143,8 +143,8 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     const milestonesMap = labelsMilestones2Map(milestonesFar);
     logger.debug(`Build: GH milestones fetched: ${logger.pp(milestonesFar)}`);
 
-    const outpre: Array<['label' | 'milestone', any]> = await Promise.all(
-      preBuildLM(rows, labelsMap, milestonesMap)
+    const preBuild: Array<['label' | 'milestone', any]> = await Promise.all(
+      preBuildModel(rows, labelsMap, milestonesMap)
         .map(([left, right]) =>
           (dry ? left : right)({
             repoQ,
@@ -157,7 +157,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     );
 
     // Pushing new labels milestones in related list
-    for (const row of outpre) {
+    for (const row of preBuild) {
       if (row === undefined) break;
       const [k, v] = row;
       const id = (k === 'label' ? getCreateNameL : getCreateTitleM)(v) ?? '';
@@ -171,8 +171,8 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     }
 
     // 6. Build (issues)
-    const outbuild: Array<['label' | 'milestone', any]> = await Promise.all(
-      buildI(rows, labelsMap, milestonesMap)
+    const build: Array<['label' | 'milestone', any]> = await Promise.all(
+      buildModel(rows, labelsMap, milestonesMap)
         .map(([left, right]) =>
           (dry ? left : right)({
             repoQ,
@@ -183,7 +183,8 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     );
 
     /*
-     {
+     [
+      {
       createIssue: {
         issue: {
           id: 'I_kwDOG-ZMMM5ISezT',
@@ -191,7 +192,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
           state: 'OPEN'
         }
       }
-    }
+    },
     {
       updateIssue: {
         issue: {
@@ -201,6 +202,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
         }
       }
     }
+    ]
      */
 
     // // OUTPUT

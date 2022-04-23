@@ -453,7 +453,7 @@ export function changedNewRows(near: any, far: any) {
       map(([_0, _1, _2, _3, l, m, ...r1]) => {
         const labels = l
           ? l.map((x: unknown) =>
-              isValidDate(x) ? x.toISOString() : String(x),
+            isValidDate(x) ? (x as Date).toISOString() : String(x),
             )
           : l;
         const milestone = isValidDate(m) ? m.toISOString() : String(m);
@@ -480,7 +480,7 @@ export function changedNewRows(near: any, far: any) {
  * Generate sideEffects
  * - labels and milestones
  */
-export function preBuildLM(
+export function preBuildModel(
   rows: any[],
   lM: Map<string, string>,
   mM: Map<string, string>,
@@ -538,7 +538,7 @@ export function preBuildLM(
  * Generate sideEffects
  * - issues
  */
-export function buildI(
+export function buildModel(
   rows: any[],
   lM: Map<string, string>,
   mM: Map<string, string>,
