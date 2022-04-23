@@ -1,9 +1,15 @@
 import { defGetter } from '@thi.ng/paths';
 import type { Fn } from '@thi.ng/api';
-import { jNl, Issue, Issues, Labels, R1, R2, Label } from './api.js';
-import { endCursor, getNodes, hasNextPage, pageInfo, totalCount } from './repo.js';
-import { queryIdM, queryTitleM } from './milestone.js';
 import { comp } from '@thi.ng/compose';
+import { jNl, Issue, Issues, Labels, R1, R2, Label } from './api.js';
+import {
+  endCursor,
+  getNodes,
+  hasNextPage,
+  pageInfo,
+  totalCount,
+} from './repo.js';
+import { queryIdM, queryTitleM } from './milestone.js';
 
 /*
  * Nodes Query
@@ -35,8 +41,10 @@ export const getI: Fn<R1<Issues>, R2<Issues>> = defGetter<R1<Issues>, 'issues'>(
 
 // Nodes
 export const getMilestoneI = defGetter<Issue, 'milestone'>(['milestone']);
-export const getLabelsI: Fn<Issue, Label[] | undefined> =
-  comp((x) => x ? getNodes<Labels>(x): x, defGetter<Issue, 'labels'>(['labels']));
+export const getLabelsI: Fn<Issue, Label[] | undefined> = comp(
+  (x) => (x ? getNodes<Labels>(x) : x),
+  defGetter<Issue, 'labels'>(['labels']),
+);
 export const getIdI = defGetter<Issue, 'id'>([queryIdI]);
 export const getStateI = defGetter<Issue, 'state'>([queryStateI]);
 export const getBodyI = defGetter<Issue, 'body'>([queryBodyI]);
@@ -60,23 +68,23 @@ export type UpdateIssue = IssueAction & {
 };
 
 export const mutateI = (a: CreateIssue | UpdateIssue) =>
-  `mutation {
-     ${a.action === 'update' ? 'updateIssue' : 'createIssue'}(input: {
-        ${a.action === 'update' ? 'id' : 'repositoryId'}: "${a.id}"
-        ${a.title ? `title: "${a.title}"` : ''}
-        ${a.body ? `body: "${a.body}"` : ''}
-        ${
-          a.labelIds
-            ? `labelIds: [${a.labelIds.map((x) => `"${x}"`).join(',')}]`
-            : ''
-        }
-        ${a.milestoneId ? `milestoneId: "${a.milestoneId}"` : ''}
-        ${a.action === 'update' && a.state ? `state: ${a.state}` : ''}
-      }) {
-        issue {
-          id
-          title
-          state
-        }
-      }
-   }`;
+  [
+    'mutation issue(',
+    '$id: ID!',
+    a.title ? '$title: String!' : '',
+    a.body ? '$body: String = null' : '',
+    a.labelIds ? '$labelIds: [ID!] = [""]' : '',
+    a.milestoneId ? '$milestoneId: ID = null' : '',
+    a.action === 'update' && a.state ? '$state: IssueState' : '',
+    ') {',
+    (a.action === 'update' ? 'updateIssue' : 'createIssue').concat('(input: {'),
+    (a.action === 'update' ? 'id' : 'repositoryId').concat(': $id'),
+    a.title ? 'title: $title' : '',
+    a.body ? 'body: $body' : '',
+    a.labelIds ? 'labelIds: $labelIds' : '',
+    a.milestoneId ? 'milestoneId: $milestoneId' : '',
+    a.action === 'update' && a.state ? 'state: $state' : '',
+    '}) {',
+    'issue {id title state}',
+    '}}',
+  ].join(' ');

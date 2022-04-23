@@ -50,23 +50,28 @@ export type DeleteLabel = {
   action: 'delete';
   id: string;
 };
+
 export const mutateL = (a: CreateLabel | DeleteLabel) =>
-  `mutation {
-     ${a.action === 'create' ? 'createLabel' : 'deleteLabel'}(input: {
-      ${a.action === 'create' ? 'repositoryId' : 'id'}: "${a.id}"
-      ${
-        a.action === 'create'
-          ? `name: "${a.name}"
-         color: "${
-           a.color ?? Math.floor(Math.random() * 16_777_215).toString(16)
-         }"`
-          : ''
-      }
-    }) {
-        ${a.action === 'create' ? 'label{id,name}' : 'clientMutationId'}
-      }
-    }
-  `;
+  [
+    'mutation label(',
+    '$id: ID!',
+    a.action === 'create' ? '$name: String!' : '',
+    a.action === 'create'
+      ? '$color: String = '.concat(
+          '"',
+          Math.floor(Math.random() * 16_777_215).toString(16),
+          '"',
+        )
+      : '',
+    ') {',
+    (a.action === 'create' ? 'createLabel' : 'deleteLabel').concat('(input: {'),
+    (a.action === 'create' ? 'repositoryId' : 'id').concat(': $id'),
+    a.action === 'create' ? 'name: $name' : '',
+    a.action === 'create' ? 'color: $color' : '',
+    '}) {',
+    a.action === 'create' ? 'label{id name}' : 'clientMutationId',
+    '}}',
+  ].join(' ');
 
 /*
  * Mutation Getter
