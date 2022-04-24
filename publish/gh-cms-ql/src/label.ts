@@ -59,7 +59,7 @@ export const mutateL = (a: CreateLabel | DeleteLabel) =>
     a.action === 'create'
       ? '$color: String = '.concat(
           '"',
-         (Math.random()*0xFFFFFF<<0).toString(16),
+          Math.trunc(Math.random() * 0xff_ff_ff).toString(16),
           '"',
         )
       : '',
@@ -76,15 +76,7 @@ export const mutateL = (a: CreateLabel | DeleteLabel) =>
 /*
  * Mutation Getter
  */
-export const getCreateIdL = defGetter<
-  CreateLabelQL,
+export const getCreateL = defGetter<CreateLabelQL, 'createLabel', 'label'>([
   'createLabel',
   'label',
-  'id'
->(['createLabel', 'label', 'id']);
-export const getCreateNameL = defGetter<
-  CreateLabelQL,
-  'createLabel',
-  'label',
-  'name'
->(['createLabel', 'label', 'name']);
+]);

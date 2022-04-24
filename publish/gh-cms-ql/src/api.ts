@@ -57,3 +57,5 @@ export type R2<T extends Combined> = R1<T>[keyof T];
  * Mutation Query
  */
 export type CreateLabelQL = { createLabel: { label: Label } }
+export type CreateIssueQL = { createIssue: { issue: Issue } }
+export type UpdateIssueQL = { updateIssue: { issue: Issue } }

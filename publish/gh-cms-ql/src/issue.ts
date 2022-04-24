@@ -1,7 +1,17 @@
 import { defGetter } from '@thi.ng/paths';
 import type { Fn } from '@thi.ng/api';
 import { comp } from '@thi.ng/compose';
-import { jNl, Issue, Issues, Labels, R1, R2, Label } from './api.js';
+import {
+  jNl,
+  Issue,
+  Issues,
+  Labels,
+  R1,
+  R2,
+  Label,
+  CreateIssueQL,
+  UpdateIssueQL,
+} from './api.js';
 import {
   endCursor,
   getNodes,
@@ -88,3 +98,15 @@ export const mutateI = (a: CreateIssue | UpdateIssue) =>
     'issue {id title state}',
     '}}',
   ].join(' ');
+
+/*
+ * Mutation Getter
+ */
+export const getCreateI = defGetter<CreateIssueQL, 'createIssue', 'issue'>([
+  'createIssue',
+  'issue',
+]);
+export const getUpdateI = defGetter<UpdateIssueQL, 'updateIssue', 'issue'>([
+  'updateIssue',
+  'issue',
+]);

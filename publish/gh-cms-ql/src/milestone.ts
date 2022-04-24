@@ -71,10 +71,10 @@ export function mutateRestM(
 /*
  * Mutation Getter
  */
-export const getCreateIdM = defGetter<OctokitResponse<any>, 'data', 'node_id'>([
+export const getCreateIdM = defGetter<OctokitResponse<{node_id: string}>, 'data', 'node_id'>([
   'data',
   'node_id',
 ]);
-export const getCreateTitleM = defGetter<OctokitResponse<any>, 'data', 'title'>(
+export const getCreateTitleM = defGetter<OctokitResponse<{title: string}>, 'data', 'title'>(
   ['data', 'title'],
 );
