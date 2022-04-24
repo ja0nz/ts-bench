@@ -52,26 +52,36 @@ export type DeleteLabel = {
 };
 
 export const mutateL = (a: CreateLabel | DeleteLabel) =>
-  [
-    'mutation label(',
-    '$id: ID!',
-    a.action === 'create' ? '$name: String!' : '',
-    a.action === 'create'
-      ? '$color: String = '.concat(
+  (a.action === 'create'
+    ? [
+        'mutation label(',
+        '$id: ID!',
+        '$name: String!',
+        '$color: String = '.concat(
           '"',
           Math.trunc(Math.random() * 0xff_ff_ff).toString(16),
           '"',
-        )
-      : '',
-    ') {',
-    (a.action === 'create' ? 'createLabel' : 'deleteLabel').concat('(input: {'),
-    (a.action === 'create' ? 'repositoryId' : 'id').concat(': $id'),
-    a.action === 'create' ? 'name: $name' : '',
-    a.action === 'create' ? 'color: $color' : '',
-    '}) {',
-    a.action === 'create' ? 'label{id name}' : 'clientMutationId',
-    '}}',
-  ].join(' ');
+        ),
+        ') {',
+        'createLabel(input: {',
+        'repositoryId: $id',
+        'name: $name',
+        'color: $color',
+        '}) {',
+        'label{id name}',
+        '}}',
+      ]
+    : [
+        'mutation label(',
+        '$id: ID!',
+        ') {',
+        'deleteLabel(input: {',
+        'id: $id',
+        '}) {',
+        'clientMutationId',
+        '}}',
+      ]
+  ).join(' ');
 
 /*
  * Mutation Getter
