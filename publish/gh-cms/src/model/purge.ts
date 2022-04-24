@@ -6,8 +6,11 @@ import {
   transduce,
   push,
 } from '@thi.ng/transducers';
-import type { Label, DeleteLabel, DeleteMilestone, Milestone } from 'gh-cms-ql';
 import {
+  Label,
+  DeleteLabel,
+  DeleteMilestone,
+  Milestone,
   mutateRestM,
   mutateL,
   getNumberM,

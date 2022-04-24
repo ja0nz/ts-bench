@@ -4,7 +4,7 @@ import { defGetter } from '@thi.ng/paths';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { AppConfig } from './config.js';
-import { readJSON } from './io.js';
+import { readJSON } from './io/fs.js';
 import type { Logger } from './logger';
 import type Process from 'node:process';
 import { assert } from '@thi.ng/errors';

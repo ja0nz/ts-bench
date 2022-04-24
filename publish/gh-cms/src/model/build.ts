@@ -1,3 +1,10 @@
+import type { graphql } from '@octokit/graphql/dist-types/types';
+import grayMatter, { GrayMatterFile } from 'gray-matter';
+import type { Fn } from '@thi.ng/api';
+import { comp as c } from '@thi.ng/compose';
+import { DGraph } from '@thi.ng/dgraph';
+import { assert } from '@thi.ng/errors';
+import { defGetter } from '@thi.ng/paths';
 import {
   comp,
   reducer,
@@ -20,11 +27,6 @@ import {
   str,
   assocMap,
 } from '@thi.ng/transducers';
-import { comp as c } from '@thi.ng/compose';
-import grayMatter, { GrayMatterFile } from 'gray-matter';
-import type { Fn } from '@thi.ng/api';
-import { DGraph } from '@thi.ng/dgraph';
-import { assert } from '@thi.ng/errors';
 import {
   getBodyI,
   getEndCursor,
@@ -63,15 +65,12 @@ import {
   getUpdateI,
   getIdI,
 } from 'gh-cms-ql';
-import type { graphql } from '@octokit/graphql/dist-types/types';
 import type { ActionObj, DGraphFields, MDActionMap, MDENV } from '../api.js';
-import {
-  modifyState,
-  createIssue,
-  createLabel,
-  createMilestone,
-} from './io/net.js';
-import { getInParsed, indexdIdentifier } from './api.js';
+
+export const indexdIdentifier = /(?<=\[)(\d+?)(?=])/g;
+export const getFrontMatterValue = (
+  key: string,
+): Fn<GrayMatterFile<string>, unknown> => defGetter(['data', key]);
 
 /*
  * IN: { "MD2ID": string, ... }
@@ -142,7 +141,7 @@ function stepTree(
       map<DGraphFields, ActionFieldsReduced>((k) => {
         if (g.isRoot(k))
           return new Reduced({
-            gm2valueFn: getInParsed(k),
+            gm2valueFn: getFrontMatterValue(k),
             gmToken: k,
             qlToken: queryBodyI,
             issue2valueFn: getBodyI,

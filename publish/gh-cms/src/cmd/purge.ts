@@ -17,7 +17,7 @@ import {
   queryR,
 } from 'gh-cms-ql';
 import type { CLIOpts, CommandSpec, DryRunOpts } from '../api.js';
-import { qlClient, restClient } from '../model/io/net.js';
+import { qlClient, restClient } from '../io/net.js';
 import { purgeModel } from '../model/purge.js';
 import { ARG_DRY } from './args.js';
 

@@ -50,8 +50,8 @@ import {
   issues2Map,
   postBuildModel,
 } from '../model/build.js';
-import { getInFs } from '../model/io/fs.js';
-import { qlClient, restClient } from '../model/io/net.js';
+import { getInFs } from '../io/fs.js';
+import { qlClient, restClient } from '../io/net.js';
 import { ARG_DRY } from './args.js';
 
 export interface BuildOptions extends CLIOpts, DryRunOpts {
