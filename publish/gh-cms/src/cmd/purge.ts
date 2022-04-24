@@ -36,26 +36,28 @@ export const purgeCmd: CommandSpec<PurgeOptions> = {
     logger.info('Starting purge');
 
     // CMD
-    const l = opts.labels;
+    const labelFlag = opts.labels;
     const dry = opts.dryRun;
     const repoUrl = opts.repoUrl;
     const repoQ = qlClient(repoUrl);
     const repoR = restClient(repoUrl);
 
-    // INPUT
-    const qFn = l
+    // 1. Define QL Fn for Labels or Milestones
+    const getFn = labelFlag
       ? queryL()(queryIdL, queryNameL, queryIssueCountL)
       : queryM()(queryNumberM, queryTitleM, queryIssueCountM);
 
-    const far: R0<Labels & Milestones> = await qlClient(opts.repoUrl)(
-      queryR(qFn),
+    // 2. Fetch far rows
+    const far: R0<Labels & Milestones> = await repoQ(
+      queryR(getFn),
     );
 
-    const rows = l
+    // 3. Parse to rows
+    const rows = labelFlag
       ? getNodes<Labels>(getL(getR<Labels>(far)))
       : getNodes<Milestones>(getM(getR<Milestones>(far)));
 
-    // OUTPUT
+    // 4. Purge Labels or Milestones
     await Promise.all(
       purgeModel(rows).map(([left, right]) =>
         (dry ? left : right)({
