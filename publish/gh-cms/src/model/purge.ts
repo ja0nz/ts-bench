@@ -39,7 +39,7 @@ export function purgeModel(...rows: LnM[][]): Either[] {
           ({ logger }) => {
             logger.info(`DRY; ${ql.type} removal, ${logger.pp(x)}`);
           },
-          async ({ repoQ, repoR }) =>
+          ({ repoQ, repoR }) =>
             ql.type === 'milestone'
               ? repoR(...mutateRestM(ql))
               : repoQ(mutateL(ql), ql),

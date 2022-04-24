@@ -65,10 +65,11 @@ import {
   getUpdateI,
   getIdI,
 } from 'gh-cms-ql';
+import type { Either } from './api';
 import type { ActionObj, DGraphFields, MDActionMap, MDENV } from '../api.js';
 
-export const indexdIdentifier = /(?<=\[)(\d+?)(?=])/g;
-export const getFrontMatterValue = (
+const indexdIdentifier = /(?<=\[)(\d+?)(?=])/g;
+const getFrontMatterValue = (
   key: string,
 ): Fn<GrayMatterFile<string>, unknown> => defGetter(['data', key]);
 
@@ -454,7 +455,7 @@ export function preBuildModel(
           mapcat(({ labels }) => (Array.isArray(labels) ? labels : [labels])),
           filter((l) => l !== 'undefined' && !lM.has(l)), // String(undefined)
           distinct(),
-          map((l) => [
+          map<Label, Either>((l) => [
             ({ logger }) => {
               logger.info(`DRY; Create missing label: ${l}`);
             },
