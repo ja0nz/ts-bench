@@ -71,10 +71,7 @@ import {
   createLabel,
   createMilestone,
 } from './io/net.js';
-import {
-  getInParsed,
-  indexdIdentifier,
-} from './api.js';
+import { getInParsed, indexdIdentifier } from './api.js';
 
 /*
  * IN: { "MD2ID": string, ... }
@@ -462,11 +459,11 @@ export function preBuildModel(
             ({ logger }) => {
               logger.info(`DRY; Create missing label: ${l}`);
             },
-            ({ repoQ, repoID }) => {
+            ({ repoQ, repoId }) => {
               const ql = {
                 type: 'label',
                 action: 'create',
-                id: repoID,
+                id: repoId,
                 name: l,
               };
               return repoQ(mutateL(ql), ql).then((x) => ['label', x]);
@@ -528,8 +525,8 @@ export function buildModel(
           ({ logger }) => {
             logger.info(`DRY; ${action} issue: ${logger.pp(data)}`);
           },
-          ({ repoQ, repoID }) => {
-            const ql = { ...data, id: rId ?? repoID };
+          ({ repoQ, repoId }) => {
+            const ql = { ...data, id: rId ?? repoId };
             return repoQ(mutateI(ql), ql);
           },
         ];
@@ -543,10 +540,8 @@ export function buildModel(
 export function issues2Map(issues: Array<CreateIssueQL | UpdateIssueQL>) {
   return transduce(
     comp(
-      map(
-        x => getCreateI(x as any) ?? getUpdateI(x as any),
-      ),
-      map(x => [getTitleI(x), x]),
+      map((x) => getCreateI(x as any) ?? getUpdateI(x as any)),
+      map((x) => [getTitleI(x), x]),
     ),
     assocMap<string, Issue>(),
     issues,
@@ -562,32 +557,38 @@ export function postBuildModel(rows, buildMap) {
     comp(
       filter(({ title, state }) => {
         const ghState = getStateI(buildMap.get(title));
-        assert(ghState !== undefined, `PostBuild: Something is not right with issue ${title}`)
+        assert(
+          ghState !== undefined,
+          `PostBuild: Something is not right with issue ${title}`,
+        );
         return state !== ghState;
       }),
       map(({ title, ...r }) => {
         const rId = getIdI(buildMap.get(title));
-        assert(rId !== undefined, `PostBuild: Something is not right with issue ${title}`)
-        return { ...r, rId }
+        assert(
+          rId !== undefined,
+          `PostBuild: Something is not right with issue ${title}`,
+        );
+        return { ...r, rId };
       }),
       map(({ rId, state }) => {
         const ql = {
           type: 'issue',
           action: 'update',
           id: rId,
-          state
+          state,
         };
         return [
           ({ logger }) => {
-            logger.info(`DRY; Can't run dry postbuild without building -_-`)
+            logger.info(`DRY; Can't run dry postbuild without building -_-`);
           },
-          ({ repoQ, repoID }) => {
+          ({ repoQ }) => {
             return repoQ(mutateI(ql), ql);
           },
         ];
-      })
+      }),
     ),
     push(),
-    rows
-  )
+    rows,
+  );
 }

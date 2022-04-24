@@ -142,6 +142,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
         }),
       ),
     );
+    logger.debug(`Build: Finished prebuild`);
 
     // Pushing new labels milestones in related list
     const getCreateNameL = comp(getNameL, getCreateL);
@@ -158,6 +159,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
       const vmap = k === 'label' ? labelsMap : milestonesMap;
       vmap.set(id, value);
     }
+    logger.debug(`Build: Finished prebuild key remapping`);
 
     // 6. Build (issues)
     const build: Array<CreateIssueQL | UpdateIssueQL> = await Promise.all(
@@ -169,6 +171,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
         }),
       ),
     );
+    logger.debug(`Build: Finished build`);
 
     // 7. Postbuild (issues)
     if (!dry) {
@@ -184,6 +187,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
       );
     }
 
+    logger.debug(`Build: Finished postbuild`);
     logger.info('Successfully build');
   },
   opts: <Args<BuildOptions>>{
