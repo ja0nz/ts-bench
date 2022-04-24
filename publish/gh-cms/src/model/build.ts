@@ -4,20 +4,14 @@ import {
   partition,
   filter,
   flatten,
-  groupByObj,
   map,
   mapcat,
   multiplex,
-  multiplexObj,
   push,
-  sideEffect,
   transduce,
   last,
-  interleave,
   scan,
-  maxCompare,
   distinct,
-  trace,
   iterator,
   step,
   Reduced,
@@ -25,26 +19,22 @@ import {
   cat,
   str,
   assocMap,
-  mapKeys,
 } from '@thi.ng/transducers';
 import { comp as c } from '@thi.ng/compose';
 import grayMatter, { GrayMatterFile } from 'gray-matter';
-import type { Fn, FnAnyT, IObjectOf } from '@thi.ng/api';
+import type { Fn } from '@thi.ng/api';
 import { DGraph } from '@thi.ng/dgraph';
 import { assert } from '@thi.ng/errors';
 import {
   getBodyI,
   getEndCursor,
   getHasNextPage,
-  getI,
   getLabelsI,
   getMilestoneI,
   getNodes,
   getR,
   getStateI,
   getTitleI,
-  hasNextPage,
-  Issues,
   Milestone,
   queryBodyI,
   queryI,
@@ -56,13 +46,9 @@ import {
   queryTitleI,
   getTitleM,
   Issue,
-  getL,
-  Labels,
   R2,
   R1,
-  Milestones,
   Combined,
-  R0,
   queryM,
   queryTitleM,
   Label,
@@ -71,10 +57,13 @@ import {
   mutateL,
   mutateRestM,
   mutateI,
+  CreateIssueQL,
+  UpdateIssueQL,
+  getCreateI,
+  getUpdateI,
+  getIdI,
 } from 'gh-cms-ql';
 import type { graphql } from '@octokit/graphql/dist-types/types';
-import type { BuildOptions } from '../cmd/build.js';
-import type { Logger } from '../logger.js';
 import type { ActionObj, DGraphFields, MDActionMap, MDENV } from '../api.js';
 import {
   modifyState,
@@ -82,33 +71,10 @@ import {
   createLabel,
   createMilestone,
 } from './io/net.js';
-import { getInRepo } from './io/queryRepo.js';
 import {
-  get_CMS_id,
-  getDate,
-  getId,
-  GH_CMS,
-  CustomGrayMatter,
-  get_CMS_parsed,
-  Repository,
-  getLabels,
-  getMilestone,
-  get_CMS_rid,
-  setLabels,
-  setMilestone,
-  get_parsed_data,
-  get_CMS_state,
-  getTitle,
-  getState,
-  set_CMS_id,
-  set_CMS_state,
-  setTitle,
-  Effect,
   getInParsed,
   indexdIdentifier,
 } from './api.js';
-
-// New implement
 
 /*
  * IN: { "MD2ID": string, ... }
@@ -216,25 +182,25 @@ function stepTree(
         const k = key.match(indexdIdentifier);
         const getIndex =
           (n: number): Fn<string, string> =>
-            (x: string) =>
-              typeof x === 'string' ? x.split(',')[n] : x;
+          (x: string) =>
+            typeof x === 'string' ? x.split(',')[n] : x;
         if (k) {
           const k0 = Number(k[0]);
           return node.length === 1
             ? node.map(
-              (n: ActionObj) =>
-                new Reduced({
-                  ...n,
-                  gm2valueFn: c(getIndex(k0), n.gm2valueFn),
-                }),
-            )
+                (n: ActionObj) =>
+                  new Reduced({
+                    ...n,
+                    gm2valueFn: c(getIndex(k0), n.gm2valueFn),
+                  }),
+              )
             : [node[k0]].map(
-              (n: ActionObj) =>
-                new Reduced({
-                  ...n,
-                  issue2valueFn: c(getIndex(k0), n.issue2valueFn),
-                }),
-            );
+                (n: ActionObj) =>
+                  new Reduced({
+                    ...n,
+                    issue2valueFn: c(getIndex(k0), n.issue2valueFn),
+                  }),
+              );
         }
 
         return [node];
@@ -414,7 +380,7 @@ export function labelsMilestones2Map<T extends Label | Milestone>(
   );
 }
 
-export function changedNewRows(near: any, far: any) {
+export function nearFarMerge(near: any, far: any) {
   // A bit of a hack
   const isValidDate = (dateLike: any): boolean =>
     dateLike instanceof Date && !isNaN(dateLike as any);
@@ -462,9 +428,10 @@ export function changedNewRows(near: any, far: any) {
       // 5. Labels and Milestones to string (GH issue format):
       // transform dates to ISO strings because String(date) is not portable
       map(({ labels, milestone, ...r }) => {
-        const lMapped = labels?.map?.((x: unknown) =>
-          String((x as Date)?.toISOString?.() ?? x),
-        ) ?? String(labels);
+        const lMapped =
+          labels?.map?.((x: unknown) =>
+            String((x as Date)?.toISOString?.() ?? x),
+          ) ?? String(labels);
         const mMapped = String(milestone?.toISOString?.() ?? milestone);
         return { ...r, labels: lMapped, milestone: mMapped };
       }),
@@ -492,7 +459,9 @@ export function preBuildModel(
           filter((l) => l !== 'undefined' && !lM.has(l)), // String(undefined)
           distinct(),
           map((l) => [
-            ({ logger }) => logger.info(`DRY; Create missing label: ${l}`),
+            ({ logger }) => {
+              logger.info(`DRY; Create missing label: ${l}`);
+            },
             ({ repoQ, repoID }) => {
               const ql = {
                 type: 'label',
@@ -510,7 +479,9 @@ export function preBuildModel(
           filter((m) => m !== 'undefined' && !mM.has(m)), // String(undefined)
           distinct(),
           map((m) => [
-            ({ logger }) => logger.info(`DRY; Create missing milestone: ${m}`),
+            ({ logger }) => {
+              logger.info(`DRY; Create missing milestone: ${m}`);
+            },
             ({ repoR }) =>
               repoR(
                 ...mutateRestM({
@@ -554,11 +525,12 @@ export function buildModel(
           milestoneId: mM.get(milestone) ?? '',
         };
         return [
-          ({ logger }) =>
-            logger.info(`DRY; ${action} issue: ${logger.pp(data)}`),
+          ({ logger }) => {
+            logger.info(`DRY; ${action} issue: ${logger.pp(data)}`);
+          },
           ({ repoQ, repoID }) => {
             const ql = { ...data, id: rId ?? repoID };
-            return repoQ(mutateI(ql), ql).then((x) => ['issue', x]);
+            return repoQ(mutateI(ql), ql);
           },
         ];
       }),
@@ -568,187 +540,54 @@ export function buildModel(
   );
 }
 
-// :End new implement
-
-type WrapIssue = { issue: Issue };
-export function postBuild(
-  options: BuildOptions,
-  logger: Logger,
-  build: Array<IObjectOf<WrapIssue>>,
-): Fn<GH_CMS[], Effect[]> {
-  // Id, title, state
-  const farBuild: Issue[] = transduce(
+export function issues2Map(issues: Array<CreateIssueQL | UpdateIssueQL>) {
+  return transduce(
     comp(
-      mapcat<IObjectOf<WrapIssue>, WrapIssue>((b) => Object.values(b)),
-      map((b) => b.issue),
+      map(
+        x => getCreateI(x as any) ?? getUpdateI(x as any),
+      ),
+      map(x => [getTitleI(x), x]),
+    ),
+    assocMap<string, Issue>(),
+    issues,
+  );
+}
+
+/*
+ * Generate sideEffects
+ * - issues
+ */
+export function postBuildModel(rows, buildMap) {
+  return transduce(
+    comp(
+      filter(({ title, state }) => {
+        const ghState = getStateI(buildMap.get(title));
+        assert(ghState !== undefined, `PostBuild: Something is not right with issue ${title}`)
+        return state !== ghState;
+      }),
+      map(({ title, ...r }) => {
+        const rId = getIdI(buildMap.get(title));
+        assert(rId !== undefined, `PostBuild: Something is not right with issue ${title}`)
+        return { ...r, rId }
+      }),
+      map(({ rId, state }) => {
+        const ql = {
+          type: 'issue',
+          action: 'update',
+          id: rId,
+          state
+        };
+        return [
+          ({ logger }) => {
+            logger.info(`DRY; Can't run dry postbuild without building -_-`)
+          },
+          ({ repoQ, repoID }) => {
+            return repoQ(mutateI(ql), ql);
+          },
+        ];
+      })
     ),
     push(),
-    build,
-  );
-  return (rows: GH_CMS[]) =>
-    transduce(
-      comp(
-        // Fill in missing/regenerated values
-        // matching by titles may be not enough - only ID is uniqe. But I don't want to parse the doc again
-        // and go through all the loops
-        map((i: GH_CMS) => {
-          const match = farBuild.filter((x) => x.title === getTitle(i));
-          if (match.length > 0) {
-            // New id
-            i = set_CMS_id(i, match[0].id);
-            // New state
-            i = set_CMS_state(i, match[0].state);
-          }
-
-          return i;
-        }),
-        // Filter rows which need preBuild
-        filter((r: GH_CMS) => {
-          const p = getState(r);
-          const i = get_CMS_state(r);
-          if (p && i === 'OPEN') return false;
-          if (!p && i === 'CLOSED') return false;
-          return true;
-        }),
-        sideEffect((i: GH_CMS) => {
-          const action = getState(i) ? 'Draft' : 'Publish';
-          if (options.dryRun)
-            logger.info(`DRY; ${action} issue title: ${getTitle(i)}`);
-        }),
-        map((i) => [get_CMS_id(i), !getState(i) ? 'CLOSED' : 'OPEN']),
-        map(([id, state]) => modifyState(options.repoUrl, id, state)),
-      ),
-      push(),
-      rows,
-    );
-}
-
-export function build(
-  options: BuildOptions,
-  logger: Logger,
-  far: Repository,
-): Fn<GH_CMS[], Effect[]> {
-  const farLabels = getInRepo(far, 'labels')?.nodes ?? [];
-  const farMilestones = getInRepo(far, 'milestones')?.nodes ?? [];
-  return (rows: GH_CMS[]) =>
-    transduce(
-      comp(
-        sideEffect((i: GH_CMS) => {
-          const nI = get_CMS_id(i);
-          if (options.dryRun)
-            logger.info(
-              `DRY; ${nI ? 'Update' : 'Create'} issue: ${logger.pp(
-                get_parsed_data(i),
-              )}`,
-            );
-        }),
-        // Labels -> ids
-        map<GH_CMS, GH_CMS>((i) => {
-          const lIDs = transduce(
-            comp(
-              mapcat<string, Label>((x) =>
-                farLabels.filter((y: Label) => y.name === x),
-              ),
-              map((x: Label) => x.id),
-            ),
-            push(),
-            getLabels(i) ?? [],
-          );
-          const nT = setLabels(i, lIDs);
-          return nT;
-        }),
-        // Milestone -> id
-        map<GH_CMS, GH_CMS>((i) => {
-          const lIDs = transduce(
-            comp(
-              mapcat<string, Milestone>((x) =>
-                farMilestones.filter((y: Milestone) => y.title === x),
-              ),
-              map((x) => x.id),
-            ),
-            last(),
-            [getMilestone(i)],
-          );
-          const nT = setMilestone(i, lIDs ?? '');
-          return nT;
-        }),
-        // State
-        map<GH_CMS, GH_CMS>((i) => {
-          const pState = !getState(i) ? 'CLOSED' : 'OPEN';
-          const nT = set_CMS_state(i, pState);
-          return nT;
-        }),
-        sideEffect((i: GH_CMS) => {
-          const nI = get_CMS_id(i);
-          if (options.dryRun)
-            logger.info(
-              `DRY; ${nI ? 'Update' : 'Create'} issue: ${logger.pp(
-                get_parsed_data(i),
-              )}`,
-            );
-        }),
-        map((i) => createIssue(options.repoUrl, i)),
-      ),
-      push(),
-      rows,
-    );
-}
-
-export function preBuild(
-  options: BuildOptions,
-  logger: Logger,
-  far: Repository,
-): Fn<GH_CMS[], Effect[]> {
-  const farLabels = getInRepo(far, 'labels')?.nodes ?? [];
-  const farMilestones = getInRepo(far, 'milestones')?.nodes ?? [];
-  return (rows: GH_CMS[]) =>
-    transduce(
-      comp(
-        multiplex<GH_CMS, Effect, Effect>(
-          comp(
-            // Flat out tags
-            mapcat<GH_CMS, string>((x: GH_CMS) => {
-              const parsedTags = getLabels(x);
-              if (parsedTags === undefined) return [];
-              return [...interleave(get_CMS_rid(x), parsedTags)];
-            }),
-            partition<string>(2),
-            filter(
-              ([_, tag]: string[]) =>
-                farLabels.filter((x: Label) => x.name === tag).length === 0,
-            ),
-            distinct({ key: (x) => x[1] }),
-            sideEffect((x: string[]) => {
-              if (options.dryRun)
-                logger.info(`DRY; Create missing label: ${x[1]}`);
-            }),
-            map(([rID, tag]: string[]) =>
-              createLabel(options.repoUrl, rID, tag),
-            ),
-          ),
-          comp(
-            // Wanted milestone
-            mapcat<GH_CMS, string>((x: GH_CMS) => {
-              const mileStone = getMilestone(x);
-              if (mileStone === undefined) return [];
-              return [mileStone];
-            }),
-            filter(
-              (t: string) =>
-                farMilestones.filter((x: Milestone) => x.title === t).length ===
-                0,
-            ),
-            sideEffect((x: string) => {
-              if (options.dryRun)
-                logger.info(`DRY; Create missing milestone: ${x}`);
-            }),
-            map((x: string) => createMilestone(options.repoUrl, x)),
-          ),
-        ),
-        flatten<Effect[]>(),
-        filter((x) => x !== undefined),
-      ),
-      push(),
-      rows,
-    );
+    rows
+  )
 }

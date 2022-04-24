@@ -1,10 +1,11 @@
-import { graphql } from '@octokit/graphql';
-import type { Fn0 } from '@thi.ng/api';
+import type { OctokitResponse } from '@octokit/types';
 import { Args, string } from '@thi.ng/args';
 import { comp } from '@thi.ng/compose';
 import { assert } from '@thi.ng/errors';
-import { assocMap, cat, map, trace, transduce, zip } from '@thi.ng/transducers';
+import { zip } from '@thi.ng/transducers';
 import {
+  getCreateL,
+  getNameL,
   getI,
   getM,
   Issues,
@@ -16,10 +17,12 @@ import {
   queryR,
   getIdR,
   getR,
-  getCreateNameL,
-  getCreateIdL,
   getCreateIdM,
   getCreateTitleM,
+  CreateIssueQL,
+  UpdateIssueQL,
+  getIdL,
+  CreateLabelQL,
 } from 'gh-cms-ql';
 import grayMatter from 'gray-matter';
 import {
@@ -30,18 +33,13 @@ import {
   ensureEnv,
   REQUIRED,
   MDENV,
-} from '../api';
-import type { Repository } from '../model/api';
+} from '../api.js';
 import {
   fetchExhaust,
-  build,
   buildDag,
   dag2MDActionMap,
-  changedNewRows,
-  parseContentRows,
+  nearFarMerge,
   parseIssues,
-  postBuild,
-  preBuild,
   queryIPager,
   patchedIssued2Map,
   queryLPager,
@@ -49,19 +47,12 @@ import {
   labelsMilestones2Map,
   preBuildModel,
   buildModel,
-} from '../model/build';
-import { getInFs } from '../model/io/fs';
-import {
-  queryStrRepo,
-  getInRepo,
-  qlClient,
-  queryQLIssues,
-  queryQLLabels,
-  queryQLMilestones,
-  queryQLID,
-  restClient,
-} from '../model/io/net';
-import { ARG_DRY } from './args';
+  issues2Map,
+  postBuildModel,
+} from '../model/build.js';
+import { getInFs } from '../model/io/fs.js';
+import { qlClient, restClient } from '../model/io/net.js';
+import { ARG_DRY } from './args.js';
 
 export interface BuildOptions extends CLIOpts, DryRunOpts {
   contentPath: string;
@@ -81,7 +72,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     const repoUrl = opts.repoUrl;
     const repoQ = qlClient(repoUrl);
     const repoR = restClient(repoUrl);
-    const repoID = comp(getIdR, getR)(await repoQ(queryR()));
+    const repoId = comp(getIdR, getR)(await repoQ(queryR()));
 
     // 1. Build DAG
     const dag = buildDag(MDENV);
@@ -100,7 +91,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
 
     const patchedIdFar: IterableIterator<[unknown[], string]> = zip(
       parseIssues(issuesFar, actionMap.get('MD2ID'), actionMap.get('MD2DATE')),
-      issuesFar.map(getIdI),
+      issuesFar.map((x) => getIdI(x)),
     );
     const idDateFar = patchedIssued2Map(patchedIdFar);
     // Logger.debug(
@@ -122,13 +113,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     );
     // Logger.debug(`Build: Parsed local content: ${logger.pp(idDateNear)}`);
 
-    const rows = changedNewRows(
-      zip(
-        idDateNear,
-        mdNearRaw
-      ),
-      idDateFar,
-    );
+    const rows = nearFarMerge(zip(idDateNear, mdNearRaw), idDateFar);
     logger.debug(`Build: Content to build: ${logger.pp(rows)}`);
 
     // 5. Prebuild (labels, milestones)
@@ -143,20 +128,24 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     const milestonesMap = labelsMilestones2Map(milestonesFar);
     logger.debug(`Build: GH milestones fetched: ${logger.pp(milestonesFar)}`);
 
-    const preBuild: Array<['label' | 'milestone', any]> = await Promise.all(
-      preBuildModel(rows, labelsMap, milestonesMap)
-        .map(([left, right]) =>
-          (dry ? left : right)({
-            repoQ,
-            repoR,
-            repoUrl,
-            repoID,
-            logger,
-          }),
-        )
+    const preBuild: Array<
+      | ['label', CreateLabelQL]
+      | ['milestone', OctokitResponse<{ node_id: string; title: string }>]
+    > = await Promise.all(
+      preBuildModel(rows, labelsMap, milestonesMap).map(([left, right]) =>
+        (dry ? left : right)({
+          repoQ,
+          repoR,
+          repoUrl,
+          repoId,
+          logger,
+        }),
+      ),
     );
 
     // Pushing new labels milestones in related list
+    const getCreateNameL = comp(getNameL, getCreateL);
+    const getCreateIdL = comp(getIdL, getCreateL);
     for (const row of preBuild) {
       if (row === undefined) break;
       const [k, v] = row;
@@ -171,55 +160,29 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     }
 
     // 6. Build (issues)
-    const build: Array<['label' | 'milestone', any]> = await Promise.all(
-      buildModel(rows, labelsMap, milestonesMap)
-        .map(([left, right]) =>
-          (dry ? left : right)({
-            repoQ,
-            repoID,
-            logger,
-          }),
-        ),
+    const build: Array<CreateIssueQL | UpdateIssueQL> = await Promise.all(
+      buildModel(rows, labelsMap, milestonesMap).map(([left, right]) =>
+        (dry ? left : right)({
+          repoQ,
+          repoId,
+          logger,
+        }),
+      ),
     );
 
     // 7. Postbuild (issues)
-    // match rows on title
-    // check if row.state == build.state
-    // if not mutate
-    /*
-     [
-      {
-      createIssue: {
-        issue: {
-          id: 'I_kwDOG-ZMMM5ISezT',
-          title: 'zigzag-10-m,1650412800000',
-          state: 'OPEN'
-        }
-      }
-    },
-    {
-      updateIssue: {
-        issue: {
-          id: 'I_kwDOG-ZMMM5GOY4-',
-          title: 'zig-7-m,1650412800003',
-          state: 'OPEN'
-        }
-      }
+    if (!dry) {
+      const buildMap: Map<string, Issue> = issues2Map(build);
+      await Promise.all(
+        postBuildModel(rows, buildMap).map(([left, right]) =>
+          (dry ? left : right)({
+            repoQ,
+            repoId,
+            logger,
+          }),
+        ),
+      );
     }
-    ]
-     */
-
-    // // OUTPUT
-    // let issues;
-    // if (!dry) {
-    //   issues = await Promise.all(buildFx.map((x) => x()));
-
-    //   // Postbuild
-    //   const postBuildFx = postBuild(opts, logger, issues)(content2Build);
-    //   if (!dry) {
-    //     await Promise.all(postBuildFx.map((x) => x()));
-    //   }
-    // }
 
     logger.info('Successfully build');
   },
