@@ -322,8 +322,7 @@ export function parseIssues(
                   if (
                     a.qlToken === 'body' &&
                     typeof pValue === 'string' &&
-                    pValue.includes('---') &&
-                    pValue.includes('\n')
+                    grayMatter.test(pValue)
                   ) {
                     return a.gm2valueFn(grayMatter(pValue));
                   }
@@ -519,16 +518,16 @@ export function buildModel(
           const action = rId ? 'update' : 'create';
           const data: UpdateIssue | CreateIssue = {
             type: 'issue',
-            id: '',
+            id: rId ?? 'NEW',
             action,
             title,
             body: body.join(''),
             labelIds: labels
               .filter((l) => l !== 'undefined')
-              .map((l) => lM.get(l) ?? `DRY:${l}`),
+              .map((l) => lM.get(l) ?? `NEW:${l}`),
             milestoneId: [milestone]
               .filter((m) => m !== 'undefined')
-              .map((m) => mM.get(m) ?? `DRY:${m}`)
+              .map((m) => mM.get(m) ?? `NEW:${m}`)
               .join(''),
           };
           return [
