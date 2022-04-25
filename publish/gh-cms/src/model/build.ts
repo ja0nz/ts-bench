@@ -64,9 +64,13 @@ import {
   getCreateI,
   getUpdateI,
   getIdI,
+  UpdateIssue,
+  CreateIssue,
+  CreateMilestone,
+  CreateLabel,
 } from 'gh-cms-ql';
-import type { Either } from './api';
-import type { ActionObj, DGraphFields, MDActionMap, MDENV } from '../api.js';
+import type { ActionObject, DGraphFields, MDActionMap, MDENV } from '../api.js';
+import type { BuildContent, Either } from './api';
 
 const indexdIdentifier = /(?<=\[)(\d+?)(?=])/g;
 const getFrontMatterValue = (
@@ -80,13 +84,13 @@ const getFrontMatterValue = (
 export function buildDag(env: typeof MDENV): DGraph<DGraphFields> {
   const g = new DGraph<DGraphFields>();
 
-  type ROW = [string, string];
-  const out: IterableIterator<ROW> = iterator(
+  type Row = [string, string];
+  const out: IterableIterator<Row> = iterator(
     comp(
-      mapcat<ROW, ROW>(([k, v]) => v.split(',').map((v1) => [k, v1])),
+      mapcat<Row, Row>(([k, v]) => v.split(',').map((v1) => [k, v1])),
       mapcat(([k, v]) => {
         const indexs = v.match(indexdIdentifier);
-        const returnValue: ROW[] = [];
+        const returnValue: Row[] = [];
         if (indexs !== null) {
           assert(indexs.length < 2, `Only one index level allowed: ${v}`);
           const [v1] = v.split('[');
@@ -106,7 +110,7 @@ export function buildDag(env: typeof MDENV): DGraph<DGraphFields> {
   return g;
 }
 
-const knownKeys: Record<string, Partial<ActionObj>> = {
+const knownKeys: Record<string, Partial<ActionObject>> = {
   MD2TITLE: {
     qlToken: queryTitleI,
     issue2valueFn: getTitleI,
@@ -132,10 +136,10 @@ function stepTree(
   acc: MDActionMap,
   key: DGraphFields,
   g: DGraph<DGraphFields>,
-): ActionObj[] | ActionObj {
+): ActionObject[] | ActionObject {
   // May be MD2ID, MD2ID[2], id, or Reduced
-  type ActionFieldsReduced = DGraphFields | Reduced<ActionObj>;
-  type ActionReduced = Reduced<ActionObj> | ActionObj[];
+  type ActionFieldsReduced = DGraphFields | Reduced<ActionObject>;
+  type ActionReduced = Reduced<ActionObject> | ActionObject[];
   return step(
     comp(
       // Trace('1. traversing ROOT value (gray matter):'),
@@ -168,7 +172,8 @@ function stepTree(
               new Reduced({
                 ...n,
                 qlToken: knownKeys[key].qlToken ?? '',
-                issue2valueFn: knownKeys[key].issue2valueFn ?? ((x) => x),
+                issue2valueFn:
+                  knownKeys[key].issue2valueFn ?? ((x: unknown) => x),
               }),
           );
         return [node];
@@ -185,14 +190,14 @@ function stepTree(
           const k0 = Number(k[0]);
           return node.length === 1
             ? node.map(
-                (n: ActionObj) =>
+                (n: ActionObject) =>
                   new Reduced({
                     ...n,
                     gm2valueFn: c(getIndex(k0), n.gm2valueFn),
                   }),
               )
             : [node[k0]].map(
-                (n: ActionObj) =>
+                (n: ActionObject) =>
                   new Reduced({
                     ...n,
                     issue2valueFn: c(getIndex(k0), n.issue2valueFn),
@@ -203,7 +208,7 @@ function stepTree(
         return [node];
       }),
       // Trace('5. LEAF values just copy:'),
-      mapcat<ActionReduced, Reduced<ActionObj>>((node) => {
+      mapcat<ActionReduced, Reduced<ActionObject>>((node) => {
         if (isReduced(node)) return [node];
         return node.map((n) => new Reduced(n));
       }),
@@ -220,10 +225,10 @@ function stepTree(
  * OUT: Map<string, ActionObj[]>
  */
 export function dag2MDActionMap(g: DGraph<DGraphFields>): MDActionMap {
-  return last(
+  return last<MDActionMap>(
     scan(
       reducer(
-        () => new Map<DGraphFields, ActionObj[]>(),
+        () => new Map<DGraphFields, ActionObject[]>(),
         (acc, key: DGraphFields) => {
           const actionObject = stepTree(acc, key, g);
           return acc.set(
@@ -243,13 +248,13 @@ export function dag2MDActionMap(g: DGraph<DGraphFields>): MDActionMap {
  */
 type GHCursor = string;
 export function queryIPager(
-  ...actionObject: Array<ActionObj[] | undefined>
+  ...actionObject: Array<ActionObject[] | undefined>
 ): Fn<GHCursor, string> {
   const join = transduce(
     comp(
       filter(Array.isArray),
-      cat<ActionObj>(),
-      map((x: ActionObj) => x.qlToken),
+      cat<ActionObject>(),
+      map((x: ActionObject) => x.qlToken),
     ),
     str('\n'),
     actionObject,
@@ -287,18 +292,6 @@ export async function fetchExhaust<T extends Combined>(
   return nodes;
 }
 
-type NewIssue = {
-  id: string;
-  date: Date;
-  iId: string;
-  iTitle: string;
-  iLabels: string[];
-  iMilestone: string;
-  iState: boolean;
-  isEmpty: boolean;
-  raw: string;
-} & GrayMatterFile<string>;
-
 /*
  * Parse remote or local issues
  * depending on the number of actionObjects the output rows differ
@@ -306,7 +299,7 @@ type NewIssue = {
  */
 export function parseIssues(
   iXs: Array<Issue | GrayMatterFile<string>>,
-  ...actionObject: Array<ActionObj[] | undefined>
+  ...actionObject: Array<ActionObject[] | undefined>
 ): unknown[][] {
   // --- iXs (issues)
   return transduce(
@@ -317,9 +310,9 @@ export function parseIssues(
           comp(
             filter(Array.isArray),
             map(
-              (aXs: ActionObj[]) =>
+              (aXs: ActionObject[]) =>
                 // --- each action
-                map((a: ActionObj) => {
+                map((a: ActionObject) => {
                   const pValue = a.issue2valueFn(issue) ?? a.gm2valueFn(issue);
                   // Must be a issues far
                   if (typeof pValue === 'string' && a.qlToken === 'body') {
@@ -366,10 +359,11 @@ export function labelsMilestones2Map<T extends Label | Milestone>(
 ): Map<string, string> {
   return transduce(
     comp(
-      map((x) => {
+      map<T, [string, string]>((x) => {
         const id = getIdL(x);
         const key = getNameL(x) ?? getTitleM(x);
-        return [key, id];
+        assert(key !== undefined, `Can't fetch name|title of ${id}`);
+        return [key!, id];
       }),
     ),
     assocMap(),
@@ -377,8 +371,9 @@ export function labelsMilestones2Map<T extends Label | Milestone>(
   );
 }
 
-export function nearFarMerge(near: any, far: any) {
+export function nearFarMerge(near: any, far: any): BuildContent {
   // A bit of a hack
+  const { isNaN } = Number;
   const isValidDate = (dateLike: any): boolean =>
     dateLike instanceof Date && !isNaN(dateLike as any);
 
@@ -443,10 +438,10 @@ export function nearFarMerge(near: any, far: any) {
  * - labels and milestones
  */
 export function preBuildModel(
-  rows: any[],
+  rows: BuildContent[],
   lM: Map<string, string>,
   mM: Map<string, string>,
-): Array<[Fn<any, any>, Fn<any, any>]> {
+): Either[] {
   return transduce(
     comp(
       multiplex(
@@ -455,12 +450,12 @@ export function preBuildModel(
           mapcat(({ labels }) => (Array.isArray(labels) ? labels : [labels])),
           filter((l) => l !== 'undefined' && !lM.has(l)), // String(undefined)
           distinct(),
-          map<Label, Either>((l) => [
+          map<string, Either>((l) => [
             ({ logger }) => {
               logger.info(`DRY; Create missing label: ${l}`);
             },
-            ({ repoQ, repoId }) => {
-              const ql = {
+            async ({ repoQ, repoId }) => {
+              const ql: CreateLabel = {
                 type: 'label',
                 action: 'create',
                 id: repoId,
@@ -475,17 +470,17 @@ export function preBuildModel(
           map(({ milestone }) => milestone),
           filter((m) => m !== 'undefined' && !mM.has(m)), // String(undefined)
           distinct(),
-          map((m) => [
+          map<string, Either>((m) => [
             ({ logger }) => {
               logger.info(`DRY; Create missing milestone: ${m}`);
             },
-            ({ repoR }) =>
+            async ({ repoR }) =>
               repoR(
                 ...mutateRestM({
                   type: 'milestone',
                   action: 'create',
                   title: m,
-                }),
+                } as CreateMilestone),
               ).then((x) => ['milestone', x]),
           ]),
         ),
@@ -508,40 +503,51 @@ export function buildModel(
   rows: any[],
   lM: Map<string, string>,
   mM: Map<string, string>,
-): Array<[Fn<any, any>, Fn<any, any>]> {
+): Array<Either<CreateIssueQL | UpdateIssueQL>> {
   return transduce(
     comp(
-      map(({ rId, title, labels, milestone, body }) => {
-        const action = rId ? 'update' : 'create';
-        const data = {
-          type: 'issue',
-          action,
-          title,
-          body: body.join(''),
-          labelIds: labels?.map?.((l) => lM.get(l) ?? `DRY:${l}`) ?? [],
-          milestoneId: mM.get(milestone) ?? '',
-        };
-        return [
-          ({ logger }) => {
-            logger.info(`DRY; ${action} issue: ${logger.pp(data)}`);
-          },
-          ({ repoQ, repoId }) => {
-            const ql = { ...data, id: rId ?? repoId };
-            return repoQ(mutateI(ql), ql);
-          },
-        ];
-      }),
+      map<BuildContent, Either<CreateIssueQL | UpdateIssueQL>>(
+        ({ rId, title, labels, milestone, body }) => {
+          const action = rId ? 'update' : 'create';
+          const data: UpdateIssue | CreateIssue = {
+            type: 'issue',
+            id: 'SET BELOW; remote Id or repo Id',
+            action,
+            title,
+            body: body.join(''),
+            labelIds: labels?.map?.((l) => lM.get(l) ?? `DRY:${l}`) ?? [],
+            milestoneId: mM.get(milestone) ?? '',
+          };
+          return [
+            ({ logger }) => {
+              logger.info(`DRY; ${action} issue: ${logger.pp(data)}`);
+            },
+            async ({ repoQ, repoId }) => {
+              const ql = { ...data, id: rId ?? repoId };
+              return repoQ(mutateI(ql), ql);
+            },
+          ];
+        },
+      ),
     ),
     push(),
     rows,
   );
 }
 
-export function issues2Map(issues: Array<CreateIssueQL | UpdateIssueQL>) {
+export function issues2Map(
+  issues: Array<CreateIssueQL | UpdateIssueQL>,
+): Map<string, Issue> {
   return transduce(
     comp(
-      map((x) => getCreateI(x as any) ?? getUpdateI(x as any)),
-      map((x) => [getTitleI(x), x]),
+      map(
+        (x) => getCreateI(x as CreateIssueQL) ?? getUpdateI(x as UpdateIssueQL),
+      ),
+      map<Issue, [string, Issue]>((x) => {
+        const title = getTitleI(x);
+        assert(title !== undefined, `Can't get title ${x}`);
+        return [title!, x];
+      }),
     ),
     assocMap<string, Issue>(),
     issues,
@@ -552,37 +558,43 @@ export function issues2Map(issues: Array<CreateIssueQL | UpdateIssueQL>) {
  * Generate sideEffects
  * - issues
  */
-export function postBuildModel(rows, buildMap) {
+export function postBuildModel(
+  rows: BuildContent[],
+  buildMap: Map<string, Issue>,
+): Array<Either<UpdateIssueQL>> {
   return transduce(
     comp(
       filter(({ title, state }) => {
-        const ghState = getStateI(buildMap.get(title));
+        const t = buildMap.get(title);
+        const ghState = t ? getStateI(t) : t;
         assert(
           ghState !== undefined,
           `PostBuild: Something is not right with issue ${title}`,
         );
-        return state !== ghState;
+        return state !== ghState!;
       }),
-      map(({ title, ...r }) => {
-        const rId = getIdI(buildMap.get(title));
+      map<BuildContent, BuildContent>((bc) => {
+        const { title } = bc;
+        const t = buildMap.get(title);
+        const rId = t ? getIdI(t) : null;
         assert(
-          rId !== undefined,
+          rId !== null,
           `PostBuild: Something is not right with issue ${title}`,
         );
-        return { ...r, rId };
+        return { ...bc, rId };
       }),
-      map(({ rId, state }) => {
-        const ql = {
+      map<BuildContent, Either<UpdateIssueQL>>(({ rId, state }) => {
+        const ql: UpdateIssue = {
           type: 'issue',
           action: 'update',
-          id: rId,
+          id: rId!,
           state,
         };
         return [
           ({ logger }) => {
             logger.info(`DRY; Can't run dry postbuild without building -_-`);
           },
-          ({ repoQ }) => {
+          async ({ repoQ }) => {
             return repoQ(mutateI(ql), ql);
           },
         ];

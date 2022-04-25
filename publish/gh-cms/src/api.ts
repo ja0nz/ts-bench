@@ -1,25 +1,28 @@
-import type { Fn } from '@thi.ng/api';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
+import type Process from 'node:process';
+import process from 'node:process';
+import { fileURLToPath } from 'node:url';
+import type { Fn, IObjectOf } from '@thi.ng/api';
 import type { Args } from '@thi.ng/args';
 import { defGetter } from '@thi.ng/paths';
-import { dirname, isAbsolute, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import type { AppConfig } from './config.js';
-import { readJSON } from './io/fs.js';
-import type { Logger } from './logger';
-import type Process from 'node:process';
 import { assert } from '@thi.ng/errors';
+import type { AppConfig } from './config.js';
+import type { Logger } from './logger.js';
+import { readJson } from './io/fs.js';
 
 let _dirname: string;
 try {
   _dirname = __dirname;
-} catch (e) {
+} catch {
   // ES6 compat
   _dirname = dirname(fileURLToPath(import.meta.url));
 }
 
-// enums
+// Enums
 export const INSTALL_DIR = resolve(join(_dirname, '..'));
-export const PKG = readJSON(join(INSTALL_DIR, 'package.json'));
+export const PKG: IObjectOf<string> = readJson(
+  join(INSTALL_DIR, 'package.json'),
+);
 export const REQUIRED = '<required>';
 export const CMD_HEADER = `
        .⠴⠿⠋      │
@@ -31,19 +34,19 @@ export const CMD_HEADER = `
      \\___/       │
 `;
 
-// process.env
+// Process.env
 const getEnv = (env: string) =>
   defGetter<typeof Process, 'env'>(['env'])(process)[env];
-export function ensureEnv(id: string, env: string, val: string) {
-  assert(val !== REQUIRED, `missing required '${id}' or '${env}'`);
+export function ensureEnv(id: string, env: string, value: string) {
+  assert(value !== REQUIRED, `missing required '${id}' or '${env}'`);
 }
 
 const CP = getEnv('CONTENT_PATH') ?? '';
-export const CONTENT_PATH = !isAbsolute(CP) ? join(process.cwd(), CP) : CP;
+export const CONTENT_PATH = isAbsolute(CP) ? CP : join(process.cwd(), CP);
 export const LOG_LEVEL = getEnv('LOG_LEVEL');
 export const REPO_URL = getEnv('REPO_URL');
 export const NO_COLOR = getEnv('NO_COLOR');
-export const GH_TOKEN = getEnv('GH_TOKEN'); // github.com -> Settings -> Developer Settings -> Personal access tokens -> token for public repo
+export const GH_TOKEN = getEnv('GH_TOKEN'); // Github.com -> Settings -> Developer Settings -> Personal access tokens -> token for public repo
 
 // MD2X variables
 export const MDENV = {
@@ -52,8 +55,8 @@ export const MDENV = {
   MD2TITLE: getEnv('MD2TITLE') ?? 'title',
   MD2LABELS: getEnv('MD2LABELS') ?? 'labels',
   MD2MILESTONE: getEnv('MD2MILESTONE') ?? 'milestone',
-  MD2STATE: getEnv('MD2STATE') ?? 'state'
-}
+  MD2STATE: getEnv('MD2STATE') ?? 'state',
+};
 /*
  * ActionObj type
  * qlToken -> comp(qlTokenI(), qlTokenR, repoQ)(qlToken)
@@ -61,30 +64,30 @@ export const MDENV = {
  * gmToken -> keys that needs to be present
  * issue2valueFn -> parsedIssue -> value
  */
-export type ActionObj = {
+export type ActionObject = {
   issue2valueFn: Fn<any, any>;
   gm2valueFn: Fn<any, any>;
   qlToken: string;
   gmToken: string;
 };
 export type DGraphFields = string | keyof typeof MDENV;
-export type MDActionMap = Map<DGraphFields, ActionObj[]>
+export type MDActionMap = Map<DGraphFields, ActionObject[]>;
 
-// process.argv
+// Process.argv
 const argv = defGetter<typeof Process, 'argv'>(['argv'])(process);
 const getArgv = (no: number) => argv.slice(2)[no];
 export const MAIN_CMD = getArgv(0);
 export const REST_CMDS: string[] = argv.slice(1);
 
-// interfaces
-export interface CLIOpts {
+// Interfaces
+export interface CLIOptions {
   /**
    * Respository URL to fetch/write issues
    */
   repoUrl: string;
 }
 
-export interface CommandSpec<T extends CLIOpts> {
+export interface CommandSpec<T extends CLIOptions> {
   /**
    * Actual command implementation
    */
@@ -99,7 +102,7 @@ export interface CommandSpec<T extends CLIOpts> {
   usage: string;
 }
 
-export interface CommandCtx<T extends CLIOpts> {
+export interface CommandCtx<T extends CLIOptions> {
   /**
    * The 'main' command to run, seperated into fn, opts and docstring
    */
@@ -122,6 +125,6 @@ export interface CommandCtx<T extends CLIOpts> {
   rest: string[];
 }
 
-export interface DryRunOpts {
+export interface DryRunOptions {
   dryRun: boolean;
 }

@@ -7,7 +7,7 @@ import {
   FormatPresets,
   StringFormat,
 } from '@thi.ng/text-format';
-import { PKG, CLIOpts, LOG_LEVEL, REPO_URL, NO_COLOR, REQUIRED } from './api';
+import { PKG, CLIOptions, LOG_LEVEL, REPO_URL, NO_COLOR, REQUIRED } from './api';
 
 /**
  * Config module:
@@ -21,7 +21,7 @@ export class AppConfig {
   logLevel: LogLevelName;
   fmt!: StringFormat;
   theme!: FormatPresets;
-  specs: Args<CLIOpts>;
+  specs: Args<CLIOptions>;
 
   constructor() {
     this.id = PKG.name;

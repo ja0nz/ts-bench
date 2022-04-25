@@ -16,12 +16,12 @@ import {
   queryNumberM,
   queryR,
 } from 'gh-cms-ql';
-import type { CLIOpts, CommandSpec, DryRunOpts } from '../api.js';
+import type { CLIOptions, CommandSpec, DryRunOptions } from '../api.js';
 import { qlClient, restClient } from '../io/net.js';
 import { purgeModel } from '../model/purge.js';
 import { ARG_DRY } from './args.js';
 
-export interface PurgeOptions extends CLIOpts, DryRunOpts {
+export interface PurgeOptions extends CLIOptions, DryRunOptions {
   labels: boolean;
   milestones: boolean;
 }
@@ -61,9 +61,10 @@ export const purgeCmd: CommandSpec<PurgeOptions> = {
     await Promise.all(
       purgeModel(rows).map(([left, right]) =>
         (dry ? left : right)({
+          logger,
           repoQ,
           repoR,
-          logger,
+          repoId: "not needed"
         }),
       ),
     );

@@ -1,5 +1,5 @@
 import { seconds } from '@thi.ng/strings';
-import { CLIOpts, CommandCtx, CommandSpec, ensureEnv } from './api';
+import { CLIOptions, CommandCtx, CommandSpec, ensureEnv } from './api';
 import type { AppConfig } from './config';
 import type { Logger } from './logger';
 import type { ArgParser } from './parser';
@@ -10,7 +10,7 @@ import type { ArgParser } from './parser';
  * - dispatching previously selected fn with parser arguments
  * - measuring time consumption
  */
-export class AppContext<T extends CLIOpts> implements CommandCtx<T> {
+export class AppContext<T extends CLIOptions> implements CommandCtx<T> {
   cmd!: CommandSpec<T>;
   opts!: T;
   rest!: string[];

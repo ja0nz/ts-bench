@@ -13,7 +13,6 @@ import {
   Milestones,
   getIdI,
   getL,
-  Issue,
   queryR,
   getIdR,
   getR,
@@ -26,8 +25,8 @@ import {
 } from 'gh-cms-ql';
 import grayMatter from 'gray-matter';
 import {
-  CLIOpts,
-  DryRunOpts,
+  CLIOptions,
+  DryRunOptions,
   CommandSpec,
   CONTENT_PATH,
   ensureEnv,
@@ -52,9 +51,10 @@ import {
 } from '../model/build.js';
 import { getInFs } from '../io/fs.js';
 import { qlClient, restClient } from '../io/net.js';
+import type { BuildContent } from '../model/api.js';
 import { ARG_DRY } from './args.js';
 
-export interface BuildOptions extends CLIOpts, DryRunOpts {
+export interface BuildOptions extends CLIOptions, DryRunOptions {
   contentPath: string;
 }
 
@@ -113,7 +113,10 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     );
     // Logger.debug(`Build: Parsed local content: ${logger.pp(idDateNear)}`);
 
-    const rows = nearFarMerge(zip(idDateNear, mdNearRaw), idDateFar);
+    const rows: BuildContent[] = nearFarMerge(
+      zip(idDateNear, mdNearRaw),
+      idDateFar,
+    );
     logger.debug(`Build: Content to build: ${logger.pp(rows)}`);
 
     // 5. Prebuild (labels, milestones)
@@ -134,11 +137,10 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     > = await Promise.all(
       preBuildModel(rows, labelsMap, milestonesMap).map(([left, right]) =>
         (dry ? left : right)({
+          logger,
           repoQ,
           repoR,
-          repoUrl,
           repoId,
-          logger,
         }),
       ),
     );
@@ -159,15 +161,17 @@ export const buildCmd: CommandSpec<BuildOptions> = {
       const vmap = k === 'label' ? labelsMap : milestonesMap;
       vmap.set(id, value);
     }
+
     logger.debug(`Build: Finished prebuild key remapping`);
 
     // 6. Build (issues)
-    const build: Array<CreateIssueQL | UpdateIssueQL> = await Promise.all(
+    const build: Array<void | CreateIssueQL | UpdateIssueQL> = await Promise.all(
       buildModel(rows, labelsMap, milestonesMap).map(([left, right]) =>
         (dry ? left : right)({
-          repoQ,
-          repoId,
           logger,
+          repoQ,
+          repoR,
+          repoId,
         }),
       ),
     );
@@ -175,13 +179,14 @@ export const buildCmd: CommandSpec<BuildOptions> = {
 
     // 7. Postbuild (issues)
     if (!dry) {
-      const buildMap: Map<string, Issue> = issues2Map(build);
+      const buildMap = issues2Map(build as (CreateIssueQL | UpdateIssueQL)[]);
       await Promise.all(
         postBuildModel(rows, buildMap).map(([left, right]) =>
           (dry ? left : right)({
-            repoQ,
-            repoId,
             logger,
+            repoQ,
+            repoR,
+            repoId,
           }),
         ),
       );

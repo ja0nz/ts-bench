@@ -21,13 +21,13 @@ import type { Either } from './api';
 
 type LnM = Label | Milestone;
 
-export function purgeModel(...rows: LnM[][]): Either[] {
+export function purgeModel(...rows: LnM[][]): Either<unknown>[] {
   return transduce(
     comp(
       // Throw all out which have an related issue
       filter((x: LnM) => !getIssueCountL(x)),
       // Transform to action
-      map<LnM, Either>((x: LnM) => {
+      map<LnM, Either<unknown>>((x: LnM) => {
         const n = getNumberM(x);
         const ql: DeleteMilestone | DeleteLabel = {
           type: n === undefined ? 'label' : 'milestone',
