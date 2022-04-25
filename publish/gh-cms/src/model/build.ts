@@ -513,7 +513,7 @@ export function buildModel(
           const action = rId ? 'update' : 'create';
           const data: UpdateIssue | CreateIssue = {
             type: 'issue',
-            id: 'SET BELOW; remote Id or repo Id',
+            id: '',
             action,
             title,
             body: body.join(''),
