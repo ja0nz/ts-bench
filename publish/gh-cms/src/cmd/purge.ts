@@ -48,9 +48,7 @@ export const purgeCmd: CommandSpec<PurgeOptions> = {
       : queryM()(queryNumberM, queryTitleM, queryIssueCountM);
 
     // 2. Fetch far rows
-    const far: R0<Labels & Milestones> = await repoQ(
-      queryR(getFn),
-    );
+    const far: R0<Labels & Milestones> = await repoQ(queryR(getFn));
 
     // 3. Parse to rows
     const rows = labelFlag
@@ -64,7 +62,7 @@ export const purgeCmd: CommandSpec<PurgeOptions> = {
           logger,
           repoQ,
           repoR,
-          repoId: "not needed"
+          repoId: 'not needed',
         }),
       ),
     );

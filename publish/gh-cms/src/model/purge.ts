@@ -21,7 +21,7 @@ import type { Either } from './api';
 
 type LnM = Label | Milestone;
 
-export function purgeModel(...rows: LnM[][]): Either<unknown>[] {
+export function purgeModel(...rows: LnM[][]): Array<Either<unknown>> {
   return transduce(
     comp(
       // Throw all out which have an related issue
@@ -39,7 +39,7 @@ export function purgeModel(...rows: LnM[][]): Either<unknown>[] {
           ({ logger }) => {
             logger.info(`DRY; ${ql.type} removal, ${logger.pp(x)}`);
           },
-          ({ repoQ, repoR }) =>
+          async ({ repoQ, repoR }) =>
             ql.type === 'milestone'
               ? repoR(...mutateRestM(ql))
               : repoQ(mutateL(ql), ql),

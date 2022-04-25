@@ -1,4 +1,3 @@
-import type { OctokitResponse } from '@octokit/types';
 import { Args, string } from '@thi.ng/args';
 import { comp } from '@thi.ng/compose';
 import { assert } from '@thi.ng/errors';
@@ -24,6 +23,7 @@ import {
   CreateLabelQL,
 } from 'gh-cms-ql';
 import grayMatter from 'gray-matter';
+import type { Fn } from '@thi.ng/api';
 import {
   CLIOptions,
   DryRunOptions,
@@ -51,7 +51,7 @@ import {
 } from '../model/build.js';
 import { getInFs } from '../io/fs.js';
 import { qlClient, restClient } from '../io/net.js';
-import type { BuildContent } from '../model/api.js';
+import type { BuildContent, PreBuildContent } from '../model/api.js';
 import { ARG_DRY } from './args.js';
 
 export interface BuildOptions extends CLIOptions, DryRunOptions {
@@ -131,10 +131,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     const milestonesMap = labelsMilestones2Map(milestonesFar);
     logger.debug(`Build: GH milestones fetched: ${logger.pp(milestonesFar)}`);
 
-    const preBuild: Array<
-      | ['label', CreateLabelQL]
-      | ['milestone', OctokitResponse<{ node_id: string; title: string }>]
-    > = await Promise.all(
+    const preBuild: Array<void | PreBuildContent> = await Promise.all(
       preBuildModel(rows, labelsMap, milestonesMap).map(([left, right]) =>
         (dry ? left : right)({
           logger,
@@ -147,13 +144,17 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     logger.debug(`Build: Finished prebuild`);
 
     // Pushing new labels milestones in related list
-    const getCreateNameL = comp(getNameL, getCreateL);
-    const getCreateIdL = comp(getIdL, getCreateL);
+    const getCreateNameL: Fn<CreateLabelQL, string | undefined> = comp(
+      getNameL,
+      getCreateL,
+    );
+    const getCreateIdL: Fn<CreateLabelQL, string> = comp(getIdL, getCreateL);
     for (const row of preBuild) {
       if (row === undefined) break;
       const [k, v] = row;
-      const id = (k === 'label' ? getCreateNameL : getCreateTitleM)(v) ?? '';
-      const value = (k === 'label' ? getCreateIdL : getCreateIdM)(v);
+      const id =
+        (k === 'label' ? getCreateNameL : getCreateTitleM)(v as any) ?? '';
+      const value = (k === 'label' ? getCreateIdL : getCreateIdM)(v as any);
       assert(
         value !== undefined,
         `Build: ${k}; Value is unset. Stack trace: ${logger.pp(v)}`,
@@ -165,21 +166,24 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     logger.debug(`Build: Finished prebuild key remapping`);
 
     // 6. Build (issues)
-    const build: Array<void | CreateIssueQL | UpdateIssueQL> = await Promise.all(
-      buildModel(rows, labelsMap, milestonesMap).map(([left, right]) =>
-        (dry ? left : right)({
-          logger,
-          repoQ,
-          repoR,
-          repoId,
-        }),
-      ),
-    );
+    const build: Array<void | CreateIssueQL | UpdateIssueQL> =
+      await Promise.all(
+        buildModel(rows, labelsMap, milestonesMap).map(([left, right]) =>
+          (dry ? left : right)({
+            logger,
+            repoQ,
+            repoR,
+            repoId,
+          }),
+        ),
+      );
     logger.debug(`Build: Finished build`);
 
     // 7. Postbuild (issues)
     if (!dry) {
-      const buildMap = issues2Map(build as (CreateIssueQL | UpdateIssueQL)[]);
+      const buildMap = issues2Map(
+        build as Array<CreateIssueQL | UpdateIssueQL>,
+      );
       await Promise.all(
         postBuildModel(rows, buildMap).map(([left, right]) =>
           (dry ? left : right)({

@@ -70,7 +70,7 @@ import {
   CreateLabel,
 } from 'gh-cms-ql';
 import type { ActionObject, DGraphFields, MDActionMap, MDENV } from '../api.js';
-import type { BuildContent, Either } from './api';
+import type { BuildContent, Either, PreBuildContent } from './api';
 
 const indexdIdentifier = /(?<=\[)(\d+?)(?=])/g;
 const getFrontMatterValue = (
@@ -371,7 +371,7 @@ export function labelsMilestones2Map<T extends Label | Milestone>(
   );
 }
 
-export function nearFarMerge(near: any, far: any): BuildContent {
+export function nearFarMerge(near: any, far: any): BuildContent[] {
   // A bit of a hack
   const { isNaN } = Number;
   const isValidDate = (dateLike: any): boolean =>
@@ -441,7 +441,7 @@ export function preBuildModel(
   rows: BuildContent[],
   lM: Map<string, string>,
   mM: Map<string, string>,
-): Either[] {
+): Array<Either<PreBuildContent>> {
   return transduce(
     comp(
       multiplex(
@@ -450,7 +450,7 @@ export function preBuildModel(
           mapcat(({ labels }) => (Array.isArray(labels) ? labels : [labels])),
           filter((l) => l !== 'undefined' && !lM.has(l)), // String(undefined)
           distinct(),
-          map<string, Either>((l) => [
+          map<string, Either<PreBuildContent>>((l) => [
             ({ logger }) => {
               logger.info(`DRY; Create missing label: ${l}`);
             },
@@ -470,7 +470,7 @@ export function preBuildModel(
           map(({ milestone }) => milestone),
           filter((m) => m !== 'undefined' && !mM.has(m)), // String(undefined)
           distinct(),
-          map<string, Either>((m) => [
+          map<string, Either<PreBuildContent>>((m) => [
             ({ logger }) => {
               logger.info(`DRY; Create missing milestone: ${m}`);
             },
