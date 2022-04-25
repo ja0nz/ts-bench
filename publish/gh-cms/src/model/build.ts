@@ -424,7 +424,6 @@ export function nearFarMerge(near: any, far: any): BuildContent[] {
       // 5. Labels and Milestones to string (GH issue format):
       // transform dates to ISO strings because String(date) is not portable
       map(({ labels, milestone, ...r }) => {
-        console.log("labels", labels)
         const functorLabels = Array.isArray(labels) ? labels : [labels];
         const lMapped = functorLabels.map(isoDate);
         const mMapped = isoDate(milestone);

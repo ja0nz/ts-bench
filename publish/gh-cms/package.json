@@ -1,6 +1,6 @@
 {
   "name": "gh-cms",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A headless CMS based on GitHub Issues",
   "keywords": [
     "cms",
