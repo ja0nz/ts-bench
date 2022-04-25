@@ -187,8 +187,9 @@ function stepTree(
           (x: unknown) => {
             if (Array.isArray(x)) return x[n];
             if (typeof x === 'string') return x.split(',')[n];
-            return x
-          }
+            return x;
+          };
+
         if (k) {
           const k0 = Number(k[0]);
           return node.length === 1
@@ -379,7 +380,7 @@ export function nearFarMerge(near: any, far: any): BuildContent[] {
   const { isNaN } = Number;
   const isValidDate = (dateLike: any): boolean =>
     dateLike instanceof Date && !isNaN(dateLike as any);
-  const isoDate = (x: unknown) => String((x as Date)?.toISOString?.() ?? x)
+  const isoDate = (x: unknown) => String((x as Date)?.toISOString?.() ?? x);
 
   return transduce(
     comp(
@@ -520,7 +521,10 @@ export function buildModel(
             labelIds: labels
               .filter((l) => l !== 'undefined')
               .map((l) => lM.get(l) ?? `DRY:${l}`),
-            milestoneId: mM.get(milestone) ?? '',
+            milestoneId: [milestone]
+              .filter((m) => m !== 'undefined')
+              .map((m) => mM.get(m) ?? `DRY:${m}`)
+              .join(''),
           };
           return [
             ({ logger }) => {
