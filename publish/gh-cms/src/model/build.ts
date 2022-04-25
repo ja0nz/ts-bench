@@ -183,9 +183,12 @@ function stepTree(
         if (isReduced(node)) return [node];
         const k = key.match(indexdIdentifier);
         const getIndex =
-          (n: number): Fn<string, string> =>
-          (x: string) =>
-            typeof x === 'string' ? x.split(',')[n] : x;
+          (n: number): Fn<unknown, string> =>
+          (x: unknown) => {
+            if (Array.isArray(x)) return x[n];
+            if (typeof x === 'string') return x.split(',')[n];
+            return x
+          }
         if (k) {
           const k0 = Number(k[0]);
           return node.length === 1
@@ -376,6 +379,7 @@ export function nearFarMerge(near: any, far: any): BuildContent[] {
   const { isNaN } = Number;
   const isValidDate = (dateLike: any): boolean =>
     dateLike instanceof Date && !isNaN(dateLike as any);
+  const isoDate = (x: unknown) => String((x as Date)?.toISOString?.() ?? x)
 
   return transduce(
     comp(
@@ -420,11 +424,10 @@ export function nearFarMerge(near: any, far: any): BuildContent[] {
       // 5. Labels and Milestones to string (GH issue format):
       // transform dates to ISO strings because String(date) is not portable
       map(({ labels, milestone, ...r }) => {
-        const lMapped =
-          labels?.map?.((x: unknown) =>
-            String((x as Date)?.toISOString?.() ?? x),
-          ) ?? String(labels);
-        const mMapped = String(milestone?.toISOString?.() ?? milestone);
+        console.log("labels", labels)
+        const functorLabels = Array.isArray(labels) ? labels : [labels];
+        const lMapped = functorLabels.map(isoDate);
+        const mMapped = isoDate(milestone);
         return { ...r, labels: lMapped, milestone: mMapped };
       }),
     ),
@@ -515,7 +518,9 @@ export function buildModel(
             action,
             title,
             body: body.join(''),
-            labelIds: labels?.map?.((l) => lM.get(l) ?? `DRY:${l}`) ?? [],
+            labelIds: labels
+              .filter((l) => l !== 'undefined')
+              .map((l) => lM.get(l) ?? `DRY:${l}`),
             milestoneId: mM.get(milestone) ?? '',
           };
           return [

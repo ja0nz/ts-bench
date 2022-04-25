@@ -6,13 +6,8 @@
   - [[#what-you-can-do-with-this-cli-tool][What you can do with this CLI tool]]
   - [[#rationale-github-issues-as-cms-for-your-blog][Rationale: GitHub Issues as CMS for your blog]]
 - [[#the-shape-of-markdown][The shape of markdown]]
-  - [[#id-custom-key][id (custom key)]]
-  - [[#date-custom-key][date (custom key)]]
-  - [[#optional-title---gh-issue-title-custom-key][Optional: title -> gh issue title (custom key)]]
-  - [[#optional-labels---gh-issue-labels-custom-key][Optional: labels -> gh issue labels (custom key)]]
-  - [[#optional-milestone---gh-issue-milestone-custom-key][Optional: milestone -> gh issue milestone (custom key)]]
-  - [[#optional-state---gh-issue-state-closed-or-open-custom-key][Optional: state -> gh issue state (CLOSED or OPEN) (custom key)]]
-- [[#content-update-strategies][Content update strategies]]
+  - [[#the-default-mapping][The default mapping]]
+  - [[#a-sophisticated-mapping][A sophisticated mapping]]
 - [[#up-and-running][Up and running]]
   - [[#install-and-first-run-yarn][Install and first run (yarn)]]
   - [[#point-to-a-local-content-directory][Point to a local content directory]]
@@ -27,9 +22,13 @@
   - [[#repo_url][REPO_URL]]
   - [[#content_path][CONTENT_PATH]]
   - [[#gh_token][GH_TOKEN]]
-  - [[#gh_md2label][GH_MD2LABEL]]
-  - [[#gh_md2milestone][GH_MD2MILESTONE]]
-  - [[#gh_md2state][GH_MD2STATE]]
+  - [[#md2id][MD2ID]]
+  - [[#md2date][MD2DATE]]
+  - [[#md2title][MD2TITLE]]
+  - [[#md2labels][MD2LABELS]]
+  - [[#md2milestone][MD2MILESTONE]]
+  - [[#md2state][MD2STATE]]
+- [[#idea-further-enhancements-projectsnext-support][IDEA Further enhancements: ProjectsNext support]]
 - [[#author][Author]]
 - [[#license][License]]
 
@@ -40,7 +39,7 @@ GithubCMS a simple command line tool that maps *markdown files* to *GitHub issue
 
 This tool draws heavy inspiration by [[https://github.com/sw-yx/swyxkit/][SwyxKit]] which is a tookit for *SvelteKit + GitHub Issues*. Yet, I am still in love with markdown files as editing medium. So you can see this tool as bridge between those two worlds.
 
-Be aware that this is *alpha quality*. It does it's job for me but you have to find out yourself. Feel free to report bugs/glitches.
+Be aware that this is *beta quality*. It does it's job for me, is tested throughoutly but in the end you have to find out yourself. Feel free to report bugs/glitches.
 
 ** What you can do with this CLI tool
 - ✅ create and update issues based on an ID
@@ -58,110 +57,60 @@ Be aware that this is *alpha quality*. It does it's job for me but you have to f
 4. Using GitHub as discussion medium on articles leads to a *reduction of third parties* and site overload in general. It's quiet convenient.
 
 * The shape of markdown
-This package requires markdown with YAML-shaped [[https://jekyllrb.com/docs/front-matter/][Front Matter]] which is a metadata header on top of your markdown file. The most critical and required metadata for this tool is *id* and *date*:
+This package requires markdown with YAML-shaped [[https://jekyllrb.com/docs/front-matter/][Front Matter]] which is a metadata header on top of your markdown file. The way you map those metadata header to GitHub issues is totally up to you! And described by [[https://www.npmjs.com/package/dotenv][Env variables]] which will be described [[id:30732088-36d7-4f48-8fd8-0bca699f461f][later on]]. But first lets go over some basic examples with demo configs...
+
+** The default mapping
+If you don't set anything or set only seleted vars this is the fallback configuration for each variable:
+#+begin_src bash
+MD2ID='id'     # -> MUST be unique to match future content updates
+MD2DATE='date' # -> MUST be a parseable 'new Date(x)' -> unix timestamp, date, ISO timestamp...
+MD2TITLE='title'
+MD2LABELS='labels'
+MD2MILESTONE='milestone'
+MD2STATE='state'
+#+end_src
+Lets take this sample FrontMatter Markdown this translates straight into
 #+begin_src markdown
 ---
-id: "123abc" -> used to match localContent->remoteContent
-date: 2022-01-23T12:47:00+01:00 -> used to figure out if update is needed. Any valid JS Date will do
+id: 123abc
+date: 2022-01-23T12:47:00+01:00
+title: "My blog post"            -> map to GitHub Title
+labels: ["tech", "dev"]          -> apply those labels
+milestone: "/blog/hello"         -> apply this milestone
+state: "CLOSED"                  -> close this issue
 ---
+Hello content                    -> this will go to the content area
 #+end_src
-*Attention*: This tool gives higher precedence to local machine content. This means, if you don't provide a =date= field it will always push from local->remote assuming that content has changed.
 
-** id (custom key)
-:PROPERTIES:
-:ID:       87e9581c-8408-40bd-a2de-35132e82128d
-:END:
-As mentioned, this engine _needs_ an unique ID.
-See [[id:ada6cf93-a2a3-4b34-bb50-a388dc7dc041][Content update strategies]] for an optimized id strategy!
-#+begin_quote
-Not happy with *id* as front matter key? Fear not, you can customize your own label in the .env file.
+** A sophisticated mapping
+Following example will illustrate a more complex example.
+#+begin_src bash
+MD2ID='MD2TITLE[0]'         # -> index 0 of MD2TITLE which is *title*
+MD2DATE='MD2TITLE[1]'       # -> index 1 of MD2TITLE wihch is *timpestamp*
+MD2TITLE='title,timestamp'  # -> combined front matter fields
+MD2LABELS='labels[1]'       # -> only map label[0] for whatever reason
+MD2MILESTONE='milestone[0]' # -> you can even destruct string Front Matter fields (must be comma seperated)
+MD2STATE='state'
+#+end_src
+Why would anybody would make it complicated like this? Let's say you have a lot of content. In order to figure out which content needs an update gh-cms needs to fetch at least all github issues fields related to *MD2ID and MD2DATE*. Its as simple as: match remote and local *id* and see if local content has an newer *date*.
 
-Example: =MD2ID=unique= -> unique: "hello123"
-#+end_quote
+If *MD2ID and MD2DATE* is stored solely in GitHub's title it only needs to fetch the title to figure out the update information! Less bandwidth and less parsing workload as there is no MD File parsing needed.
+
+Same would apply in case of *MD2ID=MD2MILESTONE* which is just fetching milestones as minimal needed information.
+
+Lets take this sample FrontMatter Markdown the above config translates into
 #+begin_src markdown
 ---
-id: "5fb0dcea-dead-4f5f-ab66-1f60ea4951b2" -> String
+id: 123abc
+date: 2022-01-23T12:47:00+01:00
+title: "My blog post"            -> GH title: *My blog post,1122334455*
+timestamp: 1122334455
+labels: ["tech", "dev"]          -> GH labels: ["tech"]
+milestone: "my,milestone"        -> GH milestone: my
+state: "OPEN"                    -> GH state: open issue
 ---
+Hello content                    -> this will go to the content area
 #+end_src
-
-** date (custom key)
-:PROPERTIES:
-:ID:       7a60e357-6dfe-4aea-893e-e9794b2693dd
-:END:
-As mentioned, this engine _needs_ any form of JS date/timestamp as updating signal!
-See [[id:ada6cf93-a2a3-4b34-bb50-a388dc7dc041][Content update strategies]] for an optimized date strategy!
-#+begin_quote
-Not happy with *date* as front matter key? Fear not, you can customize your own label in the .env file.
-
-Example: =MD2DATE=timestamp= -> timestamp: "1648049589997"
-#+end_quote
-#+begin_src markdown
----
-date: 2022-01-12T23:26:00+01:00 -> String | Number
----
-#+end_src
-
-** Optional: title -> gh issue title (custom key)
-GitHub Issues can have a title.
-If not set *falls back to mandatory issue id*.
-#+begin_quote
-Not happy with *title* as front matter key? Fear not, you can customize your own label in the .env file.
-
-Example: =MD2TITLE=heading= -> heading: "A walk in the park"
-#+end_quote
-#+begin_src markdown
----
-title: "hello, this is my blogpost" -> String
----
-#+end_src
-
-** Optional: labels -> gh issue labels (custom key)
-Labels can be used to categorize issues or any content you like.
-#+begin_quote
-Not happy with *labels* as front matter key? Fear not, you can customize your own label in the .env file.
-
-Example: =MD2LABELS=tags= -> tags: ["foo", "bar"]
-#+end_quote
-#+begin_src markdown
----
-labels: ["frontend", "js", "dev"] -> Array<String>
----
-#+end_src
-
-** Optional: milestone -> gh issue milestone (custom key)
-I use this as slug/endpoint/route identifier.
-#+begin_quote
-Not happy with *milestone* as front matter key? Fear not, you can customize your own label in the .env file.
-
-Example: =MD2MILESTONE=route= -> route: "/blog/foo"
-#+end_quote
-#+begin_src markdown
----
-milestone: "/blog/welcome-post" -> String
----
-#+end_src
-
-** Optional: state -> gh issue state (CLOSED or OPEN) (custom key)
-I use this as published/unpublished identifier.
-#+begin_quote
-Not happy with *state* as front matter key? Fear not, you can customize your own label in the .env file.
-
-Example: =MD2STATE=draft= -> draft: true
-#+end_quote
-#+begin_src markdown
----
-state: false -> Boolean
----
-#+end_src
-where
-- =true= -> OPEN issue state
-- =false= -> CLOSED issue state
-
-* Content update strategies
-:PROPERTIES:
-:ID:       ada6cf93-a2a3-4b34-bb50-a388dc7dc041
-:END:
-By this point it should be clear that [[id:87e9581c-8408-40bd-a2de-35132e82128d][id]] and [[id:7a60e357-6dfe-4aea-893e-e9794b2693dd][date]] indeed play an important role in the process.
 
 * Up and running
 This package requires some minimal setup to work properly. Please refer to [[id:007a85b4-1ef9-4071-a517-5e63e3d42cb5][CLI manual]] and [[id:30732088-36d7-4f48-8fd8-0bca699f461f][ENV manual]] for an in-depth manual.
@@ -240,15 +189,41 @@ Can be overritten by passing *-p/--content-path* as flag.
 ** GH_TOKEN
 A token to authenticate. See previous docs.
 =GH_TOKEN=ghp_xxx=
-** GH_MD2LABEL
-See previous docs.
-=GH_MD2LABEL=label=
-** GH_MD2MILESTONE
-See previous docs.
-=GH_MD2MILESTONE=milestone=
-** GH_MD2STATE
-See previous docs.
-=GH_MD2STATE=open=
+** MD2ID
+identifies the needed Front Matter fields for the surrogate key to match local and remote content
+Must be *unique*!
+#+begin_example
+id: hello,5124234712 -> will be parsed to string
+#+end_example
+** MD2DATE
+identifies the needed Front Matter fields for comparing local and remote content update necessity
+Must be a parsable date which is everything that fits in ===new Date(x)===
+#+begin_example
+date: 5124234712 -> will be parsed to date
+#+end_example
+** MD2TITLE
+identifies the needed Front Matter fields to construct an GitHub issues title.
+#+begin_example
+title: "hello GH issues" -> will be stringified
+#+end_example
+** MD2LABELS
+identifies the labels fields which can be an *Array or a single value*
+#+begin_example
+labels: ["tech", "dev"] | "tech" -> elements will be stringified
+#+end_example
+** MD2MILESTONE
+identifies the milestone field which can a primit
+#+begin_example
+milestone: "milestone" -> will be stringified
+#+end_example
+** MD2STATE
+identifies the state field which indicates the state of the issue ->
+#+begin_example
+state: "OPEN" | "CLOSED"
+#+end_example
+
+* IDEA Further enhancements: ProjectsNext support
+The new [[https://docs.github.com/en/issues/trying-out-the-new-projects-experience/about-projects][GitHub projects]] are currently in BETA. Therefore lacking a sophisticated API. Furthermore the "old projects" is still everywhere and would be rather confusing at this point of time.
 
 * Author
 - Ja0nz
