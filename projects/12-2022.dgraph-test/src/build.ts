@@ -12,7 +12,9 @@ import {
   Reduced,
   isReduced,
 } from '@thi.ng/transducers';
+import { comp as c } from "@thi.ng/compose";
 import { assert } from '@thi.ng/errors';
+import { defGetterUnsafe } from '@thi.ng/paths';
 import type { Fn } from '@thi.ng/api';
 import {
   getBodyI,
@@ -30,6 +32,7 @@ import {
   queryTitleI,
 } from 'gh-cms-ql';
 import { env } from './index.js';
+import type { NumOrString } from '@thi.ng/api';
 
 // Make const
 const reIndexd = /(?<=\[)(\d+?)(?=])/g;
@@ -70,7 +73,7 @@ export function buildDag() {
  */
 type ReturnValue = {
   issue2valueFn: Array<Fn<Issue | any, unknown>>;
-  gm2valueFn: any[];
+  gm2valueFn: any;
   qlToken: string;
   gmToken: string;
 };
@@ -93,6 +96,10 @@ const knownKeys: Record<string, Partial<ReturnValue>> = {
   },
 };
 
+// GetInParsed -> compressed
+const getInParsed = (key: NumOrString) =>
+    defGetterUnsafe<string>(["parsed", "data", key])
+
 type R = Reduced<ReturnValue>;
 export function stepTree(
   acc: Map<PropertyKey, ReturnValue[]>,
@@ -105,8 +112,7 @@ export function stepTree(
       map<string, string | R>((k) => {
         if (g.isRoot(k))
           return new Reduced({
-            // TODO: getInParsed(key)
-            gm2valueFn: [k + 'GmFn'],
+            gm2valueFn: [getInParsed(k)],
             gmToken: k,
             qlToken: queryBodyI,
             issue2valueFn: [getBodyI],

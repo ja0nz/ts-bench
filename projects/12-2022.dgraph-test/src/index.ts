@@ -1,6 +1,7 @@
 import {h1} from '@thi.ng/hiccup-html';
 import {$compile} from '@thi.ng/rdom';
 import { DGraph } from '@thi.ng/dgraph';
+import { comp } from '@thi.ng/compose';
 import {tw} from 'twind';
 
 const greeter = h1(
@@ -164,7 +165,7 @@ const getter = v => {
 
 
 export const env = {
-  MD2ID: 'MD2TITLE[1],MD2STATE',
+  MD2ID: 'MD2TITLE[1],draft',
   MD2DATE: 'MD2MILESTONE',
   MD2TITLE: 'title,route[1]',
   MD2LABELS: 'tags',
@@ -173,19 +174,48 @@ export const env = {
 };
 
 const graph = buildDag()
-console.log(...graph)
+console.log(graph.sort())
 
 console.group("dagAction")
 const a = dagAction(graph)
-console.log(a)
-console.log(JSON.stringify(a.get("MD2ID"), null, 2))
+console.log(a.get("MD2LABELS"))
+//console.log(JSON.stringify(a.get("MD2ID"), null, 2))
 console.groupEnd()
 
 //const act = dagAction(graph);
 //cl(JSON.stringify(Object.fromEntries(act), null, 2));
 //cl(act)
 
-const fakeData = {
+window.graph = a;
+const fakeLabels = {
+  // "data": {
+  //   "repository": {
+  //     "issues": {
+  //       "totalCount": 4,
+  //       "nodes": [
+  //         {
+            "labels": {
+              "nodes": [
+                {
+                  "id": "LA_kwDOG-ZMMM7r8ZiI",
+                  "name": "zig"
+                }
+              ],
+              "totalCount": 1,
+              "pageInfo": {
+                "endCursor": "Y3Vyc29yOnYyOpK5MjAyMi0wMy0yM1QxNDo1Mzo1NyswMTowMM7r8ZiI",
+                "hasNextPage": false
+              }
+            }
+          }
+  //       ]
+  //     }
+  //   }
+  // }
+// }
+window.fakeLabels = fakeLabels;
+
+const fakeGrayMatter = {
     parsed: {
         data: {
             title: 'Another Org example,another-post,11,p',
@@ -202,8 +232,12 @@ const fakeData = {
         }
     }
 }
+window.fakeGM = fakeGrayMatter;
+window.comp = comp;
+// comp(...temp2.gm2valueFn)(fakeGM)
+
 //@ts-ignore
-// const get = (key: string) => cl(key, act.get(key).getFm.map(x => x(fakeData)))
+//const get = (key: string) => cl(key, a.get(key).getFm.map(x => x(fakeGrayMatter)))
 
 // get('route')
 // get('category')
@@ -219,7 +253,7 @@ const fakeData = {
 // get('MD2STATE')
 // get('MD2LABELS')
 // get('MD2DATE')
-// get('MD2ID')
+//get('MD2ID')
 
 // cl('------------------------')
 

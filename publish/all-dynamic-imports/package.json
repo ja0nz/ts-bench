@@ -35,14 +35,14 @@
     "test": "testament test"
   },
   "dependencies": {
-    "@thi.ng/api": "^8.3.3"
+    "@thi.ng/api": "^8.3.5"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "^7.19.4",
-    "@thi.ng/errors": "^2.1.4",
-    "@thi.ng/testament": "^0.2.3",
+    "@microsoft/api-extractor": "^7.23.0",
+    "@thi.ng/errors": "^2.1.5",
+    "@thi.ng/testament": "^0.2.5",
     "rimraf": "^3.0.2",
     "tools": "workspace:^",
-    "typescript": "^4.6.2"
+    "typescript": "^4.6.3"
   }
 }

@@ -1,6 +1,3 @@
-:PROPERTIES:
-:ID:       ca226110-75c5-428f-802d-e5240e29558d
-:END:
 #+TITLE: 13-2022.fantas-eel-specs
 #+OPTIONS: ^:nil
 
@@ -35,7 +32,7 @@ cd src && fd . | as-tree
 :CATEGORY: feat
 :END:
 Doc: [[id:4dae47a1-2c23-4635-a014-68d08011f377][fantasyland]]
-Repo: [[id:ca226110-75c5-428f-802d-e5240e29558d][13-2022.fantas-eel-specs]]
+Repo: [[file:~/git/ts-bench/projects/13-2022.fantas-eel-specs/README.org][13-2022.fantas-eel-specs]]
 http://www.tomharding.me/2017/03/09/fantas-eel-and-specification-8/
 ** TODO 8. Contravariant
 :PROPERTIES:
