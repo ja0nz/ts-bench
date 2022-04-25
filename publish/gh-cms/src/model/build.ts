@@ -318,8 +318,13 @@ export function parseIssues(
                 // --- each action
                 map((a: ActionObject) => {
                   const pValue = a.issue2valueFn(issue) ?? a.gm2valueFn(issue);
-                  // Must be a issues far
-                  if (typeof pValue === 'string' && a.qlToken === 'body') {
+                  // Try to rule out if issue is in body
+                  if (
+                    a.qlToken === 'body' &&
+                    typeof pValue === 'string' &&
+                    pValue.includes('---') &&
+                    pValue.includes('\n')
+                  ) {
                     return a.gm2valueFn(grayMatter(pValue));
                   }
 
