@@ -25,7 +25,7 @@
   - [[#md2id-any][MD2ID: any]]
   - [[#md2date-date][MD2DATE: Date]]
   - [[#md2title-stringany][MD2TITLE: string(any)]]
-  - [[#md2labels-stringany--stringany][MD2LABELS: string(any) | string(any)[]]]
+  - [[#md2labels-stringany-or-stringany][MD2LABELS: string(any) or string(any)[]]]
   - [[#md2milestone-stringany][MD2MILESTONE: string(any)]]
   - [[#md2state-open-or-closed][MD2STATE: "OPEN" or "CLOSED"]]
 - [[#idea-further-enhancements-projectsnext-support][IDEA Further enhancements: ProjectsNext support]]
@@ -215,7 +215,7 @@ Can be anything that can be parsed to a string!
 #+begin_example
 title: "hello GH issues" -> will be stringified
 #+end_example
-** MD2LABELS: string(any) | string(any)[]
+** MD2LABELS: string(any) or string(any)[]
 identifies the labels fields which can be an *Array or a single value*
 Every label can be anything that can be parsed to a string!
 #+begin_example
