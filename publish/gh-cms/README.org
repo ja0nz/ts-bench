@@ -22,12 +22,12 @@
   - [[#repo_url][REPO_URL]]
   - [[#content_path][CONTENT_PATH]]
   - [[#gh_token][GH_TOKEN]]
-  - [[#md2id][MD2ID]]
-  - [[#md2date][MD2DATE]]
-  - [[#md2title][MD2TITLE]]
-  - [[#md2labels][MD2LABELS]]
-  - [[#md2milestone][MD2MILESTONE]]
-  - [[#md2state][MD2STATE]]
+  - [[#md2id-any][MD2ID: any]]
+  - [[#md2date-date][MD2DATE: Date]]
+  - [[#md2title-stringany][MD2TITLE: string(any)]]
+  - [[#md2labels-stringany--stringany][MD2LABELS: string(any) | string(any)[]]]
+  - [[#md2milestone-stringany][MD2MILESTONE: string(any)]]
+  - [[#md2state-open--closed][MD2STATE: "OPEN" | "CLOSED"]]
 - [[#idea-further-enhancements-projectsnext-support][IDEA Further enhancements: ProjectsNext support]]
 - [[#author][Author]]
 - [[#license][License]]
@@ -62,8 +62,8 @@ This package requires markdown with YAML-shaped [[https://jekyllrb.com/docs/fron
 ** The default mapping
 If you don't set anything or set only seleted vars this is the fallback configuration for each variable:
 #+begin_src bash
-MD2ID='id'     # -> MUST be unique to match future content updates
-MD2DATE='date' # -> MUST be a parseable 'new Date(x)' -> unix timestamp, date, ISO timestamp...
+MD2ID='id'
+MD2DATE='date'
 MD2TITLE='title'
 MD2LABELS='labels'
 MD2MILESTONE='milestone'
@@ -72,12 +72,12 @@ MD2STATE='state'
 Lets take this sample FrontMatter Markdown this translates straight into
 #+begin_src markdown
 ---
-id: 123abc
-date: 2022-01-23T12:47:00+01:00
-title: "My blog post"            -> map to GitHub Title
-labels: ["tech", "dev"]          -> apply those labels
-milestone: "/blog/hello"         -> apply this milestone
-state: "CLOSED"                  -> close this issue
+id: 123abc                       -> MUST be unique to match future content updates
+date: 2022-01-23T12:47:00+01:00  -> MUST be a parseable *new Date(x)* -> unix timestamp, date, ISO timestamp...
+title: "Complete post"           -> GH title: *Complete post*
+labels: ["tech", "dev"]          -> GH labels: *[tech, dev]*
+milestone: "/blog/complete"      -> GH milestone: */blog/complete*
+state: "CLOSED"                  -> GH state: closed issue
 ---
 Hello content                    -> this will go to the content area
 #+end_src
@@ -86,31 +86,34 @@ Hello content                    -> this will go to the content area
 Following example will illustrate a more complex example.
 #+begin_src bash
 MD2ID='MD2TITLE[0]'         # -> index 0 of MD2TITLE which is *title*
-MD2DATE='MD2TITLE[1]'       # -> index 1 of MD2TITLE wihch is *timpestamp*
+MD2DATE='MD2TITLE[1]'       # -> index 1 of MD2TITLE which is *timestamp*
 MD2TITLE='title,timestamp'  # -> combined front matter fields
 MD2LABELS='labels[1]'       # -> only map label[0] for whatever reason
-MD2MILESTONE='milestone[0]' # -> you can even destruct string Front Matter fields (must be comma seperated)
+MD2MILESTONE='milestone[0]' # -> you can even destruct *string Front Matter* fields (must be comma separated)
 MD2STATE='state'
 #+end_src
 Why would anybody would make it complicated like this? Let's say you have a lot of content. In order to figure out which content needs an update gh-cms needs to fetch at least all github issues fields related to *MD2ID and MD2DATE*. Its as simple as: match remote and local *id* and see if local content has an newer *date*.
 
-If *MD2ID and MD2DATE* is stored solely in GitHub's title it only needs to fetch the title to figure out the update information! Less bandwidth and less parsing workload as there is no MD File parsing needed.
+If *MD2ID and MD2DATE* is stored solely in GitHub's title it only needs to fetch the title to figure out the update information!
+Advantages:
+- Less bandwidth/payload
+- Less parsing workload because *no MD File parsing needed*.
 
-Same would apply in case of *MD2ID=MD2MILESTONE* which is just fetching milestones as minimal needed information.
+Or, to illsutrate this further, the combination *MD2ID=MD2TITLE;MD2DATE=MD2MILESTONE* would work similarly as only GitHub title & GitHub milestone provides sufficient content update information.
 
-Lets take this sample FrontMatter Markdown the above config translates into
+To continue with the above config example, local markdown files would translate to:
 #+begin_src markdown
 ---
-id: 123abc
-date: 2022-01-23T12:47:00+01:00
+timestamp: 1650962209713         -> See next line!
 title: "My blog post"            -> GH title: *My blog post,1122334455*
-timestamp: 1122334455
-labels: ["tech", "dev"]          -> GH labels: ["tech"]
-milestone: "my,milestone"        -> GH milestone: my
+labels: ["tech", "dev"]          -> GH labels: *[tech]*
+milestone: "my,milestone"        -> GH milestone: *my*
 state: "OPEN"                    -> GH state: open issue
 ---
 Hello content                    -> this will go to the content area
 #+end_src
+
+Every MD config switch is described in depth [[id:30732088-36d7-4f48-8fd8-0bca699f461f][in the env reference]].
 
 * Up and running
 This package requires some minimal setup to work properly. Please refer to [[id:007a85b4-1ef9-4071-a517-5e63e3d42cb5][CLI manual]] and [[id:30732088-36d7-4f48-8fd8-0bca699f461f][ENV manual]] for an in-depth manual.
@@ -189,35 +192,43 @@ Can be overritten by passing *-p/--content-path* as flag.
 ** GH_TOKEN
 A token to authenticate. See previous docs.
 =GH_TOKEN=ghp_xxx=
-** MD2ID
+** MD2ID: any
 identifies the needed Front Matter fields for the surrogate key to match local and remote content
 Must be *unique*!
 #+begin_example
-id: hello,5124234712 -> will be parsed to string
+id: hello,1650962209713 -> will be parsed to string
+id: 1650962209713 -> number
 #+end_example
-** MD2DATE
+** MD2DATE: Date
 identifies the needed Front Matter fields for comparing local and remote content update necessity
-Must be a parsable date which is everything that fits in ===new Date(x)===
+Must be of any JS parsable date which is everything that fits into ===new Date(x)===
+
+The valid parameters to *Date* are well described in the official documentation
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date#parameters
+
 #+begin_example
-date: 5124234712 -> will be parsed to date
+date: 1650962209713 -> will be parsed to date
 #+end_example
-** MD2TITLE
+** MD2TITLE: string(any)
 identifies the needed Front Matter fields to construct an GitHub issues title.
+Can be anything that can be parsed to a string!
 #+begin_example
 title: "hello GH issues" -> will be stringified
 #+end_example
-** MD2LABELS
+** MD2LABELS: string(any) | string(any)[]
 identifies the labels fields which can be an *Array or a single value*
+Every label can be anything that can be parsed to a string!
 #+begin_example
-labels: ["tech", "dev"] | "tech" -> elements will be stringified
+labels: ["tech", 999] | "tech" -> elements will be stringified
 #+end_example
-** MD2MILESTONE
-identifies the milestone field which can a primit
+** MD2MILESTONE: string(any)
+identifies the milestone field
+Can be anything that can be parsed to a string!
 #+begin_example
 milestone: "milestone" -> will be stringified
 #+end_example
-** MD2STATE
-identifies the state field which indicates the state of the issue ->
+** MD2STATE: "OPEN" | "CLOSED"
+identifies the state field which indicates the state of the issue
 #+begin_example
 state: "OPEN" | "CLOSED"
 #+end_example

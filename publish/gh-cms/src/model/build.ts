@@ -428,12 +428,11 @@ export function nearFarMerge(near: any, far: any): BuildContent[] {
       })),
       // 5. Labels and Milestones to string (GH issue format):
       // transform dates to ISO strings because String(date) is not portable
-      map(({ labels, milestone, ...r }) => {
-        const functorLabels = Array.isArray(labels) ? labels : [labels];
-        const lMapped = functorLabels.map(isoDate);
-        const mMapped = isoDate(milestone);
-        return { ...r, labels: lMapped, milestone: mMapped };
-      }),
+      map(({ labels, milestone, ...r }) => ({
+        ...r,
+        labels: (Array.isArray(labels) ? labels : [labels]).map(isoDate),
+        milestone: isoDate(milestone),
+      })),
     ),
     push(),
     near,
@@ -585,15 +584,14 @@ export function postBuildModel(
         );
         return state !== ghState!;
       }),
-      map<BuildContent, BuildContent>((bc) => {
-        const { title } = bc;
+      map<BuildContent, BuildContent>(({ title, ...r }) => {
         const t = buildMap.get(title);
-        const rId = t ? getIdI(t) : null;
+        const rId = t ? getIdI(t) : t;
         assert(
-          rId !== null,
+          rId !== undefined,
           `PostBuild: Something is not right with issue ${title}`,
         );
-        return { ...bc, rId };
+        return { title, ...r, rId };
       }),
       map<BuildContent, Either<UpdateIssueQL>>(({ rId, state }) => {
         const ql: UpdateIssue = {

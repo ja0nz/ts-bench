@@ -747,7 +747,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@thi.ng/api@npm:^8.3.5":
+"@thi.ng/api@npm:^8.3.4, @thi.ng/api@npm:^8.3.5":
   version: 8.3.5
   resolution: "@thi.ng/api@npm:8.3.5"
   checksum: 0decc2aad8fc452bbfa280ecccb049e722ceace787c1dc14919b186a86892930674f58d89a5115a9d2025e1ab59bcd0dcee17992d31c76dfd05cdb008e981a9b
@@ -838,7 +838,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@thi.ng/compose@npm:^2.1.5":
+"@thi.ng/compose@npm:^2.1.4, @thi.ng/compose@npm:^2.1.5":
   version: 2.1.5
   resolution: "@thi.ng/compose@npm:2.1.5"
   dependencies:
@@ -950,7 +950,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@thi.ng/paths@npm:^5.1.5":
+"@thi.ng/paths@npm:^5.1.4, @thi.ng/paths@npm:^5.1.5":
   version: 5.1.5
   resolution: "@thi.ng/paths@npm:5.1.5"
   dependencies:
@@ -3634,7 +3634,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"gh-cms-ql@^0.0.2, gh-cms-ql@workspace:^, gh-cms-ql@workspace:publish/gh-cms-ql":
+"gh-cms-ql@npm:^0.0.2":
+  version: 0.0.2
+  resolution: "gh-cms-ql@npm:0.0.2"
+  dependencies:
+    "@octokit/graphql": ^4.8.0
+    "@octokit/request": ^5.6.3
+    "@thi.ng/api": ^8.3.4
+    "@thi.ng/compose": ^2.1.4
+    "@thi.ng/paths": ^5.1.4
+    dotenv: ^16.0.0
+  checksum: 88f75687c4152ffdf779d273a480695c66a988b12e45db1d8d64fb2b8beda921438247affaf0044a8aadf5ef1973fd520973fae634fb38e15b82cdd6d8749908
+  languageName: node
+  linkType: hard
+
+"gh-cms-ql@workspace:^, gh-cms-ql@workspace:publish/gh-cms-ql":
   version: 0.0.0-use.local
   resolution: "gh-cms-ql@workspace:publish/gh-cms-ql"
   dependencies:
