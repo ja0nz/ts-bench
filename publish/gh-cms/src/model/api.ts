@@ -3,10 +3,19 @@ import type { Fn, Fn2 } from '@thi.ng/api';
 import type { CreateLabelQL } from 'gh-cms-ql';
 import type { Logger } from '../logger.js';
 
-export type Fx<T> = Fn2<string, RequestParameters, Promise<T>>;
+export type QlFx<T> = Fn2<string, RequestParameters, Promise<T>>;
+// Bit of a hack to please OctokitResponse
+export type ReFx = Fn2<string, RequestParameters, Promise<any>>;
 export type Either<T> = [
   Fn<{ logger: Logger }, void>,
-  Fn<{ repoQ: Fx<T>; repoR: Fx<T>; repoId: string }, Promise<T>>,
+  Fn<
+    {
+      repoQ: QlFx<T extends [string, any] ? T[1] : T>;
+      repoR: ReFx;
+      repoId: string;
+    },
+    Promise<T>
+  >,
 ];
 
 export type BuildContent = {

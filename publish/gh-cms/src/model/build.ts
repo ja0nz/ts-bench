@@ -68,9 +68,10 @@ import {
   CreateIssue,
   CreateMilestone,
   CreateLabel,
+  CreateLabelQL,
 } from 'gh-cms-ql';
 import type { ActionObject, DGraphFields, MDActionMap, MDENV } from '../api.js';
-import type { BuildContent, Either, PreBuildContent } from './api';
+import type { BuildContent, Either, OctoR, PreBuildContent } from './api';
 
 const indexdIdentifier = /(?<=\[)(\d+?)(?=])/g;
 const getFrontMatterValue = (
@@ -449,6 +450,7 @@ export function preBuildModel(
   mM: Map<string, string>,
 ): Array<Either<PreBuildContent>> {
   return transduce(
+    // @ts-expect-error
     comp(
       multiplex(
         comp(
@@ -456,7 +458,7 @@ export function preBuildModel(
           mapcat(({ labels }) => (Array.isArray(labels) ? labels : [labels])),
           filter((l) => l !== 'undefined' && !lM.has(l)), // String(undefined)
           distinct(),
-          map<string, Either<PreBuildContent>>((l) => [
+          map<string, Either<['label', CreateLabelQL]>>((l) => [
             ({ logger }) => {
               logger.info(`DRY; Create missing label: ${l}`);
             },
@@ -476,7 +478,7 @@ export function preBuildModel(
           map(({ milestone }) => milestone),
           filter((m) => m !== 'undefined' && !mM.has(m)), // String(undefined)
           distinct(),
-          map<string, Either<PreBuildContent>>((m) => [
+          map<string, Either<['milestone', OctoR]>>((m) => [
             ({ logger }) => {
               logger.info(`DRY; Create missing milestone: ${m}`);
             },
