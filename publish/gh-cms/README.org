@@ -27,7 +27,7 @@
   - [[#md2title-stringany][MD2TITLE: string(any)]]
   - [[#md2labels-stringany--stringany][MD2LABELS: string(any) | string(any)[]]]
   - [[#md2milestone-stringany][MD2MILESTONE: string(any)]]
-  - [[#md2state-open--closed][MD2STATE: "OPEN" | "CLOSED"]]
+  - [[#md2state-open-or-closed][MD2STATE: "OPEN" or "CLOSED"]]
 - [[#idea-further-enhancements-projectsnext-support][IDEA Further enhancements: ProjectsNext support]]
 - [[#author][Author]]
 - [[#license][License]]
@@ -113,7 +113,7 @@ state: "OPEN"                    -> GH state: open issue
 Hello content                    -> this will go to the content area
 #+end_src
 
-Every *M2D<X>* config switch is described in depth [[id:30732088-36d7-4f48-8fd8-0bca699f461f][in the env reference]].
+Every *MD2_ENV_* config switch is described in depth [[id:30732088-36d7-4f48-8fd8-0bca699f461f][in the ENV reference]].
 
 * Up and running
 This package requires some minimal setup to work properly. Please refer to [[id:007a85b4-1ef9-4071-a517-5e63e3d42cb5][CLI manual]] and [[id:30732088-36d7-4f48-8fd8-0bca699f461f][ENV manual]] for an in-depth manual.
@@ -227,7 +227,7 @@ Can be anything that can be parsed to a string!
 #+begin_example
 milestone: "milestone" -> will be stringified
 #+end_example
-** MD2STATE: "OPEN" | "CLOSED"
+** MD2STATE: "OPEN" or "CLOSED"
 identifies the state field which indicates the state of the issue
 #+begin_example
 state: "OPEN" | "CLOSED"
