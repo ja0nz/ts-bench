@@ -88,7 +88,7 @@ Following example will illustrate a more complex example.
 MD2ID='MD2TITLE[0]'         # -> index 0 of MD2TITLE which is *title*
 MD2DATE='MD2TITLE[1]'       # -> index 1 of MD2TITLE which is *timestamp*
 MD2TITLE='title,timestamp'  # -> combined front matter fields
-MD2LABELS='labels[1]'       # -> only map label[0] for whatever reason
+MD2LABELS='labels[1]'       # -> index 1 of label (for whatever reason)
 MD2MILESTONE='milestone[0]' # -> you can even destruct *string Front Matter* fields (must be comma separated)
 MD2STATE='state'
 #+end_src
@@ -106,14 +106,14 @@ To continue with the above config example, local markdown files would translate 
 ---
 timestamp: 1650962209713         -> See next line!
 title: "My blog post"            -> GH title: *My blog post,1122334455*
-labels: ["tech", "dev"]          -> GH labels: *[tech]*
+labels: ["tech", "dev"]          -> GH labels: *[dev]*
 milestone: "my,milestone"        -> GH milestone: *my*
 state: "OPEN"                    -> GH state: open issue
 ---
 Hello content                    -> this will go to the content area
 #+end_src
 
-Every MD config switch is described in depth [[id:30732088-36d7-4f48-8fd8-0bca699f461f][in the env reference]].
+Every *M2D<X>* config switch is described in depth [[id:30732088-36d7-4f48-8fd8-0bca699f461f][in the env reference]].
 
 * Up and running
 This package requires some minimal setup to work properly. Please refer to [[id:007a85b4-1ef9-4071-a517-5e63e3d42cb5][CLI manual]] and [[id:30732088-36d7-4f48-8fd8-0bca699f461f][ENV manual]] for an in-depth manual.
