@@ -1,5 +1,5 @@
 #+TITLE: Readme
-Just a *trail and error* workbench for various TS projects.
+Just a *trial and error* workbench for various TS projects.
 
 * Contents :toc:
 - [[#setup][Setup]]

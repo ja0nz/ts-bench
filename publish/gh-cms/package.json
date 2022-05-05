@@ -1,6 +1,6 @@
 {
   "name": "gh-cms",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "A headless CMS based on GitHub Issues",
   "keywords": [
     "cms",
@@ -19,7 +19,6 @@
   "author": "Ja0nz <mail@ja.nz>",
   "type": "module",
   "bin": "./dist/index.cjs",
-  "main": "./src/index.ts",
   "files": [
     "./dist/*"
   ],

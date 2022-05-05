@@ -85,11 +85,11 @@ Hello content                    -> this will go to the content area
 ** A sophisticated mapping
 Following example will illustrate a more complex example.
 #+begin_src bash
-MD2ID='MD2TITLE[0]'         # -> index 0 of MD2TITLE which is *title*
-MD2DATE='MD2TITLE[1]'       # -> index 1 of MD2TITLE which is *timestamp*
-MD2TITLE='title,timestamp'  # -> combined front matter fields
-MD2LABELS='labels[1]'       # -> index 1 of label (for whatever reason)
-MD2MILESTONE='milestone[0]' # -> you can even destruct *string Front Matter* fields (must be comma separated)
+MD2ID='MD2TITLE[0]'              # -> index 0 of MD2TITLE which is *title*
+MD2DATE='MD2TITLE[2]'            # -> index 2 of MD2TITLE which is *timestamp*
+MD2TITLE='title[0],title[1],ts'  # -> combined front matter fields
+MD2LABELS='labels[1]'            # -> index 1 of label (for whatever reason)
+MD2MILESTONE='milestone[0]'      # -> you can even destruct *string Front Matter* fields (must be comma separated)
 MD2STATE='state'
 #+end_src
 Why would anybody would make it complicated like this? Let's say you have a lot of content. In order to figure out which content needs an update gh-cms needs to fetch at least all github issues fields related to *MD2ID and MD2DATE*. Its as simple as: match remote and local *id* and see if local content has an newer *date*.
@@ -104,16 +104,16 @@ Or, to illsutrate this further, the combination *MD2ID=MD2TITLE;MD2DATE=MD2MILES
 To continue with the above config example, local markdown files would translate to:
 #+begin_src markdown
 ---
-timestamp: 1650962209713         -> See next line!
-title: "My blog post"            -> GH title: *My blog post,1122334455*
-labels: ["tech", "dev"]          -> GH labels: *[dev]*
-milestone: "my,milestone"        -> GH milestone: *my*
-state: "OPEN"                    -> GH state: open issue
+ts: 1650962209713              -> See next line!
+title: "#7,My blog post"       -> GH title: *#7,My blog post,1650962209713*
+labels: ["tech", "dev"]        -> GH labels: *[dev]*
+milestone: "/route,there"      -> GH milestone: */route*
+state: "OPEN"                  -> GH state: open issue
 ---
-Hello content                    -> this will go to the content area
+Hello content                  -> this will go to the content area
 #+end_src
 
-Every *MD2_ENV_* config switch is described in depth [[id:30732088-36d7-4f48-8fd8-0bca699f461f][in the ENV reference]].
+Every *MD2_ENV_* config switch is described in depth [[id:30732088-36d7-4f48-8fd8-0bca699f461f][in the ENV manual]].
 
 * Up and running
 This package requires some minimal setup to work properly. Please refer to [[id:007a85b4-1ef9-4071-a517-5e63e3d42cb5][CLI manual]] and [[id:30732088-36d7-4f48-8fd8-0bca699f461f][ENV manual]] for an in-depth manual.

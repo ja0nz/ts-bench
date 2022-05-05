@@ -28,6 +28,8 @@ export const queryIdI = 'id';
 export const queryStateI = 'state';
 export const queryTitleI = 'title';
 export const queryBodyI = 'body';
+export const queryCommentsI = 'comments (first: 100) { nodes { author { login, avatarUrl } body } }';
+export const queryReactionsI = 'reactions (first: 100) { nodes { content } }';
 export const queryMilestoneI = `milestone { ${queryIdM} ${queryTitleM} }`;
 
 export const queryI =
@@ -59,6 +61,8 @@ export const getIdI = defGetter<Issue, 'id'>([queryIdI]);
 export const getStateI = defGetter<Issue, 'state'>([queryStateI]);
 export const getBodyI = defGetter<Issue, 'body'>([queryBodyI]);
 export const getTitleI = defGetter<Issue, 'title'>([queryTitleI]);
+export const getCommentsI = defGetter<Issue, 'comments', 'nodes'>(['comments', 'nodes']);
+export const getReactionsI = defGetter<Issue, 'reactions', 'nodes'>(['reactions', 'nodes']);
 
 /*
  * Mutation

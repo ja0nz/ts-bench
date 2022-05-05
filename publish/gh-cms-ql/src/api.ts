@@ -15,7 +15,21 @@ export type Issue = {
   body?: string;
   milestone?: Milestone;
   labels?: R2<Labels>;
+  comments?: { nodes: IssueComment[] };
+  reactions?: { nodes: Reaction[] };
 };
+
+export type IssueComment = {
+  author: {
+    login: string;
+    avatarUrl: URL;
+  }
+}
+
+export type Reaction = {
+  content: "THUMBS_UP" | "THUMBS_DOWN" | "LAUGH" | "HOORAY" | "CONFUSED" | "HEART" | "ROCKET" | "EYES"
+}
+
 export type Label = {
   id: string;
   name?: string;
