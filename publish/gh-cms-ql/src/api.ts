@@ -1,11 +1,4 @@
 /*
- * Helper
- */
-export function jNl(...args: string[]) {
-  return args.join('\n');
-}
-
-/*
  * GraphQL
  */
 export type Issue = {
@@ -23,12 +16,20 @@ export type IssueComment = {
   author: {
     login: string;
     avatarUrl: URL;
-  }
-}
+  };
+};
 
 export type Reaction = {
-  content: "THUMBS_UP" | "THUMBS_DOWN" | "LAUGH" | "HOORAY" | "CONFUSED" | "HEART" | "ROCKET" | "EYES"
-}
+  content:
+    | 'THUMBS_UP'
+    | 'THUMBS_DOWN'
+    | 'LAUGH'
+    | 'HOORAY'
+    | 'CONFUSED'
+    | 'HEART'
+    | 'ROCKET'
+    | 'EYES';
+};
 
 export type Label = {
   id: string;
@@ -70,6 +71,6 @@ export type R2<T extends Combined> = R1<T>[keyof T];
 /*
  * Mutation Query
  */
-export type CreateLabelQL = { createLabel: { label: Label } }
-export type CreateIssueQL = { createIssue: { issue: Issue } }
-export type UpdateIssueQL = { updateIssue: { issue: Issue } }
+export type CreateLabelQL = { createLabel: { label: Label } };
+export type CreateIssueQL = { createIssue: { issue: Issue } };
+export type UpdateIssueQL = { updateIssue: { issue: Issue } };

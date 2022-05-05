@@ -1,8 +1,7 @@
 import { defGetter } from '@thi.ng/paths';
 import type { Fn } from '@thi.ng/api';
 import { comp } from '@thi.ng/compose';
-import {
-  jNl,
+import type {
   Issue,
   Issues,
   Labels,
@@ -28,7 +27,8 @@ export const queryIdI = 'id';
 export const queryStateI = 'state';
 export const queryTitleI = 'title';
 export const queryBodyI = 'body';
-export const queryCommentsI = 'comments (first: 100) { nodes { author { login, avatarUrl } body } }';
+export const queryCommentsI =
+  'comments (first: 100) { nodes { author { login, avatarUrl } body } }';
 export const queryReactionsI = 'reactions (first: 100) { nodes { content } }';
 export const queryMilestoneI = `milestone { ${queryIdM} ${queryTitleM} }`;
 
@@ -38,10 +38,17 @@ export const queryI =
     `issues(first: ${n} ${
       after && `after: "${after}"`
     } filterBy: {createdBy: ${owner}}) {
-        nodes { ${queryIdI} ${jNl(...query)} }
+        nodes { ${queryIdI} ${query.join('\n')} }
         ${totalCount}
         ${pageInfo} { ${endCursor} ${hasNextPage} }
       }`;
+
+export const querySingI =
+  (n = '0') =>
+  (...query: string[]) =>
+    `issue(number: ${n}) {
+      ${queryIdI} ${query.join('\n')}
+     }`;
 
 /*
  * Getters
@@ -50,6 +57,7 @@ export const queryI =
 export const getI: Fn<R1<Issues>, R2<Issues>> = defGetter<R1<Issues>, 'issues'>(
   ['issues'],
 );
+export const getSingI = defGetter<{ issue: Issue }, 'issue'>(['issue']);
 
 // Nodes
 export const getMilestoneI = defGetter<Issue, 'milestone'>(['milestone']);
@@ -61,8 +69,14 @@ export const getIdI = defGetter<Issue, 'id'>([queryIdI]);
 export const getStateI = defGetter<Issue, 'state'>([queryStateI]);
 export const getBodyI = defGetter<Issue, 'body'>([queryBodyI]);
 export const getTitleI = defGetter<Issue, 'title'>([queryTitleI]);
-export const getCommentsI = defGetter<Issue, 'comments', 'nodes'>(['comments', 'nodes']);
-export const getReactionsI = defGetter<Issue, 'reactions', 'nodes'>(['reactions', 'nodes']);
+export const getCommentsI = defGetter<Issue, 'comments', 'nodes'>([
+  'comments',
+  'nodes',
+]);
+export const getReactionsI = defGetter<Issue, 'reactions', 'nodes'>([
+  'reactions',
+  'nodes',
+]);
 
 /*
  * Mutation

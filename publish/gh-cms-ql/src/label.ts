@@ -1,6 +1,6 @@
 import type { Fn } from '@thi.ng/api';
 import { defGetter } from '@thi.ng/paths';
-import { CreateLabelQL, jNl, Label, Labels, R1, R2 } from './api.js';
+import type { CreateLabelQL, Label, Labels, R1, R2 } from './api.js';
 import { endCursor, hasNextPage, pageInfo, totalCount } from './repo.js';
 
 /*
@@ -14,7 +14,7 @@ export const queryL =
   (after = '', n = 100) =>
   (...query: string[]) =>
     `labels(first: ${n} ${after && `after: "${after}"`}) {
-        nodes { ${queryIdL} ${jNl(...query)} }
+        nodes { ${queryIdL} ${query.join('\n')} }
         ${totalCount}
         ${pageInfo} { ${endCursor} ${hasNextPage} }
       }`;

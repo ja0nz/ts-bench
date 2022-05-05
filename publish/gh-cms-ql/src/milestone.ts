@@ -1,7 +1,7 @@
 import type { RequestParameters, OctokitResponse } from '@octokit/types';
 import type { Fn } from '@thi.ng/api';
 import { defGetter } from '@thi.ng/paths';
-import { jNl, Milestone, Milestones, R1, R2 } from './api.js';
+import type { Milestone, Milestones, R1, R2 } from './api.js';
 import { endCursor, hasNextPage, pageInfo, totalCount } from './repo.js';
 
 /*
@@ -16,7 +16,7 @@ export const queryM =
   (after = '', n = 100) =>
   (...query: string[]) =>
     `milestones(first: ${n} ${after && `after: "${after}"`}) {
-        nodes { ${queryIdM} ${jNl(...query)} }
+        nodes { ${queryIdM} ${query.join('\n')} }
         ${totalCount}
         ${pageInfo} { ${endCursor} ${hasNextPage} }
       }`;
@@ -71,10 +71,13 @@ export function mutateRestM(
 /*
  * Mutation Getter
  */
-export const getCreateIdM = defGetter<OctokitResponse<{node_id: string}>, 'data', 'node_id'>([
+export const getCreateIdM = defGetter<
+  OctokitResponse<{ node_id: string }>,
   'data',
-  'node_id',
-]);
-export const getCreateTitleM = defGetter<OctokitResponse<{title: string}>, 'data', 'title'>(
-  ['data', 'title'],
-);
+  'node_id'
+>(['data', 'node_id']);
+export const getCreateTitleM = defGetter<
+  OctokitResponse<{ title: string }>,
+  'data',
+  'title'
+>(['data', 'title']);

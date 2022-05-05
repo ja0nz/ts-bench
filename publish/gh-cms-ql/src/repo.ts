@@ -1,4 +1,4 @@
-import { jNl, R1, R2, R0, Combined } from './api.js';
+import type { R1, R2, R0, Combined } from './api.js';
 
 /*
  * Nodes Query
@@ -10,7 +10,7 @@ export const queryR = (...query: string[]) =>
   `query ($repo: String!, $owner: String!) {
     repository(name: $repo, owner: $owner) {
       id
-      ${jNl(...query)}
+      ${query.join('\n')}
     }
   }`;
 
