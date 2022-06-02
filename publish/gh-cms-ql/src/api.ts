@@ -6,6 +6,7 @@ export type Issue = {
   state?: string;
   title?: string;
   body?: string;
+  number?: number;
   milestone?: Milestone;
   labels?: R2<Labels>;
   comments?: { nodes: IssueComment[] };

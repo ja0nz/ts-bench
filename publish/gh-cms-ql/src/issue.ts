@@ -26,6 +26,7 @@ import { queryIdM, queryTitleM } from './milestone.js';
 export const queryIdI = 'id';
 export const queryStateI = 'state';
 export const queryTitleI = 'title';
+export const queryNumberI = 'number';
 export const queryBodyI = 'body';
 export const queryCommentsI =
   'comments (first: 100) { nodes { author { login, avatarUrl } body } }';
