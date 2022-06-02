@@ -1,10 +1,16 @@
-{ pkgs ? import <nixpkgs> {} }:
+{ pkgs ? import <nixpkgs> {
+  overlays = [
+    (self: super: {
+      yarn = super.yarn.override { nodejs = pkgs.nodejs-18_x; };
+    })
+  ];
+} }:
 
 pkgs.mkShell {
   buildInputs = with pkgs; [
-   nodejs-17_x
+   nodejs-18_x
+   yarn
    miniserve
-   nodePackages.yarn
    nodePackages.typescript-language-server
    nodePackages.vscode-html-languageserver-bin
    nodePackages.vscode-css-languageserver-bin
