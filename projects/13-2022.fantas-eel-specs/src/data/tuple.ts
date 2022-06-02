@@ -14,4 +14,15 @@ Tuple.prototype.concat = function (that) {
 Tuple(Sum(1), Any(false))
     .concat(Tuple(Sum(2), Any(true)))
 
-export { Tuple };
+const Tuple4 = tagged("Tuple4", ["a", "b", "c", "d"]);
+
+Tuple4.prototype.concat = function(that) {
+  return Tuple4(
+    this.a.concat(that.a),
+    this.b.concat(that.b),
+    this.c.concat(that.c),
+    this.d.concat(that.d)
+  );
+};
+
+export { Tuple, Tuple4 };
