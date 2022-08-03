@@ -22,20 +22,20 @@
     "test": "testament test"
   },
   "dependencies": {
-    "@thi.ng/hiccup-html": "^2.1.6",
-    "@thi.ng/rdom": "^0.8.9",
+    "@thi.ng/hiccup-html": "^2.1.10",
+    "@thi.ng/rdom": "^0.9.3",
     "events": "^3.3.0",
-    "mapbox-gl": "^2.8.2",
+    "mapbox-gl": "^2.9.2",
     "twind": "^0.16.17"
   },
   "devDependencies": {
-    "@thi.ng/testament": "^0.2.7",
+    "@thi.ng/testament": "^0.2.10",
     "@types/events": "^3.0.0",
-    "@types/mapbox-gl": "^2.7.2",
+    "@types/mapbox-gl": "^2.7.5",
     "@types/rimraf": "^3.0.2",
     "rimraf": "^3.0.2",
     "tools": "workspace:^",
-    "typescript": "^4.7.2",
-    "vite": "^2.9.9"
+    "typescript": "^4.7.4",
+    "vite": "^3.0.4"
   }
 }

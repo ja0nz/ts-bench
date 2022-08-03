@@ -1,4 +1,5 @@
 import type { RequestParameters } from '@octokit/graphql/dist-types/types';
+import type { OctokitResponse } from '@octokit/types';
 import { graphql } from '@octokit/graphql';
 import { request } from '@octokit/request';
 import { URL } from 'node:url';
@@ -38,7 +39,10 @@ export const restClient =
    * @param request_ A **GET / POST** uri; see https://docs.github.com/en/rest/reference
    * @param payload A payload object with request parameters
    */
-  async (request_: string, payload: RequestParameters) => {
+  async (
+    request_: string,
+    payload: RequestParameters,
+  ): Promise<OctokitResponse<any>> => {
     const { pathname } = new URL(url);
     const [owner, repo] = pathname.split('/').filter(Boolean);
     return request.defaults({

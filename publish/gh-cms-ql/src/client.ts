@@ -5,6 +5,7 @@ import { graphql } from '@octokit/graphql';
 import type { RequestParameters } from '@octokit/graphql/dist-types/types';
 import { request } from '@octokit/request';
 import { defGetter } from '@thi.ng/paths';
+import type { OctokitResponse } from '@octokit/types';
 
 // Process.env
 const getEnv = (env: string) =>
@@ -44,7 +45,10 @@ export const restClient =
    * @param request_ A **GET / POST** uri; see https://docs.github.com/en/rest/reference
    * @param payload A payload object with request parameters
    */
-  async (request_: string, payload: RequestParameters) => {
+  async (
+    request_: string,
+    payload: RequestParameters,
+  ): Promise<OctokitResponse<any>> => {
     const { pathname } = new URL(url);
     const [owner, repo] = pathname.split('/').filter(Boolean);
     return request.defaults({
