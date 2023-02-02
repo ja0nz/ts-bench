@@ -1,22 +1,20 @@
-import type { RequestParameters, OctokitResponse } from '@octokit/types';
-import type { Fn } from '@thi.ng/api';
-import { defGetter } from '@thi.ng/paths';
-import type { Milestone, Milestones, R1, R2 } from './api.js';
-import { endCursor, hasNextPage, pageInfo, totalCount } from './repo.js';
+import type { OctokitResponse, RequestParameters } from "@octokit/types";
+import type { Fn } from "@thi.ng/api";
+import { defGetter } from "@thi.ng/paths";
+import type { Milestone, Milestones, R1, R2 } from "./api.js";
+import { endCursor, hasNextPage, pageInfo, totalCount } from "./repo.js";
 
 /*
  * Nodes Query
  */
-export const queryIdM = 'id';
-export const queryNumberM = 'number';
-export const queryTitleM = 'title';
+export const queryIdM = "id";
+export const queryNumberM = "number";
+export const queryTitleM = "title";
 export const queryIssueCountM = `issues { ${totalCount} }`;
 
-export const queryM =
-  (after = '', n = 100) =>
-  (...query: string[]) =>
-    `milestones(first: ${n} ${after && `after: "${after}"`}) {
-        nodes { ${queryIdM} ${query.join('\n')} }
+export const queryM = (after = "", n = 100) => (...query: string[]) =>
+  `milestones(first: ${n} ${after && `after: "${after}"`}) {
+        nodes { ${queryIdM} ${query.join("\n")} }
         ${totalCount}
         ${pageInfo} { ${endCursor} ${hasNextPage} }
       }`;
@@ -27,29 +25,29 @@ export const queryM =
 // Repository
 export const getM: Fn<R1<Milestones>, R2<Milestones>> = defGetter<
   R1<Milestones>,
-  'milestones'
->(['milestones']);
+  "milestones"
+>(["milestones"]);
 
 // Nodes/Leaves
-export const getIdM = defGetter<Milestone, 'id'>([queryIdM]);
-export const getNumberM = defGetter<Milestone, 'number'>([queryNumberM]);
-export const getTitleM = defGetter<Milestone, 'title'>([queryTitleM]);
-export const getIssueCountM = defGetter<Milestone, 'issues', 'totalCount'>([
-  'issues',
-  'totalCount',
+export const getIdM = defGetter<Milestone, "id">([queryIdM]);
+export const getNumberM = defGetter<Milestone, "number">([queryNumberM]);
+export const getTitleM = defGetter<Milestone, "title">([queryTitleM]);
+export const getIssueCountM = defGetter<Milestone, "issues", "totalCount">([
+  "issues",
+  "totalCount",
 ]);
 
 /*
  * Mutation
  */
 export type CreateMilestone = {
-  type: 'milestone';
-  action: 'create';
+  type: "milestone";
+  action: "create";
   title: string;
 };
 export type DeleteMilestone = {
-  type: 'milestone';
-  action: 'delete';
+  type: "milestone";
+  action: "delete";
   id: string; // Milestone number, not node id!
 };
 
@@ -61,7 +59,7 @@ export type DeleteMilestone = {
 export function mutateRestM(
   a: CreateMilestone | DeleteMilestone,
 ): [string, RequestParameters] {
-  if (a.action === 'create') {
+  if (a.action === "create") {
     return [`POST /repos/{owner}/{repo}/milestones`, { title: a.title }];
   }
 
@@ -73,11 +71,11 @@ export function mutateRestM(
  */
 export const getCreateIdM = defGetter<
   OctokitResponse<{ node_id: string }>,
-  'data',
-  'node_id'
->(['data', 'node_id']);
+  "data",
+  "node_id"
+>(["data", "node_id"]);
 export const getCreateTitleM = defGetter<
   OctokitResponse<{ title: string }>,
-  'data',
-  'title'
->(['data', 'title']);
+  "data",
+  "title"
+>(["data", "title"]);

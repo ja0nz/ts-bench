@@ -1,6 +1,6 @@
 {
   "name": "gh-cms-ql",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A graphQL frontend to Github Issues",
   "keywords": [
     "cms",
@@ -36,21 +36,19 @@
     "test": "testament test"
   },
   "dependencies": {
-    "@octokit/graphql": "^5.0.0",
-    "@octokit/request": "^6.2.0",
-    "@thi.ng/api": "^8.3.9",
-    "@thi.ng/compose": "^2.1.9",
-    "@thi.ng/paths": "^5.1.11",
-    "dotenv": "^16.0.1",
-    "gh-cms-ql": "^0.1.5"
+    "@octokit/graphql": "^5.0.5",
+    "@octokit/request": "^6.2.3",
+    "@thi.ng/api": "^8.6.3",
+    "@thi.ng/compose": "^2.1.24",
+    "@thi.ng/paths": "^5.1.28",
+    "dotenv": "^16.0.3"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "^7.28.7",
-    "@octokit/types": "^6.41.0",
-    "@thi.ng/errors": "^2.1.9",
-    "@thi.ng/testament": "^0.2.10",
-    "rimraf": "^3.0.2",
-    "tools": "workspace:^",
-    "typescript": "^4.7.4"
+    "@microsoft/api-extractor": "^7.34.2",
+    "@octokit/types": "^9.0.0",
+    "@thi.ng/errors": "^2.2.8",
+    "@thi.ng/testament": "^0.3.9",
+    "rimraf": "^4.1.2",
+    "typescript": "^4.9.5"
   }
 }

@@ -240,4 +240,4 @@ The new [[https://docs.github.com/en/issues/trying-out-the-new-projects-experien
 - Ja0nz
 
 * License
-2022 Ja0nz // Apache Software License 2.0
+2023 Ja0nz // Apache Software License 2.0

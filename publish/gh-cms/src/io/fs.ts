@@ -1,11 +1,11 @@
-import { opendir, readFile } from 'node:fs/promises';
-import { join, extname } from 'node:path';
-import { readFileSync } from 'node:fs';
-import { Buffer } from 'node:buffer';
-import type { IObjectOf } from '@thi.ng/api';
+import type { IObjectOf } from "@thi.ng/api";
+import { Buffer } from "node:buffer";
+import { readFileSync } from "node:fs";
+import { opendir, readFile } from "node:fs/promises";
+import { extname, join } from "node:path";
 
 export const readJson = (path: string): IObjectOf<string> =>
-  JSON.parse(<any>readFileSync(path));
+  JSON.parse(<any> readFileSync(path));
 
 async function* fswalk(dir: string): AsyncGenerator<string> {
   for await (const d of await opendir(dir)) {
@@ -19,9 +19,9 @@ async function* fswalk(dir: string): AsyncGenerator<string> {
 export async function getInFs(contentDir: string): Promise<string[]> {
   const fxs: string[] = [];
   for await (const f of fswalk(contentDir)) {
-    if (extname(f) === '.md') {
+    if (extname(f) === ".md") {
       const file = await readFile(f);
-      const buffer = Buffer.from(file).toString('utf-8');
+      const buffer = Buffer.from(file).toString("utf-8");
       fxs.push(buffer);
     }
   }

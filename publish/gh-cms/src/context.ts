@@ -1,8 +1,8 @@
-import { seconds } from '@thi.ng/strings';
-import { CLIOptions, CommandCtx, CommandSpec, ensureEnv } from './api';
-import type { AppConfig } from './config';
-import type { Logger } from './logger';
-import type { ArgParser } from './parser';
+import { seconds } from "@thi.ng/strings";
+import { CLIOptions, CommandCtx, CommandSpec, ensureEnv } from "./api";
+import type { AppConfig } from "./config";
+import type { Logger } from "./logger";
+import type { ArgParser } from "./parser";
 
 /**
  * Ignition module:
@@ -18,7 +18,7 @@ export class AppContext<T extends CLIOptions> implements CommandCtx<T> {
   constructor(
     public config: AppConfig,
     public logger: Logger,
-    public args: ArgParser
+    public args: ArgParser,
   ) {}
 
   async start() {
@@ -27,7 +27,7 @@ export class AppContext<T extends CLIOptions> implements CommandCtx<T> {
     this.rest = ctx.rest!;
     this.opts = ctx.opts!;
     // Guards
-    ensureEnv('--repo-url', 'env.REPO_URL', this.opts.repoUrl);
+    ensureEnv("--repo-url", "env.REPO_URL", this.opts.repoUrl);
     // Perf start
     const t0 = Date.now();
     await this.cmd.fn(this);

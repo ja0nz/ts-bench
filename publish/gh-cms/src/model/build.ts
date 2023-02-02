@@ -1,82 +1,82 @@
-import type { graphql } from '@octokit/graphql/dist-types/types';
-import grayMatter, { GrayMatterFile } from 'gray-matter';
-import type { Fn } from '@thi.ng/api';
-import { comp as c } from '@thi.ng/compose';
-import { DGraph } from '@thi.ng/dgraph';
-import { assert } from '@thi.ng/errors';
-import { defGetter } from '@thi.ng/paths';
+import type { graphql } from "@octokit/graphql/dist-types/types";
+import type { Fn } from "@thi.ng/api";
+import { comp as c } from "@thi.ng/compose";
+import { DGraph } from "@thi.ng/dgraph";
+import { assert } from "@thi.ng/errors";
+import { defGetter } from "@thi.ng/paths";
 import {
+  assocMap,
+  cat,
   comp,
-  reducer,
-  partition,
+  distinct,
   filter,
   flatten,
+  isReduced,
+  iterator,
+  last,
   map,
   mapcat,
   multiplex,
+  partition,
   push,
-  transduce,
-  last,
-  scan,
-  distinct,
-  iterator,
-  step,
   Reduced,
-  isReduced,
-  cat,
+  reducer,
+  scan,
+  step,
   str,
-  assocMap,
-} from '@thi.ng/transducers';
+  transduce,
+} from "@thi.ng/transducers";
 import {
+  Combined,
+  CreateIssue,
+  CreateIssueQL,
+  CreateLabel,
+  CreateLabelQL,
+  CreateMilestone,
   getBodyI,
+  getCreateI,
   getEndCursor,
   getHasNextPage,
+  getIdI,
+  getIdL,
   getLabelsI,
   getMilestoneI,
+  getNameL,
   getNodes,
   getR,
   getStateI,
   getTitleI,
+  getTitleM,
+  getUpdateI,
+  Issue,
+  Label,
   Milestone,
+  mutateI,
+  mutateL,
+  mutateRestM,
   queryBodyI,
   queryI,
   queryL,
+  queryM,
   queryMilestoneI,
   queryNameL,
   queryR,
   queryStateI,
   queryTitleI,
-  getTitleM,
-  Issue,
-  R2,
-  R1,
-  Combined,
-  queryM,
   queryTitleM,
-  Label,
-  getIdL,
-  getNameL,
-  mutateL,
-  mutateRestM,
-  mutateI,
-  CreateIssueQL,
-  UpdateIssueQL,
-  getCreateI,
-  getUpdateI,
-  getIdI,
+  R1,
+  R2,
   UpdateIssue,
-  CreateIssue,
-  CreateMilestone,
-  CreateLabel,
-  CreateLabelQL,
-} from 'gh-cms-ql';
-import type { ActionObject, DGraphFields, MDActionMap, MDENV } from '../api.js';
-import type { BuildContent, Either, OctoR, PreBuildContent } from './api';
+  UpdateIssueQL,
+} from "gh-cms-ql";
+import grayMatter, { GrayMatterFile } from "gray-matter";
+import type { ActionObject, DGraphFields, MDActionMap, MDENV } from "../api.js";
+import type { BuildContent, Either, OctoR, PreBuildContent } from "./api";
 
 const indexdIdentifier = /(?<=\[)(\d+?)(?=])/g;
 const getFrontMatterValue = (
   key: string,
-): Fn<GrayMatterFile<string>, unknown> => defGetter(['data', key]);
+): Fn<GrayMatterFile<string>, unknown> => defGetter(["data", key]);
 
 /*
  * IN: { "MD2ID": string, ... }
@@ -88,13 +88,13 @@ export function buildDag(env: typeof MDENV): DGraph<DGraphFields> {
   type Row = [string, string];
   const out: IterableIterator<Row> = iterator(
     comp(
-      mapcat<Row, Row>(([k, v]) => v.split(',').map((v1) => [k, v1])),
+      mapcat<Row, Row>(([k, v]) => v.split(",").map((v1) => [k, v1])),
       mapcat(([k, v]) => {
         const indexs = v.match(indexdIdentifier);
         const returnValue: Row[] = [];
         if (indexs !== null) {
           assert(indexs.length < 2, `Only one index level allowed: ${v}`);
-          const [v1] = v.split('[');
+          const [v1] = v.split("[");
           returnValue.push([v, v1]);
         }
 
@@ -145,13 +145,14 @@ function stepTree(
     comp(
       // Trace('1. traversing ROOT value (gray matter):'),
       map<DGraphFields, ActionFieldsReduced>((k) => {
-        if (g.isRoot(k))
+        if (g.isRoot(k)) {
           return new Reduced({
             gm2valueFn: getFrontMatterValue(k),
             gmToken: k,
             qlToken: queryBodyI,
             issue2valueFn: getBodyI,
           });
+        }
         return k;
       }),
       // Trace("2. expand dependencies:"),
@@ -167,47 +168,46 @@ function stepTree(
       // Trace("3. Known keys (set in .env):"),
       mapcat<ActionReduced, ActionReduced>((node) => {
         if (isReduced(node)) return [node];
-        if (knownKeys[key])
+        if (knownKeys[key]) {
           return node.map(
             (n) =>
               new Reduced({
                 ...n,
-                qlToken: knownKeys[key].qlToken ?? '',
-                issue2valueFn:
-                  knownKeys[key].issue2valueFn ?? ((x: unknown) => x),
+                qlToken: knownKeys[key].qlToken ?? "",
+                issue2valueFn: knownKeys[key].issue2valueFn ??
+                  ((x: unknown) => x),
               }),
           );
+        }
         return [node];
       }),
       // Trace('4. Indexed keys[0]:'),
       mapcat<ActionReduced, ActionReduced>((node) => {
         if (isReduced(node)) return [node];
         const k = key.match(indexdIdentifier);
-        const getIndex =
-          (n: number): Fn<unknown, string> =>
-          (x: unknown) => {
-            if (Array.isArray(x)) return x[n];
-            if (typeof x === 'string') return x.split(',')[n];
-            return x;
-          };
+        const getIndex = (n: number): Fn<unknown, string> => (x: unknown) => {
+          if (Array.isArray(x)) return x[n];
+          if (typeof x === "string") return x.split(",")[n];
+          return x;
+        };
 
         if (k) {
           const k0 = Number(k[0]);
           return node.length === 1
             ? node.map(
-                (n: ActionObject) =>
-                  new Reduced({
-                    ...n,
-                    gm2valueFn: c(getIndex(k0), n.gm2valueFn),
-                  }),
-              )
+              (n: ActionObject) =>
+                new Reduced({
+                  ...n,
+                  gm2valueFn: c(getIndex(k0), n.gm2valueFn),
+                }),
+            )
             : [node[k0]].map(
-                (n: ActionObject) =>
-                  new Reduced({
-                    ...n,
-                    issue2valueFn: c(getIndex(k0), n.issue2valueFn),
-                  }),
-              );
+              (n: ActionObject) =>
+                new Reduced({
+                  ...n,
+                  issue2valueFn: c(getIndex(k0), n.issue2valueFn),
+                }),
+            );
         }
 
         return [node];
@@ -261,7 +261,7 @@ export function queryIPager(
       cat<ActionObject>(),
       map((x: ActionObject) => x.qlToken),
     ),
-    str('\n'),
+    str("\n"),
     actionObject,
   );
   return (s: GHCursor) => c(queryR, queryI(s))(join);
@@ -281,7 +281,7 @@ export async function fetchExhaust<T extends Combined>(
   getter: Fn<R1<T>, R2<T>>,
 ): Promise<Array<T[keyof T]>> {
   const nodes: Array<T[keyof T]> = [];
-  let cursor: GHCursor = '';
+  let cursor: GHCursor = "";
   while (true) {
     const ql = await client(query(cursor));
     const qPayLoad = c(getter, getR)(ql);
@@ -321,8 +321,8 @@ export function parseIssues(
                   const pValue = a.issue2valueFn(issue) ?? a.gm2valueFn(issue);
                   // Try to rule out if issue is in body
                   if (
-                    a.qlToken === 'body' &&
-                    typeof pValue === 'string' &&
+                    a.qlToken === "body" &&
+                    typeof pValue === "string" &&
                     grayMatter.test(pValue)
                   ) {
                     return a.gm2valueFn(grayMatter(pValue));
@@ -333,7 +333,7 @@ export function parseIssues(
               // -- end each action
             ),
             map((a) => [...a]), // Flat iterator
-            mapcat((a) => (a.length > 1 ? [a.join(',')] : a)), // Join if combined value (= must be string)
+            mapcat((a) => (a.length > 1 ? [a.join(",")] : a)), // Join if combined value (= must be string)
           ),
           push(),
           actionObject,
@@ -456,40 +456,40 @@ export function preBuildModel(
         comp(
           // Labels
           mapcat(({ labels }) => (Array.isArray(labels) ? labels : [labels])),
-          filter((l) => l !== 'undefined' && !lM.has(l)), // String(undefined)
+          filter((l) => l !== "undefined" && !lM.has(l)), // String(undefined)
           distinct(),
-          map<string, Either<['label', CreateLabelQL]>>((l) => [
+          map<string, Either<["label", CreateLabelQL]>>((l) => [
             ({ logger }) => {
               logger.info(`DRY; Create missing label: ${l}`);
             },
             async ({ repoQ, repoId }) => {
               const ql: CreateLabel = {
-                type: 'label',
-                action: 'create',
+                type: "label",
+                action: "create",
                 id: repoId,
                 name: l,
               };
-              return repoQ(mutateL(ql), ql).then((x) => ['label', x]);
+              return repoQ(mutateL(ql), ql).then((x) => ["label", x]);
             },
           ]),
         ),
         comp(
           // Milestones
           map(({ milestone }) => milestone),
-          filter((m) => m !== 'undefined' && !mM.has(m)), // String(undefined)
+          filter((m) => m !== "undefined" && !mM.has(m)), // String(undefined)
           distinct(),
-          map<string, Either<['milestone', OctoR]>>((m) => [
+          map<string, Either<["milestone", OctoR]>>((m) => [
             ({ logger }) => {
               logger.info(`DRY; Create missing milestone: ${m}`);
             },
             async ({ repoR }) =>
               repoR(
                 ...mutateRestM({
-                  type: 'milestone',
-                  action: 'create',
+                  type: "milestone",
+                  action: "create",
                   title: m,
                 } as CreateMilestone),
-              ).then((x) => ['milestone', x]),
+              ).then((x) => ["milestone", x]),
           ]),
         ),
       ),
@@ -516,20 +516,20 @@ export function buildModel(
     comp(
       map<BuildContent, Either<CreateIssueQL | UpdateIssueQL>>(
         ({ rId, title, labels, milestone, body }) => {
-          const action = rId ? 'update' : 'create';
+          const action = rId ? "update" : "create";
           const data: UpdateIssue | CreateIssue = {
-            type: 'issue',
-            id: rId ?? 'NEW',
+            type: "issue",
+            id: rId ?? "NEW",
             action,
             title,
-            body: body.join(''),
+            body: body.join(""),
             labelIds: labels
-              .filter((l) => l !== 'undefined')
+              .filter((l) => l !== "undefined")
               .map((l) => lM.get(l) ?? `NEW:${l}`),
             milestoneId: [milestone]
-              .filter((m) => m !== 'undefined')
+              .filter((m) => m !== "undefined")
               .map((m) => mM.get(m) ?? `NEW:${m}`)
-              .join(''),
+              .join(""),
           };
           return [
             ({ logger }) => {
@@ -597,8 +597,8 @@ export function postBuildModel(
       }),
       map<BuildContent, Either<UpdateIssueQL>>(({ rId, state }) => {
         const ql: UpdateIssue = {
-          type: 'issue',
-          action: 'update',
+          type: "issue",
+          action: "update",
           id: rId!,
           state,
         };

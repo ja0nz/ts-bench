@@ -1,14 +1,14 @@
-import { dirname, isAbsolute, join, resolve } from 'node:path';
-import type Process from 'node:process';
-import process from 'node:process';
-import { fileURLToPath } from 'node:url';
-import type { Fn, IObjectOf } from '@thi.ng/api';
-import type { Args } from '@thi.ng/args';
-import { defGetter } from '@thi.ng/paths';
-import { assert } from '@thi.ng/errors';
-import type { AppConfig } from './config.js';
-import type { Logger } from './logger.js';
-import { readJson } from './io/fs.js';
+import type { Fn, IObjectOf } from "@thi.ng/api";
+import type { Args } from "@thi.ng/args";
+import { assert } from "@thi.ng/errors";
+import { defGetter } from "@thi.ng/paths";
+import { dirname, isAbsolute, join, resolve } from "node:path";
+import type Process from "node:process";
+import process from "node:process";
+import { fileURLToPath } from "node:url";
+import type { AppConfig } from "./config.js";
+import { readJson } from "./io/fs.js";
+import type { Logger } from "./logger.js";
 
 let _dirname: string;
 try {
@@ -19,11 +19,11 @@ try {
 }
 
 // Enums
-export const INSTALL_DIR = resolve(join(_dirname, '..'));
+export const INSTALL_DIR = resolve(join(_dirname, ".."));
 export const PKG: IObjectOf<string> = readJson(
-  join(INSTALL_DIR, 'package.json'),
+  join(INSTALL_DIR, "package.json"),
 );
-export const REQUIRED = '<required>';
+export const REQUIRED = "<required>";
 export const CMD_HEADER = `
        .⠴⠿⠋      │
     ⠹⣶⣄:         │
@@ -36,26 +36,26 @@ export const CMD_HEADER = `
 
 // Process.env
 const getEnv = (env: string) =>
-  defGetter<typeof Process, 'env'>(['env'])(process)[env];
+  defGetter<typeof Process, "env">(["env"])(process)[env];
 export function ensureEnv(id: string, env: string, value: string) {
   assert(value !== REQUIRED, `missing required '${id}' or '${env}'`);
 }
 
-const CP = getEnv('CONTENT_PATH') ?? '';
+const CP = getEnv("CONTENT_PATH") ?? "";
 export const CONTENT_PATH = isAbsolute(CP) ? CP : join(process.cwd(), CP);
-export const LOG_LEVEL = getEnv('LOG_LEVEL');
-export const REPO_URL = getEnv('REPO_URL');
-export const NO_COLOR = getEnv('NO_COLOR');
-export const GH_TOKEN = getEnv('GH_TOKEN'); // Github.com -> Settings -> Developer Settings -> Personal access tokens -> token for public repo
+export const LOG_LEVEL = getEnv("LOG_LEVEL");
+export const REPO_URL = getEnv("REPO_URL");
+export const NO_COLOR = getEnv("NO_COLOR");
+export const GH_TOKEN = getEnv("GH_TOKEN"); // Github.com -> Settings -> Developer Settings -> Personal access tokens -> token for public repo
 
 // MD2X variables
 export const MDENV = {
-  MD2ID: getEnv('MD2ID') ?? 'id',
-  MD2DATE: getEnv('MD2DATE') ?? 'date',
-  MD2TITLE: getEnv('MD2TITLE') ?? 'title',
-  MD2LABELS: getEnv('MD2LABELS') ?? 'labels',
-  MD2MILESTONE: getEnv('MD2MILESTONE') ?? 'milestone',
-  MD2STATE: getEnv('MD2STATE') ?? 'state',
+  MD2ID: getEnv("MD2ID") ?? "id",
+  MD2DATE: getEnv("MD2DATE") ?? "date",
+  MD2TITLE: getEnv("MD2TITLE") ?? "title",
+  MD2LABELS: getEnv("MD2LABELS") ?? "labels",
+  MD2MILESTONE: getEnv("MD2MILESTONE") ?? "milestone",
+  MD2STATE: getEnv("MD2STATE") ?? "state",
 };
 /*
  * ActionObj type
@@ -74,7 +74,7 @@ export type DGraphFields = string | keyof typeof MDENV;
 export type MDActionMap = Map<DGraphFields, ActionObject[]>;
 
 // Process.argv
-const argv = defGetter<typeof Process, 'argv'>(['argv'])(process);
+const argv = defGetter<typeof Process, "argv">(["argv"])(process);
 const getArgv = (no: number) => argv.slice(2)[no];
 export const MAIN_CMD = getArgv(0);
 export const REST_CMDS: string[] = argv.slice(1);

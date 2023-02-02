@@ -1,7 +1,7 @@
-import type { IObjectOf } from '@thi.ng/api';
-import type { CommandSpec } from './api';
-import { buildCmd } from './cmd/build';
-import { purgeCmd } from './cmd/purge';
+import type { IObjectOf } from "@thi.ng/api";
+import type { CommandSpec } from "./api";
+import { buildCmd } from "./cmd/build";
+import { purgeCmd } from "./cmd/purge";
 
 /**
  * Command registry module:

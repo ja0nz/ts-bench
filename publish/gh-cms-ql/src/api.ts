@@ -22,14 +22,14 @@ export type IssueComment = {
 
 export type Reaction = {
   content:
-    | 'THUMBS_UP'
-    | 'THUMBS_DOWN'
-    | 'LAUGH'
-    | 'HOORAY'
-    | 'CONFUSED'
-    | 'HEART'
-    | 'ROCKET'
-    | 'EYES';
+    | "THUMBS_UP"
+    | "THUMBS_DOWN"
+    | "LAUGH"
+    | "HOORAY"
+    | "CONFUSED"
+    | "HEART"
+    | "ROCKET"
+    | "EYES";
 };
 
 export type Label = {
@@ -51,22 +51,24 @@ export type Milestones = { milestones: Milestone };
 export type Combined = Issues | Labels | Milestones;
 
 export type R0<T extends Combined> = {
-  repository: {
-    [id in keyof T]: {
-      nodes: Array<T[id]>;
-      totalCount: number;
-      pageInfo: {
-        endCursor: string;
-        hasNextPage: boolean;
+  repository:
+    & {
+      [id in keyof T]: {
+        nodes: Array<T[id]>;
+        totalCount: number;
+        pageInfo: {
+          endCursor: string;
+          hasNextPage: boolean;
+        };
       };
-    };
-  } & { id: string };
+    }
+    & { id: string };
 };
 
 /*
  * Indexed Shorthands
  */
-export type R1<T extends Combined> = R0<T>['repository'];
+export type R1<T extends Combined> = R0<T>["repository"];
 export type R2<T extends Combined> = R1<T>[keyof T];
 
 /*

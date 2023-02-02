@@ -1,58 +1,58 @@
-import { Args, string } from '@thi.ng/args';
-import { comp } from '@thi.ng/compose';
-import { assert } from '@thi.ng/errors';
-import { zip } from '@thi.ng/transducers';
+import type { Fn } from "@thi.ng/api";
+import { Args, string } from "@thi.ng/args";
+import { comp } from "@thi.ng/compose";
+import { assert } from "@thi.ng/errors";
+import { zip } from "@thi.ng/transducers";
 import {
+  CreateIssueQL,
+  CreateLabelQL,
+  getCreateIdM,
   getCreateL,
-  getNameL,
+  getCreateTitleM,
   getI,
+  getIdI,
+  getIdL,
+  getIdR,
+  getL,
   getM,
+  getNameL,
+  getR,
   Issues,
   Labels,
   Milestones,
-  getIdI,
-  getL,
   queryR,
-  getIdR,
-  getR,
-  getCreateIdM,
-  getCreateTitleM,
-  CreateIssueQL,
   UpdateIssueQL,
-  getIdL,
-  CreateLabelQL,
-} from 'gh-cms-ql';
-import grayMatter from 'gray-matter';
-import type { Fn } from '@thi.ng/api';
+} from "gh-cms-ql";
+import grayMatter from "gray-matter";
 import {
   CLIOptions,
-  DryRunOptions,
   CommandSpec,
   CONTENT_PATH,
+  DryRunOptions,
   ensureEnv,
-  REQUIRED,
   MDENV,
-} from '../api.js';
+  REQUIRED,
+} from "../api.js";
+import { getInFs } from "../io/fs.js";
+import { qlClient, restClient } from "../io/net.js";
+import type { BuildContent, PreBuildContent } from "../model/api.js";
 import {
-  fetchExhaust,
   buildDag,
+  buildModel,
   dag2MDActionMap,
+  fetchExhaust,
+  issues2Map,
+  labelsMilestones2Map,
   nearFarMerge,
   parseIssues,
-  queryIPager,
   patchedIssued2Map,
+  postBuildModel,
+  preBuildModel,
+  queryIPager,
   queryLPager,
   queryMPager,
-  labelsMilestones2Map,
-  preBuildModel,
-  buildModel,
-  issues2Map,
-  postBuildModel,
-} from '../model/build.js';
-import { getInFs } from '../io/fs.js';
-import { qlClient, restClient } from '../io/net.js';
-import type { BuildContent, PreBuildContent } from '../model/api.js';
-import { ARG_DRY } from './args.js';
+} from "../model/build.js";
+import { ARG_DRY } from "./args.js";
 
 export interface BuildOptions extends CLIOptions, DryRunOptions {
   contentPath: string;
@@ -62,8 +62,8 @@ export const buildCmd: CommandSpec<BuildOptions> = {
   async fn(ctx) {
     const { opts, logger } = ctx;
     // Guards
-    ensureEnv('--content-path', 'env.CONTENT_PATH', opts.contentPath);
-    logger.info('Starting build');
+    ensureEnv("--content-path", "env.CONTENT_PATH", opts.contentPath);
+    logger.info("Starting build");
     logger.debug(`Build: Mapping envs to fields: ${logger.pp(MDENV)}`);
 
     // CMD
@@ -84,13 +84,13 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     // 3. FAR part
     const issuesFar = await fetchExhaust<Issues>(
       repoQ,
-      queryIPager(actionMap.get('MD2ID'), actionMap.get('MD2DATE')),
+      queryIPager(actionMap.get("MD2ID"), actionMap.get("MD2DATE")),
       getI,
     );
     logger.debug(`Build: GH issues fetched: ${logger.pp(issuesFar)}`);
 
     const patchedIdFar: IterableIterator<[unknown[], string]> = zip(
-      parseIssues(issuesFar, actionMap.get('MD2ID'), actionMap.get('MD2DATE')),
+      parseIssues(issuesFar, actionMap.get("MD2ID"), actionMap.get("MD2DATE")),
       issuesFar.map((x) => getIdI(x)),
     );
     const idDateFar = patchedIssued2Map(patchedIdFar);
@@ -104,12 +104,12 @@ export const buildCmd: CommandSpec<BuildOptions> = {
 
     const idDateNear = parseIssues(
       mdNearParsed,
-      actionMap.get('MD2ID'),
-      actionMap.get('MD2DATE'),
-      actionMap.get('MD2TITLE'),
-      actionMap.get('MD2LABELS'),
-      actionMap.get('MD2MILESTONE'),
-      actionMap.get('MD2STATE'),
+      actionMap.get("MD2ID"),
+      actionMap.get("MD2DATE"),
+      actionMap.get("MD2TITLE"),
+      actionMap.get("MD2LABELS"),
+      actionMap.get("MD2MILESTONE"),
+      actionMap.get("MD2STATE"),
     );
     // Logger.debug(`Build: Parsed local content: ${logger.pp(idDateNear)}`);
 
@@ -138,7 +138,7 @@ export const buildCmd: CommandSpec<BuildOptions> = {
           repoQ,
           repoR,
           repoId,
-        }),
+        })
       ),
     );
     logger.debug(`Build: Finished prebuild`);
@@ -152,29 +152,29 @@ export const buildCmd: CommandSpec<BuildOptions> = {
     for (const row of preBuild) {
       if (row === undefined) break;
       const [k, v] = row;
-      const id =
-        (k === 'label' ? getCreateNameL : getCreateTitleM)(v as any) ?? '';
-      const value = (k === 'label' ? getCreateIdL : getCreateIdM)(v as any);
+      const id = (k === "label" ? getCreateNameL : getCreateTitleM)(v as any) ??
+        "";
+      const value = (k === "label" ? getCreateIdL : getCreateIdM)(v as any);
       assert(
         value !== undefined,
         `Build: ${k}; Value is unset. Stack trace: ${logger.pp(v)}`,
       );
-      const vmap = k === 'label' ? labelsMap : milestonesMap;
+      const vmap = k === "label" ? labelsMap : milestonesMap;
       vmap.set(id, value);
     }
 
     logger.debug(`Build: Finished prebuild key remapping`);
 
     // 6. Build (issues)
-    const build: Array<void | CreateIssueQL | UpdateIssueQL> =
-      await Promise.all(
+    const build: Array<void | CreateIssueQL | UpdateIssueQL> = await Promise
+      .all(
         buildModel(rows, labelsMap, milestonesMap).map(([left, right]) =>
           (dry ? left : right)({
             logger,
             repoQ,
             repoR,
             repoId,
-          }),
+          })
         ),
       );
     logger.debug(`Build: Finished build`);
@@ -191,22 +191,22 @@ export const buildCmd: CommandSpec<BuildOptions> = {
             repoQ,
             repoR,
             repoId,
-          }),
+          })
         ),
       );
     }
 
     logger.debug(`Build: Finished postbuild`);
-    logger.info('Successfully build');
+    logger.info("Successfully build");
   },
-  opts: <Args<BuildOptions>>{
+  opts: <Args<BuildOptions>> {
     ...ARG_DRY,
     contentPath: string({
-      alias: 'p',
-      hint: 'PATH',
+      alias: "p",
+      hint: "PATH",
       default: CONTENT_PATH || REQUIRED,
-      desc: 'Markdown content (abs|rel) path',
+      desc: "Markdown content (abs|rel) path",
     }),
   },
-  usage: 'Transform markdown files to GH issues',
+  usage: "Transform markdown files to GH issues",
 };

@@ -1,7 +1,7 @@
-import type { OctokitResponse, RequestParameters } from '@octokit/types';
-import type { Fn, Fn2 } from '@thi.ng/api';
-import type { CreateLabelQL } from 'gh-cms-ql';
-import type { Logger } from '../logger.js';
+import type { OctokitResponse, RequestParameters } from "@octokit/types";
+import type { Fn, Fn2 } from "@thi.ng/api";
+import type { CreateLabelQL } from "gh-cms-ql";
+import type { Logger } from "../logger.js";
 
 export type QlFx<T> = Fn2<string, RequestParameters, Promise<T>>;
 // Bit of a hack to please OctokitResponse
@@ -23,11 +23,11 @@ export type BuildContent = {
   id: unknown;
   date: unknown;
   title: string;
-  state: 'OPEN' | 'CLOSED';
+  state: "OPEN" | "CLOSED";
   body: string[];
   labels: string[];
   milestone: string;
 };
 
 export type OctoR = OctokitResponse<{ node_id: string; title: string }>;
-export type PreBuildContent = ['label', CreateLabelQL] | ['milestone', OctoR];
+export type PreBuildContent = ["label", CreateLabelQL] | ["milestone", OctoR];

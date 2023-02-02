@@ -1,16 +1,16 @@
-import type { R1, R2, R0, Combined } from './api.js';
+import type { Combined, R0, R1, R2 } from "./api.js";
 
 /*
  * Nodes Query
  */
 // Repository
-export const queryIdR = 'id';
+export const queryIdR = "id";
 
 export const queryR = (...query: string[]) =>
   `query ($repo: String!, $owner: String!) {
     repository(name: $repo, owner: $owner) {
       id
-      ${query.join('\n')}
+      ${query.join("\n")}
     }
   }`;
 
@@ -48,7 +48,7 @@ export const getR = <T extends Combined>(x: R0<T>) => x.repository;
 export const getIdR = <T extends Combined>(x: R1<T>) => x.id;
 
 // R2
-export const getNodes = <T extends Combined>(x: R2<T>): R2<T>['nodes'] =>
+export const getNodes = <T extends Combined>(x: R2<T>): R2<T>["nodes"] =>
   x.nodes;
 export const getTotalCount = <T extends Combined>(x: R2<T>) => x.totalCount;
 export const getPageInfo = <T extends Combined>(x: R2<T>) => x.pageInfo;

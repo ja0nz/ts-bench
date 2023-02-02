@@ -1,9 +1,7 @@
-import { Args, flag } from '@thi.ng/args';
-import { assert } from '@thi.ng/errors';
-import type { Labels, R0, Milestones } from 'gh-cms-ql';
+import { Args, flag } from "@thi.ng/args";
+import { assert } from "@thi.ng/errors";
+import type { Labels, Milestones, R0 } from "gh-cms-ql";
 import {
-  queryTitleM,
-  queryNameL,
   getL,
   getM,
   getNodes,
@@ -13,13 +11,15 @@ import {
   queryIssueCountM,
   queryL,
   queryM,
+  queryNameL,
   queryNumberM,
   queryR,
-} from 'gh-cms-ql';
-import type { CLIOptions, CommandSpec, DryRunOptions } from '../api.js';
-import { qlClient, restClient } from '../io/net.js';
-import { purgeModel } from '../model/purge.js';
-import { ARG_DRY } from './args.js';
+  queryTitleM,
+} from "gh-cms-ql";
+import type { CLIOptions, CommandSpec, DryRunOptions } from "../api.js";
+import { qlClient, restClient } from "../io/net.js";
+import { purgeModel } from "../model/purge.js";
+import { ARG_DRY } from "./args.js";
 
 export interface PurgeOptions extends CLIOptions, DryRunOptions {
   labels: boolean;
@@ -31,9 +31,9 @@ export const purgeCmd: CommandSpec<PurgeOptions> = {
     const { opts, logger } = ctx;
     assert(
       opts.labels || opts.milestones,
-      'At least one flag (-l || -m || --help) required',
+      "At least one flag (-l || -m || --help) required",
     );
-    logger.info('Starting purge');
+    logger.info("Starting purge");
 
     // CMD
     const labelFlag = opts.labels;
@@ -62,23 +62,23 @@ export const purgeCmd: CommandSpec<PurgeOptions> = {
           logger,
           repoQ,
           repoR,
-          repoId: 'not needed',
-        }),
+          repoId: "not needed",
+        })
       ),
     );
 
-    logger.info('Successfully purged');
+    logger.info("Successfully purged");
   },
-  opts: <Args<PurgeOptions>>{
+  opts: <Args<PurgeOptions>> {
     ...ARG_DRY,
     labels: flag({
-      alias: 'l',
-      desc: 'Purge unused labels',
+      alias: "l",
+      desc: "Purge unused labels",
     }),
     milestones: flag({
-      alias: 'm',
-      desc: 'Purge unused milestones',
+      alias: "m",
+      desc: "Purge unused milestones",
     }),
   },
-  usage: 'Purge unused labels & routes (aka milestones)',
+  usage: "Purge unused labels & routes (aka milestones)",
 };

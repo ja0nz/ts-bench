@@ -1,23 +1,23 @@
 import {
   comp,
+  filter,
   flatten,
   map,
-  filter,
-  transduce,
   push,
-} from '@thi.ng/transducers';
+  transduce,
+} from "@thi.ng/transducers";
 import {
-  Label,
   DeleteLabel,
   DeleteMilestone,
-  Milestone,
-  mutateRestM,
-  mutateL,
-  getNumberM,
   getIdL,
   getIssueCountL,
-} from 'gh-cms-ql';
-import type { Either } from './api';
+  getNumberM,
+  Label,
+  Milestone,
+  mutateL,
+  mutateRestM,
+} from "gh-cms-ql";
+import type { Either } from "./api";
 
 type LnM = Label | Milestone;
 
@@ -30,8 +30,8 @@ export function purgeModel(...rows: LnM[][]): Array<Either<unknown>> {
       map<LnM, Either<unknown>>((x: LnM) => {
         const n = getNumberM(x);
         const ql: DeleteMilestone | DeleteLabel = {
-          type: n === undefined ? 'label' : 'milestone',
-          action: 'delete',
+          type: n === undefined ? "label" : "milestone",
+          action: "delete",
           id: n === undefined ? getIdL(x) : String(n),
         };
 
@@ -40,7 +40,7 @@ export function purgeModel(...rows: LnM[][]): Array<Either<unknown>> {
             logger.info(`DRY; ${ql.type} removal, ${logger.pp(x)}`);
           },
           async ({ repoQ, repoR }) =>
-            ql.type === 'milestone'
+            ql.type === "milestone"
               ? repoR(...mutateRestM(ql))
               : repoQ(mutateL(ql), ql),
         ];
