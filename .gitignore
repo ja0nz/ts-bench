@@ -16,3 +16,8 @@ doc
 dev
 
 projects/gh-cms-sandbox
+
+# Devenv
+.devenv*
+devenv.local.nix
+
