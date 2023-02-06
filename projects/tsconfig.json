@@ -1,17 +1,19 @@
 {
   "compilerOptions": {
-    "module": "esnext",
-    "target": "esnext",
+    "strict": true,
+    "target": "ESNext",
+    "module": "ESNext",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "importsNotUsedAsValues": "error",
-    "isolatedModules": true,
     "noEmit": true,
-    "strict": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "importsNotUsedAsValues": "error",
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "useDefineForClassFields": true,
-    "experimentalDecorators": true
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "types": ["vite/client"]
   }
 }
