@@ -1,2 +1,2 @@
-import { init as b_init } from './a'
-export { b_init }
+import { init as b_init } from "./a";
+export { b_init };

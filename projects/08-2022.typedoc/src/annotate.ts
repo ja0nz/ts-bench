@@ -35,26 +35,26 @@ export const code_blocks = 55;
  * {@linkcode Foo} or [[`Foo`]]
  */
 export class Bar implements Foo {
-    member = true;
+  member = true;
 }
 
 /** More details */
 export interface Foo {
-    member: boolean;
+  member: boolean;
 }
 
 // Nested links
 export interface RepoConfig {
-    /**
-     * Absolute local path/root dir
-     */
-    path: string;
+  /**
+   * Absolute local path/root dir
+   */
+  path: string;
 }
 export interface CLIOpts {
-    /**
-     * Same as {@link RepoConfig.path}
-     */
-    repoPath: string;
+  /**
+   * Same as {@link RepoConfig.path}
+   */
+  repoPath: string;
 }
 
 // Supported tags
@@ -62,14 +62,14 @@ export interface CLIOpts {
  * @param text  Comment for parameter ´text´.
  */
 export function at_params(target: any, text: string): number {
-    return 42;
+  return 42;
 }
 
 /**
  * @typeParam T Comment for type `T`.
  */
 export function at_typeparam<T>(target: T, text: string): number {
-    return 42;
+  return 42;
 }
 
 /**
@@ -77,28 +77,28 @@ export function at_typeparam<T>(target: T, text: string): number {
  * @template T Templatetag for type `T`.
  */
 export function at_typeparam_templateTag<T>(target: T, text: string): number {
-    return 42;
+  return 42;
 }
 
 /**
  * @returns Comment for special return value.
- * */
+ */
 export function at_return(target: any, text: string): number {
-    return 42;
+  return 42;
 }
 
 /**
  * @event
  */
 export function at_event(target: any, text: string): number {
-    return 42;
+  return 42;
 }
 
 /**
-* @category Category Name
-*/
+ * @category Category Name
+ */
 export function at_category(target: any, text: string): number {
-    return 42;
+  return 42;
 }
 
 /**
@@ -106,9 +106,9 @@ export function at_category(target: any, text: string): number {
  * @enum
  */
 export const At_Enum = {
-    /**
-     * Doc comments may be included here.
-     */
-    A: "a",
-    B: "b",
+  /**
+   * Doc comments may be included here.
+   */
+  A: "a",
+  B: "b",
 } as const;

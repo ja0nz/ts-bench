@@ -1,11 +1,11 @@
 import { tagged } from "daggy";
 
-const Sum = tagged('Sum', ['val'])
+const Sum = tagged("Sum", ["val"]);
 
 // Semigroup
-Sum.prototype.concat = function (that) {
-  return Sum(this.val + that.val)
-}
+Sum.prototype.concat = function(that) {
+  return Sum(this.val + that.val);
+};
 // Monoid
 Sum.empty = () => Sum(0);
 

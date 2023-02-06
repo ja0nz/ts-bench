@@ -1,1 +1,1 @@
-export default "thisShallBlink"
+export default "thisShallBlink";

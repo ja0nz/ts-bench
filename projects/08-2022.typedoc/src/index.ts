@@ -4,4 +4,4 @@
  * Include the module or packageDocumentation tag to mark it as a file comment.
  */
 
-export * as annotate from './annotate';
+export * as annotate from "./annotate";

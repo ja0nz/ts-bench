@@ -1,14 +1,14 @@
-import { Min } from "./data/min";
-import { First } from "./data/first";
-import { Any } from "./data/any";
-import { Tuple4 } from "./data/tuple";
 import { tagged } from "daggy";
+import { Any } from "./data/any";
+import { First } from "./data/first";
+import { Min } from "./data/min";
+import { Tuple4 } from "./data/tuple";
 
 const Customer = tagged("Customer", [
   "name",
   "favouriteThings",
   "registrationDate",
-  "hasMadePurchase"
+  "hasMadePurchase",
 ]);
 
 const myStrategy = {
@@ -18,11 +18,11 @@ const myStrategy = {
       First(customer.name),
       customer.favouriteThings,
       Min(customer.registrationDate),
-      Any(customer.hasMadePurchase)
+      Any(customer.hasMadePurchase),
     ),
 
   // fold Tuple4 back to Customer
-  from: ({ a, b, c, d }) => Customer(a.val, b, c.val, d.val)
+  from: ({ a, b, c, d }) => Customer(a.val, b, c.val, d.val),
 };
 
 const merge = strategy => x => y =>

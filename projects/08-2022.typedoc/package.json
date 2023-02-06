@@ -22,16 +22,15 @@
     "test": "testament test"
   },
   "dependencies": {
-    "@thi.ng/hiccup-html": "^2.1.10",
-    "@thi.ng/rdom": "^0.9.3",
-    "twind": "^0.16.17"
+    "@thi.ng/hiccup-html": "^2.2.6",
+    "@thi.ng/rdom": "^0.10.7",
+    "twind": "^0.16.19"
   },
   "devDependencies": {
-    "@thi.ng/testament": "^0.2.10",
-    "@types/rimraf": "^3.0.2",
-    "rimraf": "^3.0.2",
-    "tools": "workspace:^",
-    "typescript": "^4.7.4",
-    "vite": "^3.0.4"
+    "@thi.ng/testament": "^0.3.10",
+    "@types/rimraf": "^4.0.5",
+    "rimraf": "^4.1.2",
+    "typescript": "^4.9.5",
+    "vite": "^4.1.1"
   }
 }

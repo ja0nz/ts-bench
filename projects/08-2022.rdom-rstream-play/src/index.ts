@@ -1,31 +1,30 @@
-import { isString } from '@thi.ng/checks/is-string';
-import { delayed } from '@thi.ng/compose/delayed';
-import { exposeGlobal } from '@thi.ng/expose';
-import { h1, button, div, li, span } from '@thi.ng/hiccup-html';
-import { $compile } from '@thi.ng/rdom/compile';
-import { $list } from '@thi.ng/rdom/list';
-import { $replace } from '@thi.ng/rdom/replace';
-import { CloseMode } from '@thi.ng/rstream/api';
-import { fromDOMEvent } from '@thi.ng/rstream/event';
-import { fromInterval } from '@thi.ng/rstream/interval';
-import { fromIterable } from '@thi.ng/rstream/iterable';
-import { metaStream } from '@thi.ng/rstream/metastream';
-import { trace } from '@thi.ng/rstream';
-import { reactive, stream } from '@thi.ng/rstream/stream';
-import { sync } from '@thi.ng/rstream/sync';
-import { choices } from '@thi.ng/transducers/choices';
-import { map } from '@thi.ng/transducers/map';
-import { take } from '@thi.ng/transducers/take';
-import { tw } from 'twind';
+import { isString } from "@thi.ng/checks/is-string";
+import { delayed } from "@thi.ng/compose/delayed";
+import { exposeGlobal } from "@thi.ng/expose";
+import { button, div, h1, li, span } from "@thi.ng/hiccup-html";
+import { $compile } from "@thi.ng/rdom/compile";
+import { $list } from "@thi.ng/rdom/list";
+import { $replace } from "@thi.ng/rdom/replace";
+import { trace } from "@thi.ng/rstream";
+import { CloseMode } from "@thi.ng/rstream/api";
+import { fromDOMEvent } from "@thi.ng/rstream/event";
+import { fromInterval } from "@thi.ng/rstream/interval";
+import { fromIterable } from "@thi.ng/rstream/iterable";
+import { metaStream } from "@thi.ng/rstream/metastream";
+import { reactive, stream } from "@thi.ng/rstream/stream";
+import { sync } from "@thi.ng/rstream/sync";
+import { choices } from "@thi.ng/transducers/choices";
+import { map } from "@thi.ng/transducers/map";
+import { take } from "@thi.ng/transducers/take";
+import { tw } from "twind";
 
-const app = document.querySelector<HTMLDivElement>('#app')!;
+const app = document.querySelector<HTMLDivElement>("#app")!;
 
 /**
  * Reactive blur stream (boolean)
  * Made by the reactive stream creation helper. pre seeded
  * Toggle value (push operation)
  * () => blur.next(!blur.deref()), "toggle blur")
- *
  */
 const blur = reactive(false);
 
@@ -65,7 +64,7 @@ const typewriter = (min: number, max: number) => (src: string) =>
     return () => (active = false);
   });
 
-const names = ['👋TypeScript', '👋@thi.ng/rdom', '👋toxi', '👋Discord'];
+const names = ["👋TypeScript", "👋@thi.ng/rdom", "👋toxi", "👋Discord"];
 
 /**
  * Merging streams + factory
@@ -73,7 +72,7 @@ const names = ['👋TypeScript', '👋@thi.ng/rdom', '👋toxi', '👋Discord'];
  * So for every word in names we get ONE stream which returns the chars sequentially in a random time
  */
 const typing = fromIterable(choices(names), { delay: 2000 }).subscribe(
-  metaStream(typewriter(16, 100), { closeOut: CloseMode.NEVER })
+  metaStream(typewriter(16, 100), { closeOut: CloseMode.NEVER }),
 );
 
 // a bunch of streams which can be thrown around
@@ -92,18 +91,19 @@ const randomizeList = () =>
 const buttonToggle = (onclick: EventListener, label: string) =>
   button(
     {
-      class: tw`bg-transparent hover:bg-yellow-500 text-yellow-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded mr-2`,
+      class:
+        tw`bg-transparent hover:bg-yellow-500 text-yellow-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded mr-2`,
       onclick,
     },
-    label
+    label,
   );
 
-const mpos = fromDOMEvent(window, 'mousemove').transform(
-  map((e) => [e.pageX, e.pageY])
+const mpos = fromDOMEvent(window, "mousemove").transform(
+  map((e) => [e.pageX, e.pageY]),
 );
 
-randomizeBody(); //seeding
-randomizeList(); //seeding
+randomizeBody(); // seeding
+randomizeList(); // seeding
 
 const root = $compile(
   div(
@@ -116,7 +116,7 @@ const root = $compile(
           [tw`absolute text(white 4xl)`]: true,
         },
         style: mpos.transform(
-          map(([x, y]) => ({ left: x + 'px', top: y + 10 + 'px' }))
+          map(([x, y]) => ({ left: x + "px", top: y + 10 + "px" })),
         ),
       },
       $replace(
@@ -126,29 +126,29 @@ const root = $compile(
             span(
               {},
               x.body,
-              span({ class: tw`ml-2 text-green-300` }, `[${x.mpos}]`)
+              span({ class: tw`ml-2 text-green-300` }, `[${x.mpos}]`),
             )
           ),
-        })
-      )
+        }),
+      ),
     ),
     div(
       { class: tw`my-4` },
-      buttonToggle(() => blur.next(!blur.deref()), 'toggle blur'),
-      buttonToggle(randomizeBody, 'randomize title'),
-      buttonToggle(randomizeList, 'randomize list')
+      buttonToggle(() => blur.next(!blur.deref()), "toggle blur"),
+      buttonToggle(randomizeBody, "randomize title"),
+      buttonToggle(randomizeList, "randomize list"),
     ),
     div({ class: tw`text-pink-900` }, date),
     div(
       { class: tw`text-pink-600` },
-      items.transform(map((x) => `${x.length} items`))
+      items.transform(map((x) => `${x.length} items`)),
     ),
     $list(
       items,
-      'ul',
+      "ul",
       {
         class: tw`text-xs`,
-        style: { 'column-count': 2 },
+        style: { "column-count": 2 },
       },
       (x) =>
         li(
@@ -159,9 +159,13 @@ const root = $compile(
               ? tw`text-yellow-500`
               : tw`text-red-500`,
           },
-          x
-        )
-    )
-  )
+          x,
+        ),
+    ),
+  ),
 );
 root.mount(app);
+
+function foo(x) {
+  console.log("bar");
+}

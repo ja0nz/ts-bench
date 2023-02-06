@@ -1,1 +1,1 @@
-import * as client from 'vite/client';
+import * as client from "vite/client";
