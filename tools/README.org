@@ -1,0 +1,10 @@
+#+title: ~tools~
+
+~/tools/~ contains configurations and code for internal tools.
+
+/This directory should not be imported by other directories./
+
+Examples of common tools to add:
+
+- [[https://www.terraform.io/][Terraform]] definitions
+- /Internal/ CLIs

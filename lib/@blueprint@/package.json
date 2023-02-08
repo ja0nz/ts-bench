@@ -4,14 +4,14 @@
   "private": true,
   "description": "TODO",
   "keywords": [],
-  "homepage": "https://github.com/ja0nz/ts-bench/tree/main/publish/--placeholder--#readme",
+  "homepage": "https://github.com/ja0nz/ts-bench/tree/main/lib/--placeholder--#readme",
   "bugs": {
     "url": "https://github.com/ja0nz/ts-bench/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/ja0nz/ts-bench.git",
-    "directory": "publish/--placeholder--"
+    "directory": "lib/--placeholder--"
   },
   "license": "Apache-2.0",
   "author": "Ja0nz <mail@ja.nz>",

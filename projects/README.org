@@ -1,0 +1,6 @@
+#+title: ~projects~
+
+Projects in ~/projects/~ are independent, deployable applications. They stand completely separate from each other and must be able to be deployed independently (i.e. you can deploy /project1/ without deploying /project2/). If projects need code shared between them, that code belongs in  [[file:~/data/git/typescript/ts-bench/lib/][../lib]].
+
+* Deployed:
+ - [[file:gh-cms/][gh-cms]] -> markdown->GH issues builder

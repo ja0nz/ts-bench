@@ -1,35 +1,31 @@
-#+TITLE: Readme
+#+title: TS-Bench
 Just a *trial and error* workbench for various TS projects.
 
 * Contents :toc:
-- [[#setup][Setup]]
-  - [[#projects---a-playground-sandbox-and-actual-projects][./projects - A playground, sandbox... and actual projects]]
-  - [[#publish---own-librariescli-tools][./publish - Own libraries/CLI tools]]
-- [[#find-a-project-by-technology][Find a project by technology]]
-  - [[#thingrstream][@thi.ng/rstream]]
-  - [[#mapbox-gl][mapbox-gl]]
+- [[#bench-setup][Bench setup]]
+  - [[#projects---a-playground-a-sandbox-and-actual-projects][./projects - A playground, a sandbox... and actual projects]]
+  - [[#lib---libraries-shared-by-projects][./lib - Libraries shared by projects]]
+  - [[#secrets---encrypted-secrets][./secrets - Encrypted secrets]]
+  - [[#tools---internal-tooling][./tools - Internal tooling]]
 
-* Setup
-** [[file:projects/][./projects]] - A playground, sandbox... and actual projects
-This is a weird place between super random tests and actual projects of mine. Some projects may graduate to [[id:f2122de1-b17f-485f-a1b1-d93506c3eab2][./publish]] on day, most of them won't.
+* Bench setup
+** [[file:projects/][./projects]] - A playground, a sandbox... and actual projects
+Deployable, standalone pieces of software between random tests and actual deployments.
 
 Scaffold a new project with
 #+begin_src bash
-yarn t:template projects/good-project-name
+cd projects
+run-template good-project-name
 #+end_src
-** [[file:publish/][./publish]] - Own libraries/CLI tools
-:PROPERTIES:
-:ID:       f2122de1-b17f-485f-a1b1-d93506c3eab2
-:END:
-As the name implies, this is the land of published code consumed by other parties. So I try to put a bigger focus on comleteness in here regarding tests and documentation and principled development
+** [[file:lib/][./lib]] - Libraries shared by projects
+The glue that holds sticks projects together and eventually may be deployed to a registry near you.
 
-Scaffold a new package with
+Scaffold a new lib with
 #+begin_src bash
-yarn t:template publish/good-package-name
+cd lib
+run-template publish/good-package-name
 #+end_src
 
-* Find a project by technology
-A lookup map for me
-** @thi.ng/rstream
-** [[https://www.npmjs.com/package/mapbox-gl][mapbox-gl]]
-[[file:projects/11-2022.mapbox-gmaps-clone/README.org][11-2022.mapbox-gmaps-clone]]
+** [[file:secrets/][./secrets]] - Encrypted secrets
+** [[file:tools/][./tools]] - Internal tooling
+Currently moved all to [[file:devenv.nix][devenv.nix]] which is awesome! You should try

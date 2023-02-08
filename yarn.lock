@@ -5,9 +5,9 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"--placeholder--@workspace:publish/@blueprint@":
+"--placeholder--@workspace:lib/@blueprint@":
   version: 0.0.0-use.local
-  resolution: "--placeholder--@workspace:publish/@blueprint@"
+  resolution: "--placeholder--@workspace:lib/@blueprint@"
   dependencies:
     "@microsoft/api-extractor": ^7.34.3
     "@thi.ng/api": ^8.7.0
@@ -2618,9 +2618,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"gh-cms-ql@workspace:^, gh-cms-ql@workspace:publish/gh-cms-ql":
+"gh-cms-ql@workspace:^, gh-cms-ql@workspace:lib/gh-cms-ql":
   version: 0.0.0-use.local
-  resolution: "gh-cms-ql@workspace:publish/gh-cms-ql"
+  resolution: "gh-cms-ql@workspace:lib/gh-cms-ql"
   dependencies:
     "@microsoft/api-extractor": ^7.34.3
     "@octokit/graphql": ^5.0.5
@@ -2637,9 +2637,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"gh-cms@workspace:publish/gh-cms":
+"gh-cms@workspace:projects/gh-cms":
   version: 0.0.0-use.local
-  resolution: "gh-cms@workspace:publish/gh-cms"
+  resolution: "gh-cms@workspace:projects/gh-cms"
   dependencies:
     "@octokit/graphql": ^5.0.5
     "@octokit/rest": ^19.0.7

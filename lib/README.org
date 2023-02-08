@@ -1,0 +1,6 @@
+#+title: ~lib~
+
+The ~/lib/~ directory contains shared code. These libraries may be deployed to package managers (e.g. npm, PyPI). They should be independent of each other. Libraries in ~/lib/~ must not be deployed as a standalone application (those are [[file:~/data/git/typescript/ts-bench/projects/][../projects]]).
+
+* Deployed:
+ - [[file:gh-cms-ql/][gh-cms-ql]] -> some GraphQL queries for used by [[file:~/data/git/typescript/ts-bench/projects/gh-cms/][gh-cms]]

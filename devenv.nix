@@ -13,12 +13,12 @@
 
   # https://devenv.sh/scripts/
   scripts = with pkgs; {
-    go-format.exec = "${dprint}/bin/dprint fmt";
-    go-repl.exec = "${nodePackages.ts-node}/bin/ts-node";
-    go-clean.exec = "rm -rf dist";
+    run-format.exec = "${dprint}/bin/dprint fmt";
+    run-repl.exec = "${nodePackages.ts-node}/bin/ts-node";
+    run-clean.exec = "rm -rf dist";
     # @remarks Needs chromium installed
     # @param {string} to src file
-    go-deps.exec = ''
+    run-deps.exec = ''
       if [ -z $1 ]; then echo "req path parameter"; exit 1; fi
       tfile=$(mktemp --suffix=.html)
       ${nodejs}/bin/npx depcruise $1 \
@@ -29,7 +29,7 @@
       chromium $tfile 2>/dev/null
     '';
     # @param {string} name of new package
-    go-template.exec = ''
+    run-template.exec = ''
       if [ -z $1 ]; then echo "req package name"; exit 1; fi
       cp -r @blueprint@ $1;
       sed -i "s/--placeholder--/$1/g" $(find $1 -type f)

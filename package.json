@@ -2,7 +2,7 @@
   "name": "ts-workbench-monorepo",
   "private": true,
   "workspaces": [
-    "publish/*",
+    "lib/*",
     "projects/*"
   ],
   "scripts": {
