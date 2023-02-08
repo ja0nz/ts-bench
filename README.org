@@ -23,7 +23,7 @@ The glue that holds sticks projects together and eventually may be deployed to a
 Scaffold a new lib with
 #+begin_src bash
 cd lib
-run-template publish/good-package-name
+run-template good-lib-name
 #+end_src
 
 ** [[file:secrets/][./secrets]] - Encrypted secrets
