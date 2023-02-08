@@ -2,17 +2,23 @@
 
 *                 text=auto
 *.css             text diff=css
-*.json            linguist-language=JSON-with-Comments
-*.yml             text
-*.cjs             text
-*.js              text
-*.ts              text
-*.map             text -diff
+*.gpg             binary
 *.html            text diff=html
-*.org             text
-*.md              text diff=markdown
+*.js              text
+*.json            text
 *.lock            text -diff
 *.nix             text
+*.org             text
+LICENSE           text
+*.svg             text
+*.ts              text
+*.tsx             text
+*.yaml            text
+*.yml             text
+
+*.cjs             text
+*.map             text -diff
+*.md              text diff=markdown
 
 # RC files (like .babelrc or .eslintrc)
 *.*rc             text
