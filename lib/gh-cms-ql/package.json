@@ -7,14 +7,14 @@
     "graphql",
     "github"
   ],
-  "homepage": "https://github.com/ja0nz/ts-bench/tree/main/publish/gh-cms-ql#readme",
+  "homepage": "https://github.com/ja0nz/ts-bench/tree/main/lib/gh-cms-ql#readme",
   "bugs": {
     "url": "https://github.com/ja0nz/ts-bench/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/ja0nz/ts-bench.git",
-    "directory": "publish/gh-cms-ql"
+    "directory": "lib/gh-cms-ql"
   },
   "license": "Apache-2.0",
   "author": "Ja0nz <mail@ja.nz>",

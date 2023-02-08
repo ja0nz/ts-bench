@@ -3,13 +3,13 @@
   "private": true,
   "workspaces": [
     "lib/*",
-    "projects/*"
+    "projects/[!-]*"
   ],
   "scripts": {
     "@npmjs": "yarn workspaces foreach -pv --no-private",
     "build": "yarn @npmjs -t run build",
     "clean": "yarn @npmjs run clean",
-    "doc": "yarn typedoc --entryPointStrategy packages 'publish/*'",
+    "doc": "yarn typedoc --entryPointStrategy packages 'lib/*'",
     "pub": "yarn @npmjs run pub",
     "test": "yarn @npmjs run test"
   },

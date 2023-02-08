@@ -22,7 +22,7 @@
       if [ -z $1 ]; then echo "req path parameter"; exit 1; fi
       tfile=$(mktemp --suffix=.html)
       ${nodejs}/bin/npx depcruise $1 \
-        -X "node_modules" --highlight "publish" \
+        -X "node_modules" --highlight "lib" \
         -T dot --prefix $PWD \
       | ${graphviz}/bin/dot -T svg \
       | ${nodejs}/bin/npx depcruise-wrap-stream-in-html > $tfile
