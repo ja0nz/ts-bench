@@ -3,7 +3,7 @@
   "private": true,
   "workspaces": [
     "lib/*",
-    "projects/[!-]*"
+    "projects/*"
   ],
   "scripts": {
     "@npmjs": "yarn workspaces foreach -pv --no-private",
