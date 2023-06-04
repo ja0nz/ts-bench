@@ -40,9 +40,14 @@
   languages.typescript.enable = true;
 
   # https://devenv.sh/pre-commit-hooks/
-  pre-commit.hooks.dprint = {
-    enable = true;
-    description = "check if formatted";
-    entry = "true && ${pkgs.dprint}/bin/dprint check";
+  pre-commit.hooks = {
+    dprint = {
+      enable = true;
+      name = "dprint";
+      description = "Multi-language code formatter";
+      entry = "${pkgs.dprint}/bin/dprint fmt";
+      pass_filenames = false;
+      types = [ "text" ];
+    };
   };
 }
