@@ -22,14 +22,14 @@
     "test": "testament test"
   },
   "dependencies": {
-    "solid-js": "^1.6.10"
+    "solid-js": "^1.7.6"
   },
   "devDependencies": {
-    "@thi.ng/testament": "^0.3.10",
+    "@thi.ng/testament": "^0.3.16",
     "@types/rimraf": "^4.0.5",
-    "rimraf": "^4.1.2",
-    "typescript": "^4.9.5",
-    "vite": "^4.1.1",
-    "vite-plugin-solid": "^2.5.0"
+    "rimraf": "^5.0.1",
+    "typescript": "^5.1.3",
+    "vite": "^4.3.9",
+    "vite-plugin-solid": "^2.7.0"
   }
 }

@@ -14,8 +14,8 @@
     "test": "yarn @npmjs run test"
   },
   "devDependencies": {
-    "dependency-cruiser": "^12.7.0",
-    "typedoc": "^0.23.24"
+    "dependency-cruiser": "^13.0.2",
+    "typedoc": "^0.24.7"
   },
-  "packageManager": "yarn@3.4.1"
+  "packageManager": "yarn@3.6.0"
 }
